@@ -21,7 +21,12 @@ export const slugSchema = z
 
 export const tagsSchema = z.array(z.string().min(1).max(50)).max(20).default([]);
 
-export const imageUrlSchema = z.string().url().nullable().optional();
+/** Accepts an absolute URL or a root-relative path (e.g. `/uploads/<file>` from the upload endpoint). */
+export const imageUrlSchema = z
+  .string()
+  .regex(/^(https?:\/\/|\/)/, "Image must be a valid URL")
+  .nullable()
+  .optional();
 
 /** Shared page/pageSize query params for list endpoints. */
 export const paginationQuerySchema = z.object({
