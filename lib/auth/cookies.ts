@@ -12,7 +12,7 @@ export interface CookieStore {
   set(name: string, value: string, options?: CookieOptions): void;
 }
 
-function getCookieName(): string {
+export function getCookieName(): string {
   const name = process.env.COOKIE_NAME;
   if (!name) {
     throw new Error("COOKIE_NAME environment variable is not set");
