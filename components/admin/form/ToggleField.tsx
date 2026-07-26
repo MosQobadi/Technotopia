@@ -30,10 +30,12 @@ export function ToggleField<TFieldValues extends FieldValues>({
           ref={field.ref}
           className={className}
         >
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Content>{label}</Switch.Content>
+          <Switch.Content>
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+            {label}
+          </Switch.Content>
           <FieldError>{fieldState.error?.message}</FieldError>
         </Switch.Root>
       )}
