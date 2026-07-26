@@ -60,8 +60,8 @@ depth for its own sake — a flat, obvious structure beats a "correct" deep one.
   component. Don't hand-roll a table for a single module.
 - **Every form** is built on the shared `components/admin/form/` primitives
   (`TextField`, `TextareaField`, `SelectField`, `TagsInput`, `ImageUploadField`,
-  `ToggleField`, `FormActions` — built in a later task). Don't hand-roll form
-  fields or duplicate validation-error styling for a single module.
+  `ToggleField`, `FormActions`). Don't hand-roll form fields or duplicate
+  validation-error styling for a single module.
 - If a screen's needs don't fit the shared component, extend the shared
   component — don't fork it into a one-off.
 
@@ -122,6 +122,35 @@ Color mapping (case/whitespace-insensitive match on `value`):
 Unrecognized status strings fall back to the neutral `default` chip color
 rather than throwing — extend `STATUS_PILL_COLOR` in `DataTable.tsx` if a
 new status value needs a mapping.
+
+### `components/admin/form/`
+
+Each field wraps React Hook Form's `Controller` (or `useController` directly,
+for fields that need local state alongside the bound value) + a HeroUI
+component + `FieldError`/inline error text. Label above, input below, red
+error text under invalid fields — consistent across every form in the app.
+Demo usage: `app/dev-preview/FormFieldsDemo.tsx` (rendered from
+`app/dev-preview/page.tsx`).
+
+All fields take `control: Control<TFieldValues>` and `name: FieldPath<TFieldValues>`
+plus a `label`, so wiring one into a `react-hook-form` + Zod form is the same
+shape regardless of field type:
+
+- **`TextField`** — `type`, `placeholder`, `isRequired`.
+- **`TextareaField`** — `placeholder`, `rows`, `isRequired`.
+- **`SelectField`** — `options: { label, value }[]`, `placeholder`, `isRequired`.
+- **`TagsInput`** — value is `string[]`; type + Enter (or comma) to add a tag,
+  Backspace on an empty draft removes the last tag, each tag renders as a
+  removable pill.
+- **`ImageUploadField`** — value is `File | string | null` (a `File` for a
+  newly picked upload, a `string` URL when editing an existing image);
+  renders an object-URL preview for `File` values and revokes it on
+  change/unmount.
+- **`ToggleField`** — value is `boolean`; no `isRequired` (a switch is either
+  on or off).
+- **`FormActions`** — not field-bound; takes `onCancel`, `isSubmitting`,
+  and optional `saveLabel`/`cancelLabel`, renders Save (primary) + Cancel
+  (outline).
 
 ---
 

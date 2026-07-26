@@ -1,5 +1,6 @@
 import { Button, Input, Label, Modal, Table, TextField } from "@heroui/react";
 import { DataTableDemo } from "./DataTableDemo";
+import { FormFieldsDemo } from "./FormFieldsDemo";
 
 export default function DevPreviewPage() {
   return (
@@ -58,6 +59,11 @@ export default function DevPreviewPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-muted text-sm font-medium">DataTable (components/admin/DataTable)</h2>
         <DataTableDemo />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-muted text-sm font-medium">Form primitives (components/admin/form)</h2>
+        <FormFieldsDemo />
       </section>
 
       <section className="flex flex-col gap-3">
