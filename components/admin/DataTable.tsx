@@ -36,6 +36,8 @@ export interface DataTableProps<T extends { id: string }> {
   onSearch?: (query: string) => void;
   searchDebounceMs?: number;
   filters?: DataTableFilter[];
+  /** Rendered at the end of the search/filter row, e.g. a "+ Add X" button. */
+  actions?: ReactNode;
   page: number;
   pageSize: number;
   total: number;
@@ -109,6 +111,7 @@ export function DataTable<T extends { id: string }>({
   onSearch,
   searchDebounceMs = 300,
   filters,
+  actions,
   page,
   pageSize,
   total,
@@ -136,22 +139,25 @@ export function DataTable<T extends { id: string }>({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        {onSearch && (
-          <SearchField
-            value={searchValue}
-            onChange={handleSearchChange}
-            aria-label="Search"
-            className="max-w-xs flex-1"
-          >
-            <SearchField.Group>
-              <SearchField.SearchIcon />
-              <SearchField.Input placeholder={searchPlaceholder} />
-              <SearchField.ClearButton />
-            </SearchField.Group>
-          </SearchField>
-        )}
-        {filters?.map((filter) => <DataTableFilterSelect key={filter.label} filter={filter} />)}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {onSearch && (
+            <SearchField
+              value={searchValue}
+              onChange={handleSearchChange}
+              aria-label="Search"
+              className="max-w-xs flex-1"
+            >
+              <SearchField.Group>
+                <SearchField.SearchIcon />
+                <SearchField.Input placeholder={searchPlaceholder} />
+                <SearchField.ClearButton />
+              </SearchField.Group>
+            </SearchField>
+          )}
+          {filters?.map((filter) => <DataTableFilterSelect key={filter.label} filter={filter} />)}
+        </div>
+        {actions}
       </div>
 
       <Table.Root>
