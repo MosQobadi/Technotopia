@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  SENDING
+  SENT
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  phone        String?  @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders Order[]
+}
+
+model Category {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  tags             String[]
+  shortDescription String
+  longDescription  String
+  image            String?
+  status           Status
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  products Product[]
+}
+
+model Brand {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  status    Status
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  name             String
+  sku              String   @unique
+  categoryId       String
+  brandId          String
+  price            Decimal  @db.Decimal(10, 2)
+  discountPercent  Int      @default(0)
+  tags             String[]
+  shortDescription String
+  longDescription  String
+  image            String?
+  status           Status
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brand      Brand       @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  inventory  Inventory?
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([brandId])
+}
+
+// stock thresholds (derived, not stored): 0 = Out of Stock, 1-9 = Low Stock, 10+ = In Stock
+model Inventory {
+  id            String   @id @default(cuid())
+  productId     String   @unique
+  stock         Int      @default(0)
+  lastUpdatedAt DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  customerId      String
+  status          OrderStatus
+  paymentStatus   PaymentStatus
+  subtotal        Decimal       @db.Decimal(10, 2)
+  discount        Decimal       @db.Decimal(10, 2)
+  shippingCost    Decimal       @db.Decimal(10, 2)
+  tax             Decimal       @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  shippingAddress String
+  postalCode      String
+  adminNote       String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  customer User        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  items    OrderItem[]
+
+  @@index([customerId])
+}
+
+model OrderItem {
+  id                  String   @id @default(cuid())
+  orderId             String
+  productId           String
+  productNameSnapshot String
+  priceSnapshot       Decimal  @db.Decimal(10, 2)
+  quantity            Int
+  lineTotal           Decimal  @db.Decimal(10, 2)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+}
