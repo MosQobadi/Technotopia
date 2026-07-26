@@ -1,4 +1,5 @@
 import { Button, Input, Label, Modal, Table, TextField } from "@heroui/react";
+import { DataTableDemo } from "./DataTableDemo";
 
 export default function DevPreviewPage() {
   return (
@@ -52,6 +53,11 @@ export default function DevPreviewPage() {
             </Table.Content>
           </Table.ScrollContainer>
         </Table.Root>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-muted text-sm font-medium">DataTable (components/admin/DataTable)</h2>
+        <DataTableDemo />
       </section>
 
       <section className="flex flex-col gap-3">
