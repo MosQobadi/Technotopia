@@ -96,6 +96,15 @@ export async function listOrders({
   return { orders: orders.map(toListItem), total };
 }
 
+export async function getOrdersForCustomer(customerId: string): Promise<OrderListItem[]> {
+  const orders = await prisma.order.findMany({
+    where: { customerId },
+    include: ORDER_LIST_INCLUDE,
+    orderBy: { createdAt: "desc" },
+  });
+  return orders.map(toListItem);
+}
+
 const ORDER_DETAIL_INCLUDE = {
   customer: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
   items: {

@@ -16,6 +16,7 @@ function toSafeUser(user: User): SafeUser {
     firstName: user.firstName,
     lastName: user.lastName,
     role: user.role,
+    status: user.status,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
