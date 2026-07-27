@@ -12,7 +12,8 @@ import {
 } from "@heroui/react";
 
 export interface DataTableColumn<T> {
-  key: keyof T & string;
+  /** Must be unique across columns. Matched against a field of T only when no `render` is given. */
+  key: string;
   label: string;
   render?: (row: T) => ReactNode;
 }
@@ -36,6 +37,8 @@ export interface DataTableProps<T extends { id: string }> {
   onSearch?: (query: string) => void;
   searchDebounceMs?: number;
   filters?: DataTableFilter[];
+  /** Rendered alongside the filter selects, for filters that don't fit the single-value/options shape (e.g. a date range). */
+  extraFilters?: ReactNode;
   /** Rendered at the end of the search/filter row, e.g. a "+ Add X" button. */
   actions?: ReactNode;
   page: number;
@@ -111,6 +114,7 @@ export function DataTable<T extends { id: string }>({
   onSearch,
   searchDebounceMs = 300,
   filters,
+  extraFilters,
   actions,
   page,
   pageSize,
@@ -156,6 +160,7 @@ export function DataTable<T extends { id: string }>({
             </SearchField>
           )}
           {filters?.map((filter) => <DataTableFilterSelect key={filter.label} filter={filter} />)}
+          {extraFilters}
         </div>
         {actions}
       </div>
@@ -175,7 +180,9 @@ export function DataTable<T extends { id: string }>({
                 <Table.Row key={row.id} columns={columns}>
                   {(column) => (
                     <Table.Cell key={column.key}>
-                      {column.render ? column.render(row) : String(row[column.key] ?? "")}
+                      {column.render
+                        ? column.render(row)
+                        : String((row as Record<string, unknown>)[column.key] ?? "")}
                     </Table.Cell>
                   )}
                 </Table.Row>
