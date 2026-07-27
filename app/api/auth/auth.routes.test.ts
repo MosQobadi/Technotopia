@@ -43,10 +43,10 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-function loginRequest(body: unknown) {
+function loginRequest(body: unknown, headers: Record<string, string> = {}) {
   return new NextRequest("http://localhost/api/auth/login", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...headers },
     body: JSON.stringify(body),
   });
 }
@@ -106,6 +106,26 @@ describe("POST /api/auth/login", () => {
 
     expect(response.status).toBe(400);
     expect(body.success).toBe(false);
+  });
+
+  it("rate-limits repeated attempts from the same IP", async () => {
+    const ipHeaders = { "x-forwarded-for": "203.0.113.5" };
+
+    for (let i = 0; i < 5; i++) {
+      const response = await login(
+        loginRequest({ email: ADMIN_EMAIL, password: "wrong-password" }, ipHeaders),
+      );
+      expect(response.status).toBe(401);
+    }
+
+    const blocked = await login(
+      loginRequest({ email: ADMIN_EMAIL, password: "wrong-password" }, ipHeaders),
+    );
+    const body = await blocked.json();
+
+    expect(blocked.status).toBe(429);
+    expect(body.success).toBe(false);
+    expect(blocked.headers.get("Retry-After")).toBeTruthy();
   });
 });
 

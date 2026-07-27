@@ -1,5 +1,22 @@
 import { z } from "zod";
 
+/** Strips HTML tags so free text can never carry executable markup (stored XSS defense-in-depth). */
+function stripHtml(value: string): string {
+  return value.replace(/<[^>]*>/g, "").trim();
+}
+
+/** Raw payload cap before stripping — generous so legitimate HTML-padded input isn't rejected pre-strip. */
+const RAW_INPUT_MAX = 20000;
+
+/** Plain free-text field (description, note, etc.) — HTML-stripped, then length-bounded. */
+export function freeTextSchema(min: number, max: number) {
+  return z
+    .string()
+    .max(RAW_INPUT_MAX)
+    .transform(stripHtml)
+    .pipe(z.string().min(min).max(max));
+}
+
 /** Mirrors Prisma's `Status` enum (Category, Brand, Product, User). */
 export const statusSchema = z.enum(["ACTIVE", "INACTIVE"]);
 

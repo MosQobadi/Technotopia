@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { imageUrlSchema, paginationQuerySchema, statusSchema, tagsSchema } from "./common";
+import {
+  freeTextSchema,
+  imageUrlSchema,
+  paginationQuerySchema,
+  statusSchema,
+  tagsSchema,
+} from "./common";
 
 export const productCreateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -13,8 +19,8 @@ export const productCreateSchema = z.object({
   price: z.number().min(0),
   discountPercent: z.number().int().min(0).max(100).default(0),
   tags: tagsSchema,
-  shortDescription: z.string().min(1).max(300),
-  longDescription: z.string().min(1).max(5000),
+  shortDescription: freeTextSchema(1, 300),
+  longDescription: freeTextSchema(1, 5000),
   image: imageUrlSchema,
   status: statusSchema,
 });

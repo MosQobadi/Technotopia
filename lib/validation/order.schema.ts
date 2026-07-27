@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { orderStatusSchema, paginationQuerySchema, paymentStatusSchema } from "./common";
+import { freeTextSchema, orderStatusSchema, paginationQuerySchema, paymentStatusSchema } from "./common";
 
 export const orderStatusUpdateSchema = z.object({
   status: orderStatusSchema,
 });
 
 export const orderNoteSchema = z.object({
-  adminNote: z.string().max(5000),
+  adminNote: freeTextSchema(0, 5000),
 });
 
 export const orderListQuerySchema = paginationQuerySchema.extend({

@@ -22,8 +22,14 @@ function req(options: { formData?: FormData; cookie?: string | null } = {}) {
   });
 }
 
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
 function imageFile(bytes: number, type = "image/png", name = "test.png") {
-  return new File([new Uint8Array(bytes)], name, { type });
+  const data = new Uint8Array(bytes);
+  if (type === "image/png") {
+    data.set(PNG_SIGNATURE.slice(0, Math.min(bytes, PNG_SIGNATURE.length)));
+  }
+  return new File([data], name, { type });
 }
 
 describe("POST /api/admin/upload", () => {

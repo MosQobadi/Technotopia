@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  freeTextSchema,
   imageUrlSchema,
   paginationQuerySchema,
   slugSchema,
@@ -11,8 +12,8 @@ export const categoryCreateSchema = z.object({
   name: z.string().min(1).max(200),
   slug: slugSchema.optional(),
   tags: tagsSchema,
-  shortDescription: z.string().min(1).max(300),
-  longDescription: z.string().min(1).max(5000),
+  shortDescription: freeTextSchema(1, 300),
+  longDescription: freeTextSchema(1, 5000),
   image: imageUrlSchema,
   status: statusSchema,
 });
