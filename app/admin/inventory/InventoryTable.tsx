@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { DataTable, StatusPill, type DataTableColumn } from "@/components/admin/DataTable";
 import type { InventoryStatus } from "@/types/inventory";
+import { StockEditModal } from "./StockEditModal";
 
 interface InventoryItem {
   productId: string;
@@ -63,6 +64,7 @@ export function InventoryTable() {
   const [brandOptions, setBrandOptions] = useState<Option[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, startTransition] = useTransition();
+  const [editingItem, setEditingItem] = useState<InventoryRow | null>(null);
 
   useEffect(() => {
     async function loadOptions() {
@@ -124,12 +126,10 @@ export function InventoryTable() {
     {
       key: "id",
       label: "Actions",
-      render: () => (
-        <span title="Coming soon: Stock Edit modal">
-          <Button variant="ghost" size="sm" isDisabled>
-            Edit
-          </Button>
-        </span>
+      render: (row) => (
+        <Button variant="ghost" size="sm" onPress={() => setEditingItem(row)}>
+          Edit
+        </Button>
       ),
     },
   ];
@@ -181,6 +181,12 @@ export function InventoryTable() {
         total={total}
         onPageChange={setPage}
         emptyMessage={isLoading ? "Loading inventory..." : "No inventory items found."}
+      />
+
+      <StockEditModal
+        item={editingItem}
+        onClose={() => setEditingItem(null)}
+        onSaved={() => startTransition(loadInventory)}
       />
     </div>
   );
