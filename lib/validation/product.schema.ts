@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { imageUrlSchema, statusSchema, tagsSchema } from "./common";
+import { imageUrlSchema, paginationQuerySchema, statusSchema, tagsSchema } from "./common";
 
 export const productCreateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -21,5 +21,13 @@ export const productCreateSchema = z.object({
 
 export const productUpdateSchema = productCreateSchema.partial();
 
+export const productListQuerySchema = paginationQuerySchema.extend({
+  search: z.string().trim().max(200).optional(),
+  category: z.string().min(1).optional(),
+  brand: z.string().min(1).optional(),
+  status: statusSchema.optional(),
+});
+
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;
 export type ProductUpdateInput = z.infer<typeof productUpdateSchema>;
+export type ProductListQuery = z.infer<typeof productListQuerySchema>;

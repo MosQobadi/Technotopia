@@ -103,6 +103,18 @@ export async function updateBrand(id: string, input: BrandUpdateInput): Promise<
   }
 }
 
+export interface BrandOption {
+  id: string;
+  name: string;
+}
+
+export async function listBrandOptions(): Promise<BrandOption[]> {
+  return prisma.brand.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+}
+
 export type DeleteBrandResult = { ok: true } | { ok: false; reason: "not_found" | "has_products" };
 
 export async function deleteBrand(id: string): Promise<DeleteBrandResult> {

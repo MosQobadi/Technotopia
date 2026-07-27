@@ -108,6 +108,18 @@ export async function updateCategory(
   }
 }
 
+export interface CategoryOption {
+  id: string;
+  name: string;
+}
+
+export async function listCategoryOptions(): Promise<CategoryOption[]> {
+  return prisma.category.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+}
+
 export type DeleteCategoryResult = { ok: true } | { ok: false; reason: "not_found" | "has_products" };
 
 export async function deleteCategory(id: string): Promise<DeleteCategoryResult> {
