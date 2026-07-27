@@ -12,6 +12,9 @@ export const orderStatusSchema = z.enum([
   "CANCELLED",
 ]);
 
+/** Mirrors Prisma's `PaymentStatus` enum. */
+export const paymentStatusSchema = z.enum(["UNPAID", "PAID", "REFUNDED"]);
+
 /** kebab-case slug, e.g. "wireless-microphones". */
 export const slugSchema = z
   .string()
