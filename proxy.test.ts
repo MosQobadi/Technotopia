@@ -18,12 +18,12 @@ function requestFor(pathname: string, token?: string) {
 }
 
 describe("proxy", () => {
-  it("redirects an unauthenticated request to /admin/products to /login with a from param", async () => {
+  it("redirects an unauthenticated request to /admin/products to /admin/login with a from param", async () => {
     const response = await proxy(requestFor("/admin/products"));
 
     expect(response.status).toBe(307);
     const location = new URL(response.headers.get("location")!);
-    expect(location.pathname).toBe("/login");
+    expect(location.pathname).toBe("/admin/login");
     expect(location.searchParams.get("from")).toBe("/admin/products");
   });
 
@@ -31,7 +31,7 @@ describe("proxy", () => {
     const response = await proxy(requestFor("/admin/products", "not-a-real-token"));
 
     expect(response.status).toBe(307);
-    expect(new URL(response.headers.get("location")!).pathname).toBe("/login");
+    expect(new URL(response.headers.get("location")!).pathname).toBe("/admin/login");
   });
 
   it("redirects a non-admin (CUSTOMER) user away from /admin", async () => {
@@ -39,12 +39,18 @@ describe("proxy", () => {
     const response = await proxy(requestFor("/admin/products", token));
 
     expect(response.status).toBe(307);
-    expect(new URL(response.headers.get("location")!).pathname).toBe("/login");
+    expect(new URL(response.headers.get("location")!).pathname).toBe("/admin/login");
   });
 
   it("allows an authenticated ADMIN user through", async () => {
     const token = await signToken({ userId: "user_2", role: Role.ADMIN });
     const response = await proxy(requestFor("/admin/products", token));
+
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("allows unauthenticated access to /admin/login without redirecting", async () => {
+    const response = await proxy(requestFor("/admin/login"));
 
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
