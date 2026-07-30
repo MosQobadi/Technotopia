@@ -3,12 +3,14 @@ import {
   freeTextSchema,
   imageUrlSchema,
   paginationQuerySchema,
+  slugSchema,
   statusSchema,
   tagsSchema,
 } from "./common";
 
 export const productCreateSchema = z.object({
   name: z.string().min(1).max(200),
+  slug: slugSchema.optional(),
   sku: z
     .string()
     .min(1)

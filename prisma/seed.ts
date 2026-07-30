@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import { PrismaClient, type Prisma } from "../lib/generated/prisma/client";
+import { slugify } from "../lib/slugify";
 
 const adapter = new PrismaPg(process.env["DATABASE_URL"] as string);
 const prisma = new PrismaClient({ adapter });
@@ -219,7 +220,7 @@ async function main() {
     const product = await prisma.product.upsert({
       where: { sku: seed.sku },
       update: {},
-      create: productData,
+      create: { ...productData, slug: slugify(seed.name) },
     });
     await prisma.inventory.upsert({
       where: { productId: product.id },

@@ -69,10 +69,12 @@ function req(url: string, options: { cookie?: string | null } = {}) {
 }
 
 async function createProduct(overrides: Record<string, unknown> = {}) {
+  const suffix = Math.random().toString(36).slice(2, 8);
   return prisma.product.create({
     data: {
       name: `${PREFIX} Product`,
-      sku: `${PREFIX}-SKU-${Math.random().toString(36).slice(2, 8)}`,
+      slug: `${PREFIX}-slug-${suffix}`,
+      sku: `${PREFIX}-SKU-${suffix}`,
       categoryId,
       brandId,
       price: 10,

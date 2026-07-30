@@ -42,6 +42,7 @@ async function main() {
   const product = await prisma.product.create({
     data: {
       name: `${prefix} Product`,
+      slug: `${prefix}-slug`,
       sku: `${prefix}-SKU`,
       categoryId: category.id,
       brandId: brand.id,

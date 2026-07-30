@@ -238,6 +238,7 @@ describe("DELETE /api/admin/brands/:id", () => {
     await prisma.product.create({
       data: {
         name: `${PREFIX} Product`,
+        slug: `${PREFIX}-slug-1`,
         sku: `${PREFIX}-sku-1`,
         categoryId: category.id,
         brandId: created.data.id,

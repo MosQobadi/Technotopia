@@ -47,10 +47,11 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     if (result.reason === "not_found") {
       return NextResponse.json({ success: false, error: "Product not found." }, { status: 404 });
     }
-    return NextResponse.json(
-      { success: false, error: "A product with this SKU already exists." },
-      { status: 409 },
-    );
+    const error =
+      result.reason === "duplicate_slug"
+        ? "A product with this name already exists."
+        : "A product with this SKU already exists.";
+    return NextResponse.json({ success: false, error }, { status: 409 });
   }
 
   return NextResponse.json({ success: true, data: result.product });

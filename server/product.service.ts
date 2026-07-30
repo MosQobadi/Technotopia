@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { Product } from "@/lib/generated/prisma/client";
 import { Status } from "@/lib/generated/prisma/enums";
+import { slugify } from "@/lib/slugify";
 import type { ProductCreateInput, ProductUpdateInput } from "@/lib/validation";
 
 const PRODUCT_INCLUDE = {
@@ -86,13 +87,24 @@ export async function listProducts({
 
 export type CreateProductResult =
   | { ok: true; product: ProductListItem }
-  | { ok: false; reason: "duplicate_sku" };
+  | { ok: false; reason: "duplicate_sku" | "duplicate_slug" };
+
+/** Maps a Prisma unique-constraint violation to which field caused it. */
+function uniqueConstraintReason(
+  err: Prisma.PrismaClientKnownRequestError,
+): "duplicate_sku" | "duplicate_slug" {
+  const target = err.meta?.["target"];
+  return Array.isArray(target) && target.includes("slug") ? "duplicate_slug" : "duplicate_sku";
+}
 
 export async function createProduct(input: ProductCreateInput): Promise<CreateProductResult> {
+  const slug = input.slug || slugify(input.name);
+
   try {
     const product = await prisma.product.create({
       data: {
         ...input,
+        slug,
         inventory: { create: { stock: 0, lastUpdatedAt: new Date() } },
       },
       include: PRODUCT_INCLUDE,
@@ -100,7 +112,7 @@ export async function createProduct(input: ProductCreateInput): Promise<CreatePr
     return { ok: true, product: toListItem(product) };
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      return { ok: false, reason: "duplicate_sku" };
+      return { ok: false, reason: uniqueConstraintReason(err) };
     }
     throw err;
   }
@@ -116,7 +128,7 @@ export async function getProductById(id: string): Promise<ProductListItem | null
 
 export type UpdateProductResult =
   | { ok: true; product: ProductListItem }
-  | { ok: false; reason: "not_found" | "duplicate_sku" };
+  | { ok: false; reason: "not_found" | "duplicate_sku" | "duplicate_slug" };
 
 export async function updateProduct(
   id: string,
@@ -131,7 +143,7 @@ export async function updateProduct(
     return { ok: true, product: toListItem(product) };
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === "P2002") return { ok: false, reason: "duplicate_sku" };
+      if (err.code === "P2002") return { ok: false, reason: uniqueConstraintReason(err) };
       if (err.code === "P2025") return { ok: false, reason: "not_found" };
     }
     throw err;

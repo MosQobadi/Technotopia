@@ -53,6 +53,7 @@ beforeAll(async () => {
   const product = await prisma.product.create({
     data: {
       name: `${PREFIX} Product`,
+      slug: `${PREFIX}-slug`,
       sku: `${PREFIX}-SKU`,
       categoryId,
       brandId,
