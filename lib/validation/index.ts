@@ -2,6 +2,7 @@ export * from "./common";
 export * from "./product.schema";
 export * from "./category.schema";
 export * from "./brand.schema";
+export * from "./banner.schema";
 export * from "./order.schema";
 export * from "./inventory.schema";
 export * from "./customer.schema";
