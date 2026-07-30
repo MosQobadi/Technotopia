@@ -28,7 +28,25 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# The standalone output only bundles packages actually imported by app code —
+# the Prisma CLI is invoked as a subprocess and never imported, so it's absent.
+# Install it separately (pinned to the same version as package.json) so the
+# entrypoint can run `migrate deploy` before the server starts.
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+RUN mkdir -p /tmp/prisma-cli \
+  && cd /tmp/prisma-cli \
+  && npm init -y >/dev/null 2>&1 \
+  && npm install --omit=dev prisma@7.9.0 dotenv \
+  && rm -rf /tmp/prisma-cli/node_modules/react /tmp/prisma-cli/node_modules/react-dom \
+  && cp -r /tmp/prisma-cli/node_modules/. /app/node_modules/ \
+  && rm -rf /tmp/prisma-cli
+
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 USER nextjs
 EXPOSE 3000
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]
