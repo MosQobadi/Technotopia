@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: white; color: oklch(0.17 0 0); font-family: 'Plus Jakarta Sans', sans-serif; }
+    a { color: oklch(0.58 0.2 258); text-decoration: none; }
+    a:hover { color: oklch(0.5 0.21 258); text-decoration: underline; }
+    *:focus-visible { outline: 2px solid oklch(0.58 0.2 258); outline-offset: 2px; }
+  </style>
+</helmet>
+
+<header style="background: white; border-bottom: 1px solid oklch(0.94 0 0); position: sticky; top: 0; z-index: 20;">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+    <a href="./Home.dc.html" style="display: flex; align-items: center; gap: 7px; flex-shrink: 0;">
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: oklch(0.58 0.2 258);"></span>
+      <span style="font-weight: 800; font-size: 19px; color: oklch(0.17 0 0); letter-spacing: -0.01em;">Technotopia</span>
+    </a>
+    <nav style="display: flex; gap: 20px; flex-shrink: 0;">
+      <a href="./Home.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Home</a>
+      <a href="./Product Listing.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Shop</a>
+      <a href="./Product Listing.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Categories</a>
+    </nav>
+    <div style="flex: 1; min-width: 220px; display: flex; background: oklch(0.96 0.002 240); border-radius: 999px; overflow: hidden;">
+      <select style="background: transparent; border: none; padding: 0 8px 0 14px; font-size: 12px; height: 40px; color: oklch(0.45 0 0);" aria-label="Search scope">
+        <option>All</option><option>Products</option><option>Categories</option><option>Brands</option>
+      </select>
+      <input type="text" placeholder="Search microphones, cameras, lights…" style="flex: 1; background: transparent; border: none; padding: 0 8px; font-size: 14px; height: 40px; min-width: 60px;">
+      <button aria-label="Search" style="background: oklch(0.58 0.2 258); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; margin: 0 3px; cursor: pointer; font-size: 15px;" style-hover="background: oklch(0.5 0.21 258);">→</button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
+      <a href="./Wishlist.dc.html" aria-label="Wishlist" style="width: 38px; height: 38px; border-radius: 50%; background: oklch(0.17 0 0); color: white; display: flex; align-items: center; justify-content: center; font-size: 16px;">♡</a>
+      <a href="./Cart.dc.html" aria-label="Cart" style="position: relative; width: 38px; height: 38px; border-radius: 50%; background: oklch(0.96 0.002 240); color: oklch(0.17 0 0); display: flex; align-items: center; justify-content: center; font-size: 15px;">
+        ▭
+        <span style="position: absolute; top: -4px; right: -4px; background: oklch(0.58 0.2 258); color: white; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">3</span>
+      </a>
+      <a href="./My Account.dc.html" aria-label="Account" style="width: 38px; height: 38px; border-radius: 50%; background: oklch(0.17 0 0); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">A</a>
+    </div>
+  </div>
+</header>
+
+<main style="max-width: 1280px; margin: 0 auto; padding: 40px 24px 96px;" data-screen-label="Wishlist">
+  <h1 style="font-size: 32px; font-weight: 800; margin: 0 0 32px; letter-spacing: -0.015em;">Your Wishlist</h1>
+
+  <sc-if value="{{ isEmpty }}">
+    <div style="background: oklch(0.97 0.002 240); border-radius: 20px; padding: 64px 24px; text-align: center;">
+      <p style="font-size: 16px; color: oklch(0.45 0 0); margin: 0 0 20px;">You haven't saved anything yet.</p>
+      <a href="./Product Listing.dc.html" style="display: inline-block; background: oklch(0.58 0.2 258); color: white; border-radius: 999px; padding: 12px 26px; font-weight: 700; font-size: 14px;">Browse products</a>
+    </div>
+  </sc-if>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px;">
+    <sc-for list="{{ items }}" as="p" hint-placeholder-count="6">
+      <div style="background: oklch(0.96 0.002 240); border-radius: 20px; overflow: hidden; transition: transform 0.15s ease;" style-hover="transform: translateY(-4px);">
+        <div style="position: relative; aspect-ratio: 1; background: oklch(0.94 0.002 240); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: oklch(0.55 0 0);">
+          PRODUCT PHOTO
+          <button onClick="{{ p.remove }}" aria-label="Remove from wishlist" style="position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: none; font-size: 13px; cursor: pointer; color: oklch(0.6 0.2 25);">✕</button>
+        </div>
+        <div style="padding: 20px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">{{ p.category }}</div>
+          <h3 style="font-size: 17px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em;">{{ p.name }}</h3>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px;">
+            <span style="font-size: 18px; font-weight: 800;">{{ p.priceLabel }}</span>
+          </div>
+          <button style="width: 100%; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 11px 0; font-weight: 700; font-size: 14px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Add to Cart</button>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</main>
+
+<footer style="background: oklch(0.97 0.002 240); border-top: 1px solid oklch(0.93 0 0);">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 40px 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; align-items: center;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.55 0 0);">© 2026 Technotopia. All rights reserved.</span>
+    <address style="font-size: 13px; color: oklch(0.4 0 0); font-style: normal;">No. 00, Placeholder St., Tehran, Iran · support@technotopia.example</address>
+  </div>
+</footer>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    items: [
+      { id: 1, category: 'Cameras', name: 'Frameline Z6 Mirrorless', price: 84500000 },
+      { id: 2, category: 'Speakers', name: 'Monito 5 Studio Monitor', price: 9100000 },
+      { id: 3, category: 'Accessories', name: 'Gimbal Pro 3-Axis Stabilizer', price: 12300000 },
+    ],
+  };
+  formatPrice(n) { return n.toLocaleString('fa-IR') + '\uFDFC'; }
+  renderVals() {
+    const items = this.state.items;
+    return {
+      isEmpty: items.length === 0,
+      items: items.map(p => ({
+        ...p,
+        priceLabel: this.formatPrice(p.price),
+        remove: () => this.setState(s => ({ items: s.items.filter(x => x.id !== p.id) })),
+      })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

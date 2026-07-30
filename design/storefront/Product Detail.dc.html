@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: white; color: oklch(0.17 0 0); font-family: 'Plus Jakarta Sans', sans-serif; }
+    a { color: oklch(0.58 0.2 258); text-decoration: none; }
+    a:hover { color: oklch(0.5 0.21 258); text-decoration: underline; }
+    ::selection { background: oklch(0.58 0.2 258 / 0.2); }
+    *:focus-visible { outline: 2px solid oklch(0.58 0.2 258); outline-offset: 2px; }
+  </style>
+</helmet>
+
+<header style="background: white; border-bottom: 1px solid oklch(0.94 0 0); position: sticky; top: 0; z-index: 20;">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+    <a href="./Home.dc.html" style="display: flex; align-items: center; gap: 7px; flex-shrink: 0;">
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: oklch(0.58 0.2 258);"></span>
+      <span style="font-weight: 800; font-size: 19px; color: oklch(0.17 0 0); letter-spacing: -0.01em;">Technotopia</span>
+    </a>
+    <nav style="display: flex; gap: 20px; flex-shrink: 0;">
+      <a href="./Home.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Home</a>
+      <a href="./Product Listing.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Shop</a>
+      <a href="./Product Listing.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Categories</a>
+    </nav>
+    <div style="flex: 1; min-width: 220px; display: flex; background: oklch(0.96 0.002 240); border-radius: 999px; overflow: hidden;">
+      <select style="background: transparent; border: none; padding: 0 8px 0 14px; font-size: 12px; height: 40px; color: oklch(0.45 0 0);" aria-label="Search scope">
+        <option>All</option><option>Products</option><option>Categories</option><option>Brands</option>
+      </select>
+      <input type="text" placeholder="Search microphones, cameras, lights…" style="flex: 1; background: transparent; border: none; padding: 0 8px; font-size: 14px; height: 40px; min-width: 60px;">
+      <button aria-label="Search" style="background: oklch(0.58 0.2 258); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; margin: 0 3px; cursor: pointer; font-size: 15px;" style-hover="background: oklch(0.5 0.21 258);">→</button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
+      <a href="./Wishlist.dc.html" aria-label="Wishlist" style="width: 38px; height: 38px; border-radius: 50%; background: oklch(0.96 0.002 240); color: oklch(0.17 0 0); display: flex; align-items: center; justify-content: center; font-size: 16px;">♡</a>
+      <a href="./Cart.dc.html" aria-label="Cart" style="position: relative; width: 38px; height: 38px; border-radius: 50%; background: oklch(0.96 0.002 240); color: oklch(0.17 0 0); display: flex; align-items: center; justify-content: center; font-size: 15px;">
+        ▭
+        <span style="position: absolute; top: -4px; right: -4px; background: oklch(0.58 0.2 258); color: white; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">3</span>
+      </a>
+      <a href="./My Account.dc.html" aria-label="Account" style="width: 38px; height: 38px; border-radius: 50%; background: oklch(0.17 0 0); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">A</a>
+    </div>
+  </div>
+</header>
+
+<main style="max-width: 1280px; margin: 0 auto; padding: 40px 24px 96px;" data-screen-label="Product Detail">
+  <nav aria-label="Breadcrumb" style="font-size: 13px; color: oklch(0.5 0 0); margin-bottom: 28px;">
+    <a href="./Home.dc.html" style="color: oklch(0.5 0 0);">Home</a> / <a href="./Product Listing.dc.html" style="color: oklch(0.5 0 0);">Microphones</a> / <span>Cardio X2 Condenser Mic</span>
+  </nav>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; margin-bottom: 72px;">
+    <div>
+      <div style="position: relative; aspect-ratio: 1; background: oklch(0.96 0.002 240); border-radius: 24px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: oklch(0.55 0 0);">{{ activeImageLabel }}</span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <sc-for list="{{ thumbnails }}" as="t" hint-placeholder-count="4">
+          <button onClick="{{ t.onClick }}" style="width: 68px; height: 68px; background: oklch(0.96 0.002 240); border-radius: 14px; border: 2px solid {{ t.borderColor }}; cursor: pointer; font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: oklch(0.55 0 0);">{{ t.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Microphones · SonoCore</div>
+      <h1 style="font-size: 32px; font-weight: 800; margin: 0 0 14px; letter-spacing: -0.015em;">Cardio X2 Condenser Mic</h1>
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;">
+        <span style="font-size: 30px; font-weight: 800;">۴,۲۰۰,۰۰۰﷼</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: oklch(0.65 0 0); text-decoration: line-through;">۵,۲۵۰,۰۰۰﷼</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 700; color: white; background: oklch(0.6 0.2 25); border-radius: 999px; padding: 4px 10px;">-20%</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 24px;">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: oklch(0.55 0.14 148);"></span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.55 0.14 148);">IN STOCK</span>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 28px;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.4 0 0); border: 1px solid oklch(0.9 0 0); border-radius: 999px; padding: 4px 10px;">24-BIT</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.4 0 0); border: 1px solid oklch(0.9 0 0); border-radius: 999px; padding: 4px 10px;">USB-C</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.4 0 0); border: 1px solid oklch(0.9 0 0); border-radius: 999px; padding: 4px 10px;">CARDIOID</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; background: oklch(0.96 0.002 240); border-radius: 999px;">
+          <button onClick="{{ decQty }}" aria-label="Decrease quantity" style="width: 42px; height: 44px; background: none; border: none; font-size: 18px; cursor: pointer;">−</button>
+          <span style="width: 40px; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600;">{{ qty }}</span>
+          <button onClick="{{ incQty }}" aria-label="Increase quantity" style="width: 42px; height: 44px; background: none; border: none; font-size: 18px; cursor: pointer;">+</button>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0);">{{ subtotalLabel }}</span>
+      </div>
+
+      <div style="display: flex; gap: 14px; margin-bottom: 36px;">
+        <button style="flex: 1; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 15px 0; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Add to Cart</button>
+        <button aria-label="Add to wishlist" style="width: 52px; height: 52px; flex-shrink: 0; border-radius: 50%; background: oklch(0.96 0.002 240); border: none; font-size: 19px; cursor: pointer;" style-hover="background: oklch(0.6 0.2 25 / 0.12); color: oklch(0.6 0.2 25);">♡</button>
+      </div>
+
+      <div style="border-top: 1px solid oklch(0.93 0 0); padding-top: 24px;">
+        <h2 style="font-size: 17px; font-weight: 700; margin: 0 0 12px;">Description</h2>
+        <p style="font-size: 15px; line-height: 1.7; color: oklch(0.4 0 0); margin: 0;">A cardioid condenser mic tuned for voice — 24-bit/96kHz over USB-C, zero-latency monitoring, and a shock-mounted capsule that keeps desk knocks out of the signal. Built for streamers, podcasters and voiceover work.</p>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: oklch(0.6 0.2 25);"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.5 0 0); text-transform: uppercase;">Related</span>
+    </div>
+    <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 24px; letter-spacing: -0.015em;">Pairs well with this.</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+      <sc-for list="{{ related }}" as="p" hint-placeholder-count="4">
+        <div style="background: oklch(0.96 0.002 240); border-radius: 20px; overflow: hidden; transition: transform 0.15s ease;" style-hover="transform: translateY(-4px);">
+          <div style="aspect-ratio: 1; background: oklch(0.94 0.002 240); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: oklch(0.55 0 0);">PRODUCT PHOTO</div>
+          <div style="padding: 18px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">{{ p.category }}</div>
+            <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 10px;">{{ p.name }}</h3>
+            <span style="font-size: 17px; font-weight: 800;">{{ p.priceLabel }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+</main>
+
+<footer style="background: oklch(0.97 0.002 240); border-top: 1px solid oklch(0.93 0 0);">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 40px 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; align-items: center;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.55 0 0);">© 2026 Technotopia. All rights reserved.</span>
+    <address style="font-size: 13px; color: oklch(0.4 0 0); font-style: normal;">No. 00, Placeholder St., Tehran, Iran · support@technotopia.example</address>
+  </div>
+</footer>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { qty: 1, activeImage: 0 };
+  images = ['MAIN PHOTO', 'SIDE VIEW', 'IN USE', 'BOX CONTENTS'];
+  relatedData = [
+    { category: 'Accessories', name: 'Boom Arm Stand', price: 1900000 },
+    { category: 'Accessories', name: 'Pop Filter', price: 650000 },
+    { category: 'Speakers', name: 'Monito 5 Studio Monitor', price: 9100000 },
+    { category: 'Accessories', name: 'XLR Cable 3m', price: 480000 },
+  ];
+  formatPrice(n) { return n.toLocaleString('fa-IR') + '\uFDFC'; }
+  renderVals() {
+    const s = this.state;
+    return {
+      activeImageLabel: this.images[s.activeImage],
+      thumbnails: this.images.map((label, i) => ({
+        label,
+        borderColor: i === s.activeImage ? 'oklch(0.58 0.2 258)' : 'oklch(0.96 0.002 240)',
+        onClick: () => this.setState({ activeImage: i }),
+      })),
+      qty: s.qty,
+      incQty: () => this.setState(st => ({ qty: st.qty + 1 })),
+      decQty: () => this.setState(st => ({ qty: Math.max(1, st.qty - 1) })),
+      subtotalLabel: 'Subtotal: ' + this.formatPrice(4200000 * s.qty),
+      related: this.relatedData.map(p => ({ ...p, priceLabel: this.formatPrice(p.price) })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

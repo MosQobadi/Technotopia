@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: white; color: oklch(0.17 0 0); font-family: 'Plus Jakarta Sans', sans-serif; }
+    a { color: oklch(0.58 0.2 258); text-decoration: none; }
+    a:hover { color: oklch(0.5 0.21 258); text-decoration: underline; }
+    input { font-family: 'Plus Jakarta Sans', sans-serif; }
+    *:focus-visible { outline: 2px solid oklch(0.58 0.2 258); outline-offset: 2px; }
+  </style>
+</helmet>
+
+<header style="background: white; border-bottom: 1px solid oklch(0.94 0 0); position: sticky; top: 0; z-index: 20;">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+    <a href="./Home.dc.html" style="display: flex; align-items: center; gap: 7px; flex-shrink: 0;">
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: oklch(0.58 0.2 258);"></span>
+      <span style="font-weight: 800; font-size: 19px; color: oklch(0.17 0 0); letter-spacing: -0.01em;">Technotopia</span>
+    </a>
+    <nav style="display: flex; gap: 20px; flex-shrink: 0;">
+      <a href="./Home.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Home</a>
+      <a href="./Product Listing.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Shop</a>
+      <a href="./Product Listing.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Categories</a>
+    </nav>
+    <div style="flex: 1; min-width: 220px; display: flex; background: oklch(0.96 0.002 240); border-radius: 999px; overflow: hidden;">
+      <select style="background: transparent; border: none; padding: 0 8px 0 14px; font-size: 12px; height: 40px; color: oklch(0.45 0 0);" aria-label="Search scope">
+        <option>All</option><option>Products</option><option>Categories</option><option>Brands</option>
+      </select>
+      <input type="text" placeholder="Search microphones, cameras, lights…" style="flex: 1; background: transparent; border: none; padding: 0 8px; font-size: 14px; height: 40px; min-width: 60px;">
+      <button aria-label="Search" style="background: oklch(0.58 0.2 258); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; margin: 0 3px; cursor: pointer; font-size: 15px;" style-hover="background: oklch(0.5 0.21 258);">→</button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
+      <a href="./Wishlist.dc.html" aria-label="Wishlist" style="width: 38px; height: 38px; border-radius: 50%; background: oklch(0.96 0.002 240); color: oklch(0.17 0 0); display: flex; align-items: center; justify-content: center; font-size: 16px;">♡</a>
+      <a href="./Cart.dc.html" aria-label="Cart" style="position: relative; width: 38px; height: 38px; border-radius: 50%; background: oklch(0.96 0.002 240); color: oklch(0.17 0 0); display: flex; align-items: center; justify-content: center; font-size: 15px;">
+        ▭
+        <span style="position: absolute; top: -4px; right: -4px; background: oklch(0.58 0.2 258); color: white; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">3</span>
+      </a>
+      <a href="./My Account.dc.html" aria-label="Account" style="width: 38px; height: 38px; border-radius: 50%; background: oklch(0.17 0 0); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">A</a>
+    </div>
+  </div>
+</header>
+
+<main style="max-width: 900px; margin: 0 auto; padding: 40px 24px 96px;" data-screen-label="My Account">
+  <h1 style="font-size: 32px; font-weight: 800; margin: 0 0 28px; letter-spacing: -0.015em;">My Account</h1>
+
+  <div style="display: flex; gap: 8px; margin-bottom: 32px; background: oklch(0.96 0.002 240); border-radius: 999px; padding: 6px; width: fit-content;">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+      <button onClick="{{ t.onClick }}" style="border: none; border-radius: 999px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; background: {{ t.bg }}; color: {{ t.color }};">{{ t.label }}</button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ isProfile }}">
+    <section style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 560px;">
+      <input value="{{ profile.fullName }}" onChange="{{ setProfile.fullName }}" placeholder="Full name" style="grid-column: span 2; padding: 13px 16px; border-radius: 12px; border: 1px solid oklch(0.9 0 0); font-size: 14px;">
+      <input value="{{ profile.email }}" onChange="{{ setProfile.email }}" placeholder="Email" style="padding: 13px 16px; border-radius: 12px; border: 1px solid oklch(0.9 0 0); font-size: 14px;">
+      <input value="{{ profile.phone }}" onChange="{{ setProfile.phone }}" placeholder="Phone" style="padding: 13px 16px; border-radius: 12px; border: 1px solid oklch(0.9 0 0); font-size: 14px;">
+      <button style="grid-column: span 2; justify-self: start; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 12px 26px; font-weight: 700; font-size: 14px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Save changes</button>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isOrders }}">
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <sc-for list="{{ orders }}" as="o" hint-placeholder-count="3">
+        <div style="background: oklch(0.97 0.002 240); border-radius: 16px; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); margin-bottom: 4px;">{{ o.number }} · {{ o.date }}</div>
+            <div style="font-size: 14px; font-weight: 600;">{{ o.itemsSummary }}</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <span style="font-size: 15px; font-weight: 800;">{{ o.totalLabel }}</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: {{ o.statusColor }}; background: white; border-radius: 999px; padding: 5px 12px;">{{ o.status }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isAddresses }}">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <sc-for list="{{ addresses }}" as="a" hint-placeholder-count="2">
+        <div style="background: oklch(0.97 0.002 240); border-radius: 16px; padding: 20px;">
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 6px;">{{ a.label }}</div>
+          <address style="font-size: 13px; line-height: 1.6; color: oklch(0.45 0 0); font-style: normal;">{{ a.line }}</address>
+        </div>
+      </sc-for>
+      <button style="grid-column: span 2; justify-self: start; background: white; color: oklch(0.17 0 0); border: 1.5px solid oklch(0.17 0 0); border-radius: 999px; padding: 12px 26px; font-weight: 700; font-size: 14px; cursor: pointer;" style-hover="background: oklch(0.17 0 0); color: white;">+ Add address</button>
+    </div>
+  </sc-if>
+</main>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    activeTab: 'profile',
+    profile: { fullName: 'Amir Rezaei', email: 'amir@example.com', phone: '+98 912 000 0000' },
+  };
+  orders = [
+    { number: '#TT-48213', date: '2026-07-12', itemsSummary: 'Cardio X2 Mic + 2 more', total: 28100000, status: 'Delivered' },
+    { number: '#TT-48109', date: '2026-06-30', itemsSummary: 'Frameline Z6 Mirrorless', total: 84500000, status: 'Shipped' },
+    { number: '#TT-47992', date: '2026-06-14', itemsSummary: 'Halo 60 LED Panel', total: 6800000, status: 'Processing' },
+  ];
+  addresses = [
+    { label: 'Home', line: 'No. 12, Vali-e-Asr St., Tehran, Iran, 00000' },
+    { label: 'Office', line: 'Unit 4, 3rd Floor, Fereshteh St., Tehran, Iran, 00001' },
+  ];
+  formatPrice(n) { return n.toLocaleString('fa-IR') + '\uFDFC'; }
+  statusColor(s) {
+    if (s === 'Delivered') return 'oklch(0.55 0.14 148)';
+    if (s === 'Shipped') return 'oklch(0.58 0.2 258)';
+    return 'oklch(0.6 0.15 80)';
+  }
+  renderVals() {
+    const s = this.state;
+    const tabs = [
+      { key: 'profile', label: 'Profile' },
+      { key: 'orders', label: 'Order History' },
+      { key: 'addresses', label: 'Addresses' },
+    ];
+    const setProfile = {};
+    ['fullName', 'email', 'phone'].forEach(k => {
+      setProfile[k] = (e) => this.setState(st => ({ profile: { ...st.profile, [k]: e.target.value } }));
+    });
+    return {
+      tabs: tabs.map(t => ({
+        label: t.label,
+        onClick: () => this.setState({ activeTab: t.key }),
+        bg: s.activeTab === t.key ? 'white' : 'transparent',
+        color: s.activeTab === t.key ? 'oklch(0.17 0 0)' : 'oklch(0.5 0 0)',
+      })),
+      isProfile: s.activeTab === 'profile',
+      isOrders: s.activeTab === 'orders',
+      isAddresses: s.activeTab === 'addresses',
+      profile: s.profile,
+      setProfile,
+      orders: this.orders.map(o => ({ ...o, totalLabel: this.formatPrice(o.total), statusColor: this.statusColor(o.status) })),
+      addresses: this.addresses,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

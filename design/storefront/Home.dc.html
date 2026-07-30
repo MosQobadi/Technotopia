@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: white; color: oklch(0.17 0 0); font-family: 'Plus Jakarta Sans', sans-serif; }
+    a { color: oklch(0.58 0.2 258); text-decoration: none; }
+    a:hover { color: oklch(0.5 0.21 258); text-decoration: underline; }
+    ::selection { background: oklch(0.58 0.2 258 / 0.2); }
+    *:focus-visible { outline: 2px solid oklch(0.58 0.2 258); outline-offset: 2px; }
+    select { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</helmet>
+
+<header style="background: white; border-bottom: 1px solid oklch(0.94 0 0); position: sticky; top: 0; z-index: 20;">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+    <a href="./Home.dc.html" style="display: flex; align-items: center; gap: 7px; flex-shrink: 0;">
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: oklch(0.58 0.2 258);"></span>
+      <span style="font-weight: 800; font-size: 19px; color: oklch(0.17 0 0); letter-spacing: -0.01em;">Technotopia</span>
+    </a>
+    <nav style="display: flex; gap: 20px; flex-shrink: 0;">
+      <a href="./Home.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.17 0 0);">Home</a>
+      <a href="./Product Listing.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Shop</a>
+      <a href="./Product Listing.dc.html" style="font-size: 14px; font-weight: 600; color: oklch(0.4 0 0);">Categories</a>
+    </nav>
+    <div style="flex: 1; min-width: 220px; display: flex; background: oklch(0.96 0.002 240); border-radius: 999px; overflow: hidden;">
+      <select style="background: transparent; border: none; padding: 0 8px 0 14px; font-size: 12px; height: 40px; color: oklch(0.45 0 0);" aria-label="Search scope">
+        <option>All</option><option>Products</option><option>Categories</option><option>Brands</option>
+      </select>
+      <input type="text" placeholder="Search microphones, cameras, lights…" style="flex: 1; background: transparent; border: none; padding: 0 8px; font-size: 14px; height: 40px; min-width: 60px;">
+      <button aria-label="Search" style="background: oklch(0.58 0.2 258); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; margin: 0 3px; cursor: pointer; font-size: 15px;" style-hover="background: oklch(0.5 0.21 258);">→</button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
+      <a href="./Wishlist.dc.html" aria-label="Wishlist" style="width: 38px; height: 38px; border-radius: 50%; background: oklch(0.96 0.002 240); color: oklch(0.17 0 0); display: flex; align-items: center; justify-content: center; font-size: 16px;">♡</a>
+      <a href="./Cart.dc.html" aria-label="Cart" style="position: relative; width: 38px; height: 38px; border-radius: 50%; background: oklch(0.96 0.002 240); color: oklch(0.17 0 0); display: flex; align-items: center; justify-content: center; font-size: 15px;">
+        ▭
+        <span style="position: absolute; top: -4px; right: -4px; background: oklch(0.58 0.2 258); color: white; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">3</span>
+      </a>
+      <a href="./My Account.dc.html" aria-label="Account" style="width: 38px; height: 38px; border-radius: 50%; background: oklch(0.17 0 0); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">A</a>
+    </div>
+  </div>
+</header>
+
+<main data-screen-label="Home">
+  <section style="background: oklch(0.97 0.002 240);">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 64px 24px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center;">
+      <div>
+        <div style="display: inline-flex; align-items: center; gap: 7px; margin-bottom: 16px;">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: oklch(0.6 0.2 25);"></span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.5 0 0); text-transform: uppercase;">{{ heroSlide.tag }}</span>
+        </div>
+        <h1 style="font-size: 48px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 18px;">{{ heroSlide.headline }}</h1>
+        <p style="font-size: 16px; line-height: 1.6; color: oklch(0.45 0 0); max-width: 460px; margin: 0 0 28px;">{{ heroSlide.subcopy }}</p>
+        <button style="background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 15px 30px; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">{{ heroSlide.cta.label }} →</button>
+        <div style="display: flex; gap: 8px; margin-top: 32px;">
+          <sc-for list="{{ heroDots }}" as="dot" hint-placeholder-count="3">
+            <button onClick="{{ dot.onClick }}" aria-label="Go to slide" style="width: {{ dot.width }}; height: 6px; border-radius: 999px; background: {{ dot.color }}; border: none; cursor: pointer; padding: 0;"></button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="position: relative; aspect-ratio: 4/3; background: oklch(0.94 0.002 240); border-radius: 24px; display: flex; align-items: center; justify-content: center;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: oklch(0.55 0 0);">HERO PRODUCT PHOTO</span>
+        <button onClick="{{ prevSlide }}" aria-label="Previous slide" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%; background: white; border: none; font-size: 16px; cursor: pointer;">←</button>
+        <button onClick="{{ nextSlide }}" aria-label="Next slide" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%; background: white; border: none; font-size: 16px; cursor: pointer;">→</button>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width: 1280px; margin: 0 auto; padding: 72px 24px 40px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: oklch(0.6 0.2 25);"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.5 0 0); text-transform: uppercase;">The Stars</span>
+    </div>
+    <h2 style="font-size: 32px; font-weight: 800; letter-spacing: -0.015em; margin: 0 0 32px;">Gear that gets all the attention.</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px;">
+      <sc-for list="{{ visibleStars }}" as="p" hint-placeholder-count="4">
+        <div style="background: oklch(0.96 0.002 240); border-radius: 20px; overflow: hidden; transition: transform 0.15s ease;" style-hover="transform: translateY(-4px);">
+          <div style="position: relative; aspect-ratio: 1; background: oklch(0.94 0.002 240); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: oklch(0.55 0 0);">
+            PRODUCT PHOTO
+            <sc-if value="{{ p.discountLabel }}">
+              <span style="position: absolute; top: 12px; left: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: white; background: oklch(0.6 0.2 25); border-radius: 999px; padding: 4px 10px;">{{ p.discountLabel }}</span>
+            </sc-if>
+            <button aria-label="Add to wishlist" style="position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: none; font-size: 14px; cursor: pointer;">♡</button>
+          </div>
+          <div style="padding: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">{{ p.category }}</div>
+            <h3 style="font-size: 17px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em;">{{ p.name }}</h3>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px;">
+              <span style="font-size: 18px; font-weight: 800;">{{ p.priceLabel }}</span>
+              <sc-if value="{{ p.originalPriceLabel }}">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.65 0 0); text-decoration: line-through;">{{ p.originalPriceLabel }}</span>
+              </sc-if>
+            </div>
+            <button style="width: 100%; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 11px 0; font-weight: 700; font-size: 14px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Add to Cart</button>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; justify-content: center; margin-top: 36px;">
+      <button onClick="{{ toggleStars }}" style="background: white; color: oklch(0.17 0 0); border: 1.5px solid oklch(0.17 0 0); border-radius: 999px; padding: 12px 28px; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.17 0 0); color: white;">{{ starsToggleLabel }}</button>
+    </div>
+  </section>
+
+  <section style="max-width: 1280px; margin: 0 auto; padding: 64px 24px;" aria-hidden="true"></section>
+
+  <section style="max-width: 1280px; margin: 0 auto; padding: 24px 24px 96px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: oklch(0.6 0.2 25);"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.5 0 0); text-transform: uppercase;">Best Sellers</span>
+    </div>
+    <h2 style="font-size: 32px; font-weight: 800; letter-spacing: -0.015em; margin: 0 0 28px;">Gear people actually buy twice.</h2>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 28px;">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <sc-for list="{{ categoryChips }}" as="chip" hint-placeholder-count="6">
+          <button onClick="{{ chip.onClick }}" style="font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 999px; border: none; background: {{ chip.bg }}; color: {{ chip.color }}; cursor: pointer;">{{ chip.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <select onChange="{{ onBrandChange }}" value="{{ activeBrand }}" style="border: none; background: oklch(0.96 0.002 240); border-radius: 999px; padding: 9px 14px; font-size: 13px; color: oklch(0.17 0 0);">
+          <sc-for list="{{ brandOptions }}" as="b" hint-placeholder-count="5">
+            <option value="{{ b }}">{{ b }}</option>
+          </sc-for>
+        </select>
+        <select onChange="{{ onSortChange }}" value="{{ activeSort }}" style="border: none; background: oklch(0.96 0.002 240); border-radius: 999px; padding: 9px 14px; font-size: 13px; color: oklch(0.17 0 0);">
+          <option value="sold">Most Sold</option>
+          <option value="priceAsc">Price: Low to High</option>
+          <option value="priceDesc">Price: High to Low</option>
+          <option value="new">Newest</option>
+        </select>
+      </div>
+    </div>
+
+    <sc-if value="{{ bestSellersEmpty }}">
+      <p style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: oklch(0.5 0 0); padding: 40px 0; text-align: center;">No products match these filters.</p>
+    </sc-if>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px;">
+      <sc-for list="{{ filteredBestSellers }}" as="p" hint-placeholder-count="8">
+        <div style="background: oklch(0.96 0.002 240); border-radius: 20px; overflow: hidden; transition: transform 0.15s ease;" style-hover="transform: translateY(-4px);">
+          <div style="position: relative; aspect-ratio: 1; background: oklch(0.94 0.002 240); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: oklch(0.55 0 0);">
+            PRODUCT PHOTO
+            <span style="position: absolute; top: 12px; left: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; color: oklch(0.17 0 0); background: white; border-radius: 999px; padding: 4px 10px;">#{{ p.rank }} SOLD</span>
+          </div>
+          <div style="padding: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">{{ p.category }} · {{ p.brand }}</div>
+            <h3 style="font-size: 17px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em;">{{ p.name }}</h3>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px;">
+              <span style="font-size: 18px; font-weight: 800;">{{ p.priceLabel }}</span>
+            </div>
+            <button style="width: 100%; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 11px 0; font-weight: 700; font-size: 14px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Add to Cart</button>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+</main>
+
+<footer style="background: oklch(0.97 0.002 240); border-top: 1px solid oklch(0.93 0 0);">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 64px 24px 32px; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: oklch(0.58 0.2 258);"></span>
+        <span style="font-weight: 800; font-size: 18px; letter-spacing: -0.01em;">Technotopia</span>
+      </div>
+      <p style="font-size: 14px; line-height: 1.6; color: oklch(0.5 0 0); max-width: 280px; margin: 0;">Cameras, microphones, lights and speakers for people who make things worth watching.</p>
+    </div>
+    <div>
+      <h3 style="font-size: 13px; font-weight: 700; color: oklch(0.35 0 0); margin: 0 0 16px;">Shop</h3>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <a href="./Product Listing.dc.html" style="font-size: 14px; color: oklch(0.4 0 0);">Cameras</a>
+        <a href="./Product Listing.dc.html" style="font-size: 14px; color: oklch(0.4 0 0);">Microphones</a>
+        <a href="./Product Listing.dc.html" style="font-size: 14px; color: oklch(0.4 0 0);">Lights</a>
+        <a href="./Product Listing.dc.html" style="font-size: 14px; color: oklch(0.4 0 0);">Speakers</a>
+        <a href="./Product Listing.dc.html" style="font-size: 14px; color: oklch(0.4 0 0);">Accessories</a>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size: 13px; font-weight: 700; color: oklch(0.35 0 0); margin: 0 0 16px;">Support</h3>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <a href="./Order Tracking.dc.html" style="font-size: 14px; color: oklch(0.4 0 0);">Track an order</a>
+        <a href="#" style="font-size: 14px; color: oklch(0.4 0 0);">Returns &amp; warranty</a>
+        <a href="#" style="font-size: 14px; color: oklch(0.4 0 0);">Shipping info</a>
+        <a href="mailto:support@technotopia.example" style="font-size: 14px; color: oklch(0.4 0 0);">support@technotopia.example</a>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: oklch(0.5 0 0);">+98 21 0000 0000</span>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size: 13px; font-weight: 700; color: oklch(0.35 0 0); margin: 0 0 16px;">Visit</h3>
+      <address style="font-size: 14px; line-height: 1.7; color: oklch(0.4 0 0); font-style: normal;">No. 00, Placeholder St.<br>Tehran, Iran<br>Postal code 00000</address>
+    </div>
+  </div>
+  <div style="border-top: 1px solid oklch(0.93 0 0); max-width: 1280px; margin: 0 auto; padding: 20px 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.55 0 0);">© 2026 Technotopia. All rights reserved.</span>
+    <div style="display: flex; gap: 20px;">
+      <a href="#" style="font-size: 12px; color: oklch(0.45 0 0);">Privacy</a>
+      <a href="#" style="font-size: 12px; color: oklch(0.45 0 0);">Terms</a>
+    </div>
+  </div>
+</footer>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    slideIndex: 0,
+    starsExpanded: false,
+    activeCategory: 'All',
+    activeBrand: 'All',
+    activeSort: 'sold',
+  };
+
+  heroSlides = [
+    { tag: 'new arrival', headline: 'Shoot Louder. Light Brighter.', subcopy: 'The full creator kit — camera, mic, and lighting picked to work together out of the box.', cta: { label: 'Shop the kit' } },
+    { tag: 'best seller', headline: 'The mic 40,000 creators trust.', subcopy: 'Cardioid clarity with a 24-bit signal path built for voice-first content.', cta: { label: 'View microphones' } },
+    { tag: 'this week', headline: 'Up to 25% off select lighting.', subcopy: 'Softboxes, ring lights and panel kits — while stock lasts.', cta: { label: 'Shop lighting deals' } },
+  ];
+
+  starsData = [
+    { category: 'Cameras', name: 'Frameline Z6 Mirrorless', price: 84500000, originalPrice: null },
+    { category: 'Microphones', name: 'Cardio X2 Condenser Mic', price: 4200000, originalPrice: 5250000 },
+    { category: 'Lights', name: 'Halo 60 LED Panel', price: 6800000, originalPrice: null },
+    { category: 'Speakers', name: 'Monito 5 Studio Monitor', price: 9100000, originalPrice: 10700000 },
+    { category: 'Accessories', name: 'Gimbal Pro 3-Axis Stabilizer', price: 12300000, originalPrice: null },
+    { category: 'Cameras', name: 'PocketCine 4K Action Cam', price: 21900000, originalPrice: 25500000 },
+    { category: 'Microphones', name: 'LavPro Wireless Duo', price: 5600000, originalPrice: null },
+    { category: 'Lights', name: 'RGB Tube Kit (2-pack)', price: 4400000, originalPrice: null },
+    { category: 'Speakers', name: 'BoomBox Go Bluetooth', price: 3100000, originalPrice: 3800000 },
+    { category: 'Accessories', name: 'Carbon Tripod 180', price: 5900000, originalPrice: null },
+  ];
+
+  bestSellersData = [
+    { rank: 1, category: 'Microphones', brand: 'SonoCore', name: 'Cardio X2 Condenser Mic', price: 4200000, sold: 980, isNew: false },
+    { rank: 2, category: 'Cameras', brand: 'Aperta', name: 'Frameline Z6 Mirrorless', price: 84500000, sold: 610, isNew: false },
+    { rank: 3, category: 'Lights', brand: 'Luma', name: 'Halo 60 LED Panel', price: 6800000, sold: 540, isNew: true },
+    { rank: 4, category: 'Accessories', brand: 'Gripwell', name: 'Gimbal Pro 3-Axis Stabilizer', price: 12300000, sold: 505, isNew: false },
+    { rank: 5, category: 'Speakers', brand: 'Wavlink', name: 'Monito 5 Studio Monitor', price: 9100000, sold: 470, isNew: false },
+    { rank: 6, category: 'Microphones', brand: 'SonoCore', name: 'LavPro Wireless Duo', price: 5600000, sold: 430, isNew: true },
+    { rank: 7, category: 'Cameras', brand: 'Aperta', name: 'PocketCine 4K Action Cam', price: 21900000, sold: 390, isNew: false },
+    { rank: 8, category: 'Accessories', brand: 'Gripwell', name: 'Carbon Tripod 180', price: 5900000, sold: 355, isNew: false },
+    { rank: 9, category: 'Lights', brand: 'Luma', name: 'RGB Tube Kit (2-pack)', price: 4400000, sold: 320, isNew: false },
+    { rank: 10, category: 'Speakers', brand: 'Wavlink', name: 'BoomBox Go Bluetooth', price: 3100000, sold: 290, isNew: true },
+  ];
+
+  categories = ['All', 'Cameras', 'Microphones', 'Lights', 'Speakers', 'Accessories'];
+  brands = ['All', 'Aperta', 'SonoCore', 'Luma', 'Wavlink', 'Gripwell'];
+
+  formatPrice(n) { return n.toLocaleString('fa-IR') + '\uFDFC'; }
+
+  componentDidMount() {
+    this._timer = setInterval(() => {
+      this.setState(s => ({ slideIndex: (s.slideIndex + 1) % this.heroSlides.length }));
+    }, 6000);
+  }
+  componentWillUnmount() { clearInterval(this._timer); }
+
+  renderVals() {
+    const s = this.state;
+    const slide = this.heroSlides[s.slideIndex];
+    const heroDots = this.heroSlides.map((_, i) => ({
+      width: i === s.slideIndex ? '28px' : '10px',
+      color: i === s.slideIndex ? 'oklch(0.58 0.2 258)' : 'oklch(0.88 0 0)',
+      onClick: () => this.setState({ slideIndex: i }),
+    }));
+
+    const stars = this.starsData.map(p => ({
+      ...p,
+      priceLabel: this.formatPrice(p.price),
+      originalPriceLabel: p.originalPrice ? this.formatPrice(p.originalPrice) : null,
+      discountLabel: p.originalPrice ? '-' + Math.round((1 - p.price / p.originalPrice) * 100) + '%' : null,
+    }));
+    const visibleStars = s.starsExpanded ? stars : stars.slice(0, 4);
+
+    const categoryChips = this.categories.map(c => ({
+      label: c,
+      onClick: () => this.setState({ activeCategory: c }),
+      bg: c === s.activeCategory ? 'oklch(0.17 0 0)' : 'oklch(0.96 0.002 240)',
+      color: c === s.activeCategory ? 'white' : 'oklch(0.17 0 0)',
+    }));
+
+    let filtered = this.bestSellersData.filter(p =>
+      (s.activeCategory === 'All' || p.category === s.activeCategory) &&
+      (s.activeBrand === 'All' || p.brand === s.activeBrand)
+    );
+    const sorters = {
+      sold: (a, b) => b.sold - a.sold,
+      priceAsc: (a, b) => a.price - b.price,
+      priceDesc: (a, b) => b.price - a.price,
+      new: (a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0),
+    };
+    filtered = [...filtered].sort(sorters[s.activeSort]).map(p => ({ ...p, priceLabel: this.formatPrice(p.price) }));
+
+    return {
+      heroSlide: slide,
+      heroDots,
+      prevSlide: () => this.setState(st => ({ slideIndex: (st.slideIndex - 1 + this.heroSlides.length) % this.heroSlides.length })),
+      nextSlide: () => this.setState(st => ({ slideIndex: (st.slideIndex + 1) % this.heroSlides.length })),
+      visibleStars,
+      starsToggleLabel: s.starsExpanded ? 'Show Less' : 'Show More',
+      toggleStars: () => this.setState(st => ({ starsExpanded: !st.starsExpanded })),
+      categoryChips,
+      brandOptions: this.brands,
+      activeBrand: s.activeBrand,
+      onBrandChange: (e) => this.setState({ activeBrand: e.target.value }),
+      activeSort: s.activeSort,
+      onSortChange: (e) => this.setState({ activeSort: e.target.value }),
+      filteredBestSellers: filtered,
+      bestSellersEmpty: filtered.length === 0,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

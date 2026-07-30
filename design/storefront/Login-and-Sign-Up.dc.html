@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: white; color: oklch(0.17 0 0); font-family: 'Plus Jakarta Sans', sans-serif; }
+    a { color: oklch(0.58 0.2 258); text-decoration: none; }
+    a:hover { color: oklch(0.5 0.21 258); text-decoration: underline; }
+    input { font-family: 'Plus Jakarta Sans', sans-serif; }
+    *:focus-visible { outline: 2px solid oklch(0.58 0.2 258); outline-offset: 2px; }
+  </style>
+</helmet>
+
+<header style="background: white; border-bottom: 1px solid oklch(0.94 0 0);">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 12px;">
+    <a href="./Home.dc.html" style="display: flex; align-items: center; gap: 7px;">
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: oklch(0.58 0.2 258);"></span>
+      <span style="font-weight: 800; font-size: 19px; color: oklch(0.17 0 0); letter-spacing: -0.01em;">Technotopia</span>
+    </a>
+  </div>
+</header>
+
+<main style="max-width: 420px; margin: 0 auto; padding: 64px 24px 96px;" data-screen-label="Login and Sign Up">
+  <div style="display: flex; gap: 8px; margin-bottom: 32px; background: oklch(0.96 0.002 240); border-radius: 999px; padding: 6px;">
+    <button onClick="{{ showLogin }}" style="flex: 1; border: none; border-radius: 999px; padding: 10px 0; font-size: 14px; font-weight: 600; cursor: pointer; background: {{ loginTabBg }}; color: {{ loginTabColor }};">Log In</button>
+    <button onClick="{{ showSignup }}" style="flex: 1; border: none; border-radius: 999px; padding: 10px 0; font-size: 14px; font-weight: 600; cursor: pointer; background: {{ signupTabBg }}; color: {{ signupTabColor }};">Sign Up</button>
+  </div>
+
+  <sc-if value="{{ isLogin }}">
+    <h1 style="font-size: 26px; font-weight: 800; margin: 0 0 24px; letter-spacing: -0.01em;">Welcome back</h1>
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+      <input type="email" placeholder="Email" style="padding: 13px 16px; border-radius: 12px; border: 1px solid oklch(0.9 0 0); font-size: 14px;">
+      <input type="password" placeholder="Password" style="padding: 13px 16px; border-radius: 12px; border: 1px solid oklch(0.9 0 0); font-size: 14px;">
+    </div>
+    <a href="#" style="display: block; font-size: 13px; margin-bottom: 20px;">Forgot password?</a>
+    <button style="width: 100%; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 14px 0; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Log In</button>
+  </sc-if>
+
+  <sc-if value="{{ isSignup }}">
+    <h1 style="font-size: 26px; font-weight: 800; margin: 0 0 24px; letter-spacing: -0.01em;">Create your account</h1>
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+      <input placeholder="Full name" style="padding: 13px 16px; border-radius: 12px; border: 1px solid oklch(0.9 0 0); font-size: 14px;">
+      <input type="email" placeholder="Email" style="padding: 13px 16px; border-radius: 12px; border: 1px solid oklch(0.9 0 0); font-size: 14px;">
+      <input type="password" placeholder="Password" style="padding: 13px 16px; border-radius: 12px; border: 1px solid oklch(0.9 0 0); font-size: 14px;">
+    </div>
+    <button style="width: 100%; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 14px 0; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Create Account</button>
+    <p style="font-size: 12px; color: oklch(0.5 0 0); margin-top: 16px; line-height: 1.5;">By signing up, you agree to Technotopia's <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+  </sc-if>
+</main>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { mode: 'login' };
+  renderVals() {
+    const s = this.state;
+    return {
+      isLogin: s.mode === 'login',
+      isSignup: s.mode === 'signup',
+      showLogin: () => this.setState({ mode: 'login' }),
+      showSignup: () => this.setState({ mode: 'signup' }),
+      loginTabBg: s.mode === 'login' ? 'white' : 'transparent',
+      loginTabColor: s.mode === 'login' ? 'oklch(0.17 0 0)' : 'oklch(0.5 0 0)',
+      signupTabBg: s.mode === 'signup' ? 'white' : 'transparent',
+      signupTabColor: s.mode === 'signup' ? 'oklch(0.17 0 0)' : 'oklch(0.5 0 0)',
+    };
+  }
+}
+
+</script>
+</body>
+</html>

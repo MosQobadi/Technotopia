@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: white; color: oklch(0.17 0 0); font-family: 'Plus Jakarta Sans', sans-serif; }
+    a { color: oklch(0.58 0.2 258); text-decoration: none; }
+    a:hover { color: oklch(0.5 0.21 258); text-decoration: underline; }
+    ::selection { background: oklch(0.58 0.2 258 / 0.2); }
+    *:focus-visible { outline: 2px solid oklch(0.58 0.2 258); outline-offset: 2px; }
+  </style>
+</helmet>
+
+<div style="max-width: 1120px; margin: 0 auto; padding: 64px 24px 120px;">
+
+  <header style="margin-bottom: 56px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.58 0.2 258); text-transform: uppercase; margin-bottom: 12px;">// design system v2 — boyamic-style direction, for approval</div>
+    <h1 style="font-size: 42px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.02em; line-height: 1.05;">Technotopia</h1>
+    <p style="font-size: 16px; color: oklch(0.45 0 0); max-width: 640px; line-height: 1.6; margin: 0;">Rebuilt to match the reference: white canvas, one restrained blue, big confident type, rounded flat-gray product cards, photography carrying the weight instead of decoration.</p>
+  </header>
+
+  <section style="margin-bottom: 56px;">
+    <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 20px;">Color tokens</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
+      <div>
+        <div style="height: 72px; background: oklch(0.17 0 0); border-radius: 12px;"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">ink-900<br><span style="color: oklch(0.55 0 0);">headlines / nav text</span></div>
+      </div>
+      <div>
+        <div style="height: 72px; background: oklch(0.58 0.2 258); border-radius: 12px;"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">accent — signal blue<br><span style="color: oklch(0.55 0 0);">CTAs / links only</span></div>
+      </div>
+      <div>
+        <div style="height: 72px; background: oklch(0.96 0.002 240); border-radius: 12px; border: 1px solid oklch(0.92 0 0);"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">surface-100<br><span style="color: oklch(0.55 0 0);">card / product tray fill</span></div>
+      </div>
+      <div>
+        <div style="height: 72px; background: white; border: 1px solid oklch(0.9 0 0); border-radius: 12px;"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">white<br><span style="color: oklch(0.55 0 0);">page background</span></div>
+      </div>
+      <div>
+        <div style="height: 72px; background: oklch(0.62 0.15 148); border-radius: 12px;"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">success<br><span style="color: oklch(0.55 0 0);">in stock</span></div>
+      </div>
+      <div>
+        <div style="height: 72px; background: oklch(0.75 0.15 80); border-radius: 12px;"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">warning<br><span style="color: oklch(0.55 0 0);">low stock</span></div>
+      </div>
+      <div>
+        <div style="height: 72px; background: oklch(0.6 0.2 25); border-radius: 12px;"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">error / discount<br><span style="color: oklch(0.55 0 0);">out of stock, -% badge</span></div>
+      </div>
+      <div>
+        <div style="height: 72px; background: oklch(0.55 0 0); border-radius: 12px;"></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">gray-500<br><span style="color: oklch(0.55 0 0);">body copy</span></div>
+      </div>
+    </div>
+    <p style="font-size: 13px; color: oklch(0.5 0 0); margin-top: 14px; max-width: 640px;">Blue is the only accent, used only on primary buttons and links — everywhere else stays black, white or gray, matching how sparingly the reference uses color.</p>
+  </section>
+
+  <section style="margin-bottom: 56px;">
+    <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 20px;">Typography — one family, big weight contrast</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+      <div style="background: oklch(0.96 0.002 240); border-radius: 16px; padding: 24px;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Plus Jakarta Sans 800</div>
+        <div style="font-size: 40px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em;">Explore the gear.</div>
+        <div style="font-size: 13px; color: oklch(0.5 0 0); margin-top: 10px;">H1/H2, hero lines — always this heavy</div>
+      </div>
+      <div style="background: oklch(0.96 0.002 240); border-radius: 16px; padding: 24px;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Plus Jakarta Sans 400/500</div>
+        <div style="font-size: 16px; line-height: 1.6; color: oklch(0.45 0 0);">Cardioid pickup, 24-bit signal, zero-latency monitoring — built for voice-first content.</div>
+        <div style="font-size: 13px; color: oklch(0.5 0 0); margin-top: 10px;">Paragraphs, UI labels — deliberately light against the bold headline</div>
+      </div>
+    </div>
+    <div style="background: oklch(0.96 0.002 240); border-radius: 16px; padding: 24px; margin-top: 16px;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Mono accent — IBM Plex Mono 500/600</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; letter-spacing: 0.03em;">SKU-4471 · 24-BIT · USB-C · CARDIOID</div>
+      <div style="font-size: 13px; color: oklch(0.5 0 0); margin-top: 10px;">Specs, eyebrow labels, SKU tags — the one technical texture kept from before</div>
+    </div>
+  </section>
+
+  <section style="margin-bottom: 64px;">
+    <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 12px;">Radius, shadow &amp; the record-dot motif</h2>
+    <p style="font-size: 14px; line-height: 1.6; color: oklch(0.4 0 0); max-width: 680px; margin: 0 0 20px;">Buttons are full pills. Cards and product trays are large-radius flat gray, never bordered, never shadowed — depth comes from the gray-on-white fill, not elevation. A small filled dot — a tally-light — sits before every eyebrow label and section tag: the one recurring mark that reads "recording gear" without drawing an icon.</p>
+    <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 8px; background: oklch(0.96 0.002 240); border-radius: 999px; padding: 10px 18px;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.6 0.2 25);"></span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Live · Best Sellers</span>
+      </div>
+      <div style="width: 160px; height: 160px; background: oklch(0.96 0.002 240); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.55 0 0);">PRODUCT TRAY</div>
+      <button style="background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 14px 28px; font-weight: 700; font-size: 15px; cursor: pointer;">Pill button</button>
+    </div>
+  </section>
+
+  <hr style="border: none; border-top: 1px solid oklch(0.93 0 0); margin-bottom: 56px;">
+  <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 24px;">Applied to core components</h2>
+
+  <section style="margin-bottom: 48px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px;">Buttons</div>
+    <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+      <button style="background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 14px 28px; font-weight: 700; font-size: 15px; cursor: pointer; transition: background 0.15s;" style-hover="background: oklch(0.5 0.21 258);">Add to Cart</button>
+      <button style="background: white; color: oklch(0.17 0 0); border: 1.5px solid oklch(0.17 0 0); border-radius: 999px; padding: 12.5px 26px; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.17 0 0); color: white;">View Details</button>
+      <button style="background: white; color: oklch(0.58 0.2 258); border: 1.5px solid oklch(0.58 0.2 258); border-radius: 999px; padding: 12.5px 26px; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.58 0.2 258); color: white;">Learn More</button>
+      <button aria-label="Wishlist" style="width: 46px; height: 46px; border-radius: 50%; background: oklch(0.96 0.002 240); border: none; font-size: 18px; cursor: pointer;" style-hover="color: oklch(0.6 0.2 25);">♡</button>
+      <button style="background: oklch(0.95 0 0); color: oklch(0.6 0 0); border: none; border-radius: 999px; padding: 12.5px 26px; font-weight: 700; font-size: 15px; cursor: not-allowed;">Out of Stock</button>
+    </div>
+  </section>
+
+  <section style="margin-bottom: 48px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px;">Price tag with discount</div>
+    <div style="display: flex; gap: 32px; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="font-size: 26px; font-weight: 800; color: oklch(0.17 0 0);">۱۲,۴۰۰,۰۰۰﷼</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: oklch(0.65 0 0); text-decoration: line-through;">۱۵,۵۰۰,۰۰۰﷼</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 700; color: white; background: oklch(0.6 0.2 25); border-radius: 999px; padding: 3px 10px;">-20%</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="font-size: 26px; font-weight: 800; color: oklch(0.17 0 0);">۸,۹۰۰,۰۰۰﷼</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.62 0.15 148);">IN STOCK</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-bottom: 48px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px;">Section header</div>
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.6 0.2 25);"></span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.5 0 0); text-transform: uppercase;">Best Sellers</span>
+    </div>
+    <h2 style="font-size: 34px; font-weight: 800; margin: 0; letter-spacing: -0.015em;">Gear people actually buy twice.</h2>
+  </section>
+
+  <section>
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px;">Product card</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 280px)); gap: 24px;">
+      <div style="background: oklch(0.96 0.002 240); border-radius: 20px; overflow: hidden; transition: transform 0.15s ease;" style-hover="transform: translateY(-4px);">
+        <div style="position: relative; aspect-ratio: 1; background: oklch(0.94 0.002 240); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: oklch(0.55 0 0);">
+          PRODUCT PHOTO
+          <span style="position: absolute; top: 12px; left: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: white; background: oklch(0.6 0.2 25); border-radius: 999px; padding: 4px 10px;">-20%</span>
+          <button aria-label="Wishlist" style="position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: none; font-size: 14px; cursor: pointer;">♡</button>
+        </div>
+        <div style="padding: 20px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Microphones</div>
+          <h3 style="font-size: 17px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em;">Cardio X2 Condenser Mic</h3>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px;">
+            <span style="font-size: 18px; font-weight: 800;">۴,۲۰۰,۰۰۰﷼</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.65 0 0); text-decoration: line-through;">۵,۲۵۰,۰۰۰﷼</span>
+          </div>
+          <button style="width: 100%; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 11px 0; font-weight: 700; font-size: 14px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+</body>
+</html>
