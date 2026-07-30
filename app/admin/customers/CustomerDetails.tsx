@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { format } from "date-fns";
 import { Button, Card, Table } from "@heroui/react";
 import { StatusPill } from "@/components/admin/DataTable";
+import { formatPrice } from "@/lib/format";
 
 export interface CustomerOrderData {
   id: string;
@@ -36,10 +37,6 @@ interface OrderColumn {
   render: (order: CustomerOrderData) => ReactNode;
 }
 
-function formatCurrency(value: number) {
-  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
 function titleCase(value: string) {
   return value.charAt(0) + value.slice(1).toLowerCase();
 }
@@ -47,7 +44,7 @@ function titleCase(value: string) {
 const ORDER_COLUMNS: OrderColumn[] = [
   { key: "id", label: "Order ID", render: (order) => `#${order.id}` },
   { key: "itemCount", label: "Items", render: (order) => order.itemCount },
-  { key: "total", label: "Total", render: (order) => formatCurrency(order.total) },
+  { key: "total", label: "Total", render: (order) => formatPrice(order.total) },
   {
     key: "status",
     label: "Status",

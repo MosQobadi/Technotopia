@@ -5,6 +5,7 @@ import { Chip, Input, TextField } from "@heroui/react";
 import { format } from "date-fns";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { DataTable, StatusPill, type DataTableColumn } from "@/components/admin/DataTable";
+import { formatPrice } from "@/lib/format";
 
 interface OrderRow {
   id: string;
@@ -86,7 +87,7 @@ export function OrdersTable() {
     { key: "id", label: "Order ID", render: (row) => `#${row.id}` },
     { key: "customerName", label: "Customer" },
     { key: "itemCount", label: "Items" },
-    { key: "total", label: "Total", render: (row) => `$${row.total.toLocaleString()}` },
+    { key: "total", label: "Total", render: (row) => formatPrice(row.total) },
     {
       key: "status",
       label: "Status",

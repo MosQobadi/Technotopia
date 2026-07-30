@@ -16,6 +16,7 @@ import {
   TextField,
   ToggleField,
 } from "@/components/admin/form";
+import { formatPrice } from "@/lib/format";
 
 const productFormSchema = z.object({
   name: z.string().min(1, "Product name is required").max(200),
@@ -240,13 +241,13 @@ export function ProductForm({ product }: ProductFormProps) {
                 rows={5}
               />
               <div className="grid grid-cols-2 gap-4">
-                <TextField control={control} name="price" label="Price" type="number" isRequired />
+                <TextField control={control} name="price" label="Price (Rial)" type="number" isRequired />
                 <TextField control={control} name="discountPercent" label="Discount %" type="number" />
               </div>
               <div>
                 <p className="text-muted text-sm">Final Price</p>
                 <p className="text-lg font-medium">
-                  {finalPrice !== null ? `$${finalPrice.toLocaleString()}` : "—"}
+                  {finalPrice !== null ? formatPrice(finalPrice) : "—"}
                 </p>
               </div>
               <ImageUploadField

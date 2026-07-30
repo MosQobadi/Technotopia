@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import { DataTable, StatusPill, type DataTableColumn } from "@/components/admin/DataTable";
+import { formatPrice } from "@/lib/format";
 
 export interface RecentOrderRow {
   id: string;
@@ -28,7 +29,7 @@ const COLUMNS: DataTableColumn<RecentOrderRow>[] = [
   { key: "id", label: "Order ID", render: (row) => `#${row.id}` },
   { key: "customerName", label: "Customer" },
   { key: "date", label: "Date", render: (row) => format(new Date(row.date), "MMM d, yyyy") },
-  { key: "total", label: "Total", render: (row) => `$${row.total.toLocaleString()}` },
+  { key: "total", label: "Total", render: (row) => formatPrice(row.total) },
   { key: "status", label: "Status", render: (row) => <StatusPill value={titleCase(row.status)} /> },
 ];
 

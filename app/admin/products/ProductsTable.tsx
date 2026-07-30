@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { DataTable, StatusPill, type DataTableColumn } from "@/components/admin/DataTable";
+import { formatPrice } from "@/lib/format";
 import { DeleteProductAction } from "./DeleteProductAction";
 
 interface ProductRow {
@@ -123,7 +124,7 @@ export function ProductsTable() {
     { key: "name", label: "Name" },
     { key: "category", label: "Category", render: (row) => row.category.name },
     { key: "brand", label: "Brand", render: (row) => row.brand.name },
-    { key: "price", label: "Price", render: (row) => `$${row.price.toLocaleString()}` },
+    { key: "price", label: "Price", render: (row) => formatPrice(row.price) },
     {
       key: "stock",
       label: "Stock",

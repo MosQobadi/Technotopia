@@ -8,6 +8,7 @@ import { z } from "zod";
 import { Button, Card, Chip, Table } from "@heroui/react";
 import { StatusPill } from "@/components/admin/DataTable";
 import { TextareaField } from "@/components/admin/form";
+import { formatPrice } from "@/lib/format";
 
 export interface OrderDetailItemData {
   id: string;
@@ -45,15 +46,11 @@ interface ItemColumn {
   render: (item: OrderDetailItemData) => ReactNode;
 }
 
-function formatCurrency(value: number) {
-  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
 const ITEM_COLUMNS: ItemColumn[] = [
   { key: "productName", label: "Product", render: (item) => item.productName },
   { key: "quantity", label: "Qty", render: (item) => item.quantity },
-  { key: "price", label: "Price", render: (item) => formatCurrency(item.price) },
-  { key: "lineTotal", label: "Total", render: (item) => formatCurrency(item.lineTotal) },
+  { key: "price", label: "Price", render: (item) => formatPrice(item.price) },
+  { key: "lineTotal", label: "Total", render: (item) => formatPrice(item.lineTotal) },
 ];
 
 const ORDER_STATUS_STEPS = [
@@ -176,23 +173,23 @@ export function OrderDetails({ order, onOrderChange }: OrderDetailsProps) {
               <dl className="ml-auto flex w-full max-w-xs flex-col gap-2 text-sm">
                 <div className="flex items-center justify-between">
                   <dt className="text-muted">Subtotal</dt>
-                  <dd className="text-foreground">{formatCurrency(order.subtotal)}</dd>
+                  <dd className="text-foreground">{formatPrice(order.subtotal)}</dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="text-muted">Discount</dt>
-                  <dd className="text-foreground">-{formatCurrency(order.discount)}</dd>
+                  <dd className="text-foreground">-{formatPrice(order.discount)}</dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="text-muted">Shipping</dt>
-                  <dd className="text-foreground">{formatCurrency(order.shippingCost)}</dd>
+                  <dd className="text-foreground">{formatPrice(order.shippingCost)}</dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="text-muted">Tax</dt>
-                  <dd className="text-foreground">{formatCurrency(order.tax)}</dd>
+                  <dd className="text-foreground">{formatPrice(order.tax)}</dd>
                 </div>
                 <div className="border-default flex items-center justify-between border-t pt-2 font-medium">
                   <dt className="text-foreground">Total</dt>
-                  <dd className="text-foreground">{formatCurrency(order.total)}</dd>
+                  <dd className="text-foreground">{formatPrice(order.total)}</dd>
                 </div>
               </dl>
             </Card.Content>
