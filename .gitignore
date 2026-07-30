@@ -51,6 +51,9 @@ next-env.d.ts
 # user-uploaded content (written at runtime, not source)
 /public/uploads
 
+# certbot state (certs, account keys) — generated on the VPS, not source
+/certbot
+
 # playwright
 /e2e/.auth
 /playwright-report
