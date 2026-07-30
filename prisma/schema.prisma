@@ -55,6 +55,7 @@ model Category {
   longDescription  String
   image            String?
   status           Status
+  isFeatured       Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -86,6 +87,7 @@ model Product {
   longDescription  String
   image            String?
   status           Status
+  isFeatured       Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

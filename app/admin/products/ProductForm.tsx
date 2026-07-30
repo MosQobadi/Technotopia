@@ -41,6 +41,7 @@ const productFormSchema = z.object({
     ),
   image: z.union([z.instanceof(File), z.string(), z.null()]),
   isActive: z.boolean(),
+  isFeatured: z.boolean(),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -58,6 +59,7 @@ export interface ProductFormProduct {
   discountPercent: number;
   image: string | null;
   status: "ACTIVE" | "INACTIVE";
+  isFeatured: boolean;
 }
 
 interface ProductFormProps {
@@ -107,6 +109,7 @@ export function ProductForm({ product }: ProductFormProps) {
       discountPercent: product ? String(product.discountPercent) : "0",
       image: product?.image ?? null,
       isActive: product ? product.status === "ACTIVE" : true,
+      isFeatured: product?.isFeatured ?? false,
     },
   });
 
@@ -161,6 +164,7 @@ export function ProductForm({ product }: ProductFormProps) {
       discountPercent: values.discountPercent === "" ? 0 : Number(values.discountPercent),
       image,
       status: values.isActive ? "ACTIVE" : "INACTIVE",
+      isFeatured: values.isFeatured,
     };
 
     const response = await fetch(
@@ -214,6 +218,7 @@ export function ProductForm({ product }: ProductFormProps) {
               <SelectField control={control} name="brandId" label="Brand" options={brandOptions} isRequired />
               <TagsInput control={control} name="tags" label="Tags" placeholder="e.g. wireless, ergonomic" />
               <ToggleField control={control} name="isActive" label="Active" />
+              <ToggleField control={control} name="isFeatured" label="Featured" />
             </div>
 
             <div className="flex flex-col gap-5">

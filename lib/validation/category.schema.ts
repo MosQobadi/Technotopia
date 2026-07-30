@@ -16,6 +16,7 @@ export const categoryCreateSchema = z.object({
   longDescription: freeTextSchema(1, 5000),
   image: imageUrlSchema,
   status: statusSchema,
+  isFeatured: z.boolean().default(false),
 });
 
 export const categoryUpdateSchema = categoryCreateSchema.partial();

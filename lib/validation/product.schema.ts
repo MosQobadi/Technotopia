@@ -23,6 +23,7 @@ export const productCreateSchema = z.object({
   longDescription: freeTextSchema(1, 5000),
   image: imageUrlSchema,
   status: statusSchema,
+  isFeatured: z.boolean().default(false),
 });
 
 export const productUpdateSchema = productCreateSchema.partial();

@@ -28,6 +28,7 @@ const categoryFormSchema = z.object({
   longDescription: z.string().min(1, "Long description is required").max(5000),
   image: z.union([z.instanceof(File), z.string(), z.null()]),
   isActive: z.boolean(),
+  isFeatured: z.boolean(),
 });
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
@@ -41,6 +42,7 @@ export interface CategoryFormCategory {
   longDescription: string;
   image: string | null;
   status: "ACTIVE" | "INACTIVE";
+  isFeatured: boolean;
 }
 
 interface CategoryFormProps {
@@ -75,6 +77,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
         longDescription: category?.longDescription ?? "",
         image: category?.image ?? null,
         isActive: category ? category.status === "ACTIVE" : true,
+        isFeatured: category?.isFeatured ?? false,
       },
     });
 
@@ -110,6 +113,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
       longDescription: values.longDescription,
       image,
       status: values.isActive ? "ACTIVE" : "INACTIVE",
+      isFeatured: values.isFeatured,
     };
 
     const response = await fetch(
@@ -165,6 +169,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
                 placeholder="e.g. electronics, photography"
               />
               <ToggleField control={control} name="isActive" label="Active" />
+              <ToggleField control={control} name="isFeatured" label="Featured" />
             </div>
 
             <div className="flex flex-col gap-5">
