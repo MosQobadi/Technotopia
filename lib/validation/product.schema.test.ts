@@ -8,7 +8,7 @@ describe("productCreateSchema", () => {
       sku: "BOYA-BYM1-001",
       categoryId: "clx0001category",
       brandId: "clx0001brand",
-      price: 24.99,
+      price: 25,
       discountPercent: 10,
       tags: ["microphone", "lavalier"],
       shortDescription: "Compact clip-on lavalier microphone.",
@@ -26,7 +26,7 @@ describe("productCreateSchema", () => {
       sku: "BOYA-BYM1-001",
       categoryId: "clx0001category",
       brandId: "clx0001brand",
-      price: 24.99,
+      price: 25,
       discountPercent: 150,
       shortDescription: "Compact clip-on lavalier microphone.",
       longDescription: "A budget-friendly lavalier microphone with a 20-foot cable.",
@@ -39,12 +39,17 @@ describe("productCreateSchema", () => {
 
 describe("productUpdateSchema", () => {
   it("accepts a partial update", () => {
-    const result = productUpdateSchema.safeParse({ price: 19.99 });
+    const result = productUpdateSchema.safeParse({ price: 20 });
     expect(result.success).toBe(true);
   });
 
   it("rejects a negative price", () => {
     const result = productUpdateSchema.safeParse({ price: -5 });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a non-integer price", () => {
+    const result = productUpdateSchema.safeParse({ price: 19.99 });
     expect(result.success).toBe(false);
   });
 });

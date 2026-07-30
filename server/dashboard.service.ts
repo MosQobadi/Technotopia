@@ -34,7 +34,7 @@ export async function getDashboardSummary({
 
   return {
     totalOrders,
-    totalRevenue: Number(revenue._sum.total ?? 0),
+    totalRevenue: revenue._sum.total ?? 0,
     activeProductCount,
     lowStockCount,
     recentOrders: recent.orders,

@@ -16,7 +16,7 @@ export const productCreateSchema = z.object({
     .regex(/^[A-Za-z0-9_-]+$/, "SKU may only contain letters, numbers, - and _"),
   categoryId: z.string().min(1),
   brandId: z.string().min(1),
-  price: z.number().min(0),
+  price: z.number().int().min(0),
   discountPercent: z.number().int().min(0).max(100).default(0),
   tags: tagsSchema,
   shortDescription: freeTextSchema(1, 300),

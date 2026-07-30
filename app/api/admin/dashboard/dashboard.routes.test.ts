@@ -75,7 +75,7 @@ async function createProduct(overrides: Record<string, unknown> = {}) {
       sku: `${PREFIX}-SKU-${Math.random().toString(36).slice(2, 8)}`,
       categoryId,
       brandId,
-      price: "10.00",
+      price: 10,
       discountPercent: 0,
       tags: [],
       shortDescription: "x",
@@ -86,7 +86,7 @@ async function createProduct(overrides: Record<string, unknown> = {}) {
   });
 }
 
-async function createOrder(status: "PENDING" | "DELIVERED", total: string) {
+async function createOrder(status: "PENDING" | "DELIVERED", total: number) {
   const product = await createProduct();
   return prisma.order.create({
     data: {
@@ -94,9 +94,9 @@ async function createOrder(status: "PENDING" | "DELIVERED", total: string) {
       status,
       paymentStatus: status === "DELIVERED" ? "PAID" : "UNPAID",
       subtotal: total,
-      discount: "0.00",
-      shippingCost: "0.00",
-      tax: "0.00",
+      discount: 0,
+      shippingCost: 0,
+      tax: 0,
       total,
       shippingAddress: "1 Test Street",
       postalCode: "T3 5T5",
@@ -135,8 +135,8 @@ describe("GET /api/admin/dashboard/summary", () => {
   // both read the same near-instant DB state.
 
   it("counts orders and sums only DELIVERED revenue", async () => {
-    await createOrder("PENDING", "50.00");
-    await createOrder("DELIVERED", "75.00");
+    await createOrder("PENDING", 50);
+    await createOrder("DELIVERED", 75);
 
     const [response, truthCount, truthRevenue] = await Promise.all([
       GET(req("/api/admin/dashboard/summary")),
@@ -146,7 +146,7 @@ describe("GET /api/admin/dashboard/summary", () => {
     const body = await response.json();
 
     expect(body.data.totalOrders).toBe(truthCount);
-    expect(body.data.totalRevenue).toBeCloseTo(Number(truthRevenue._sum.total ?? 0), 2);
+    expect(body.data.totalRevenue).toBe(truthRevenue._sum.total ?? 0);
   });
 
   it("counts only active products", async () => {

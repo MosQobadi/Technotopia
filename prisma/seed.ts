@@ -91,7 +91,7 @@ async function main() {
     sku: string;
     categoryId: string;
     brandId: string;
-    price: string;
+    price: number;
     discountPercent: number;
     tags: string[];
     shortDescription: string;
@@ -104,7 +104,7 @@ async function main() {
       sku: "SNY-A7IV",
       categoryId: cameras.id,
       brandId: sony.id,
-      price: "2499.00",
+      price: 2499,
       discountPercent: 10,
       tags: ["mirrorless", "full-frame"],
       shortDescription: "Full-frame mirrorless camera with 33MP sensor.",
@@ -118,7 +118,7 @@ async function main() {
       sku: "SNY-ZVE10",
       categoryId: cameras.id,
       brandId: sony.id,
-      price: "799.00",
+      price: 799,
       discountPercent: 0,
       tags: ["mirrorless", "vlogging"],
       shortDescription: "Compact vlogging camera with interchangeable lenses.",
@@ -132,7 +132,7 @@ async function main() {
       sku: "CAN-EOSR6M2",
       categoryId: cameras.id,
       brandId: canon.id,
-      price: "2299.00",
+      price: 2299,
       discountPercent: 5,
       tags: ["mirrorless", "full-frame", "hybrid"],
       shortDescription: "High-speed full-frame hybrid mirrorless camera.",
@@ -146,7 +146,7 @@ async function main() {
       sku: "CAN-EOS90D",
       categoryId: cameras.id,
       brandId: canon.id,
-      price: "1199.00",
+      price: 1199,
       discountPercent: 0,
       tags: ["dslr", "aps-c"],
       shortDescription: "APS-C DSLR with 32.5MP sensor and fast burst shooting.",
@@ -160,7 +160,7 @@ async function main() {
       sku: "BOYA-BYM1",
       categoryId: microphones.id,
       brandId: boya.id,
-      price: "19.99",
+      price: 20,
       discountPercent: 0,
       tags: ["lavalier", "budget"],
       shortDescription: "Affordable omnidirectional lavalier microphone.",
@@ -174,7 +174,7 @@ async function main() {
       sku: "BOYA-BYMM1",
       categoryId: microphones.id,
       brandId: boya.id,
-      price: "49.99",
+      price: 50,
       discountPercent: 15,
       tags: ["shotgun", "camera-mount"],
       shortDescription: "Compact shotgun mic for cameras and smartphones.",
@@ -188,7 +188,7 @@ async function main() {
       sku: "RDS-RING18",
       categoryId: lights.id,
       brandId: roads.id,
-      price: "129.00",
+      price: 129,
       discountPercent: 20,
       tags: ["ring-light", "streaming"],
       shortDescription: "18-inch bi-color LED ring light with stand.",
@@ -202,7 +202,7 @@ async function main() {
       sku: "RDS-LEDPANEL",
       categoryId: lights.id,
       brandId: roads.id,
-      price: "249.00",
+      price: 249,
       discountPercent: 0,
       tags: ["led-panel", "studio-kit"],
       shortDescription: "Dual LED panel lighting kit with stands and bags.",
@@ -257,24 +257,20 @@ async function main() {
     customers.push(customer);
   }
 
-  function money(n: number): string {
-    return n.toFixed(2);
-  }
-
   type LineSeed = { product: (typeof products)[number]; quantity: number };
 
   function computeTotals(lines: LineSeed[], shippingCost: number, taxRate: number) {
     const items = lines.map((line) => {
-      const price = Number(line.product.price);
+      const price = line.product.price;
       const discountPercent = line.product.discountPercent;
       const discountedPrice = price * (1 - discountPercent / 100);
-      const lineTotal = discountedPrice * line.quantity;
+      const lineTotal = Math.round(discountedPrice * line.quantity);
       return { line, price, lineTotal };
     });
     const subtotal = items.reduce((sum, item) => sum + item.price * item.line.quantity, 0);
     const discountedSubtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
     const discount = subtotal - discountedSubtotal;
-    const tax = discountedSubtotal * taxRate;
+    const tax = Math.round(discountedSubtotal * taxRate);
     const total = discountedSubtotal + shippingCost + tax;
     return { items, subtotal, discount, tax, total };
   }
@@ -294,7 +290,7 @@ async function main() {
       paymentStatus: "UNPAID",
       shippingAddress: "12 Baker Street, London",
       postalCode: "NW1 6XE",
-      shippingCost: 9.99,
+      shippingCost: 10,
       lines: [
         { product: products[0]!, quantity: 1 },
         { product: products[4]!, quantity: 2 },
@@ -306,7 +302,7 @@ async function main() {
       paymentStatus: "PAID",
       shippingAddress: "45 Elm Avenue, Manchester",
       postalCode: "M1 4BT",
-      shippingCost: 14.5,
+      shippingCost: 15,
       lines: [{ product: products[2]!, quantity: 1 }],
     },
     {
@@ -315,7 +311,7 @@ async function main() {
       paymentStatus: "PAID",
       shippingAddress: "8 Maple Road, Bristol",
       postalCode: "BS1 5TR",
-      shippingCost: 5.0,
+      shippingCost: 5,
       lines: [
         { product: products[5]!, quantity: 3 },
         { product: products[6]!, quantity: 1 },
@@ -328,7 +324,7 @@ async function main() {
       paymentStatus: "REFUNDED",
       shippingAddress: "3 Oak Close, Leeds",
       postalCode: "LS1 2AB",
-      shippingCost: 9.99,
+      shippingCost: 10,
       lines: [{ product: products[1]!, quantity: 1 }],
     },
     {
@@ -337,7 +333,7 @@ async function main() {
       paymentStatus: "PAID",
       shippingAddress: "27 Birch Lane, Edinburgh",
       postalCode: "EH1 1AA",
-      shippingCost: 12.0,
+      shippingCost: 12,
       lines: [
         { product: products[7]!, quantity: 1 },
         { product: products[0]!, quantity: 1 },
@@ -357,20 +353,20 @@ async function main() {
         customerId: seed.customer.id,
         status: seed.status,
         paymentStatus: seed.paymentStatus,
-        subtotal: money(subtotal),
-        discount: money(discount),
-        shippingCost: money(seed.shippingCost),
-        tax: money(tax),
-        total: money(total),
+        subtotal,
+        discount,
+        shippingCost: seed.shippingCost,
+        tax,
+        total,
         shippingAddress: seed.shippingAddress,
         postalCode: seed.postalCode,
         items: {
           create: items.map(({ line, price, lineTotal }) => ({
             productId: line.product.id,
             productNameSnapshot: line.product.name,
-            priceSnapshot: money(price),
+            priceSnapshot: price,
             quantity: line.quantity,
-            lineTotal: money(lineTotal),
+            lineTotal,
           })),
         },
       },

@@ -51,7 +51,7 @@ test("create a category, a brand, and a product using them, then find it in the 
   await selectOption(page, "Brand", brandName);
   await page.getByLabel("Short Description").fill("Short description for E2E product.");
   await page.getByLabel("Long Description").fill("Long description for the E2E test product.");
-  await page.getByLabel("Price").fill("99.99");
+  await page.getByLabel("Price").fill("100");
   await page.getByRole("button", { name: "Save Product" }).click();
 
   await expect(page).toHaveURL(/\/admin\/products$/);

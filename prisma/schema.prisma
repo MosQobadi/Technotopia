@@ -80,7 +80,7 @@ model Product {
   sku              String   @unique
   categoryId       String
   brandId          String
-  price            Decimal  @db.Decimal(10, 2)
+  price            Int
   discountPercent  Int      @default(0)
   tags             String[]
   shortDescription String
@@ -117,11 +117,11 @@ model Order {
   customerId      String
   status          OrderStatus
   paymentStatus   PaymentStatus
-  subtotal        Decimal       @db.Decimal(10, 2)
-  discount        Decimal       @db.Decimal(10, 2)
-  shippingCost    Decimal       @db.Decimal(10, 2)
-  tax             Decimal       @db.Decimal(10, 2)
-  total           Decimal       @db.Decimal(10, 2)
+  subtotal        Int
+  discount        Int
+  shippingCost    Int
+  tax             Int
+  total           Int
   shippingAddress String
   postalCode      String
   adminNote       String?       @db.Text
@@ -161,9 +161,9 @@ model OrderItem {
   orderId             String
   productId           String
   productNameSnapshot String
-  priceSnapshot       Decimal  @db.Decimal(10, 2)
+  priceSnapshot       Int
   quantity            Int
-  lineTotal           Decimal  @db.Decimal(10, 2)
+  lineTotal           Int
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 

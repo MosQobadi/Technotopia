@@ -239,7 +239,7 @@ describe("DELETE /api/admin/categories/:id", () => {
         sku: `${PREFIX}-sku-1`,
         categoryId: created.data.id,
         brandId: brand.id,
-        price: "9.99",
+        price: 10,
         tags: [],
         shortDescription: "x",
         longDescription: "x",

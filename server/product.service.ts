@@ -16,8 +16,7 @@ type ProductWithRelations = Product & {
   inventory: { stock: number } | null;
 };
 
-export interface ProductListItem extends Omit<Product, "price"> {
-  price: number;
+export interface ProductListItem extends Product {
   finalPrice: number;
   stock: number;
   category: { id: string; name: string };
@@ -25,13 +24,11 @@ export interface ProductListItem extends Omit<Product, "price"> {
 }
 
 function toListItem(product: ProductWithRelations): ProductListItem {
-  const { inventory, price, ...rest } = product;
-  const numericPrice = Number(price);
-  const finalPrice = Math.round(numericPrice * (1 - rest.discountPercent / 100) * 100) / 100;
+  const { inventory, ...rest } = product;
+  const finalPrice = Math.round(rest.price * (1 - rest.discountPercent / 100));
 
   return {
     ...rest,
-    price: numericPrice,
     finalPrice,
     stock: inventory?.stock ?? 0,
   };

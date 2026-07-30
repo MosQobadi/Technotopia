@@ -69,7 +69,7 @@ async function createProductWithStock(stock: number, overrides: Record<string, u
       sku: `${PREFIX}-SKU-${Math.random().toString(36).slice(2, 8)}`,
       categoryId,
       brandId,
-      price: "10.00",
+      price: 10,
       discountPercent: 0,
       tags: [],
       shortDescription: "x",

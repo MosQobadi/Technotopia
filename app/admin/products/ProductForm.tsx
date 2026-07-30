@@ -32,7 +32,10 @@ const productFormSchema = z.object({
   price: z
     .string()
     .min(1, "Price is required")
-    .refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, "Price must be a positive number"),
+    .refine(
+      (v) => Number.isInteger(Number(v)) && Number(v) >= 0,
+      "Price must be a whole number of Rial",
+    ),
   discountPercent: z
     .string()
     .refine(
@@ -138,7 +141,7 @@ export function ProductForm({ product }: ProductFormProps) {
     const price = Number(priceWatch);
     if (!priceWatch || Number.isNaN(price) || price < 0) return null;
     const discount = discountWatch && !Number.isNaN(Number(discountWatch)) ? Number(discountWatch) : 0;
-    return Math.round(price * (1 - discount / 100) * 100) / 100;
+    return Math.round(price * (1 - discount / 100));
   }, [priceWatch, discountWatch]);
 
   async function onSubmit(values: ProductFormValues) {
