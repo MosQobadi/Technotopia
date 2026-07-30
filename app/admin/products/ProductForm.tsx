@@ -9,6 +9,7 @@ import { z } from "zod";
 import {
   FormActions,
   ImageUploadField,
+  RialInput,
   SelectField,
   type SelectFieldOption,
   TagsInput,
@@ -31,12 +32,9 @@ const productFormSchema = z.object({
   shortDescription: z.string().min(1, "Short description is required").max(300),
   longDescription: z.string().min(1, "Long description is required").max(5000),
   price: z
-    .string()
-    .min(1, "Price is required")
-    .refine(
-      (v) => Number.isInteger(Number(v)) && Number(v) >= 0,
-      "Price must be a whole number of Rial",
-    ),
+    .number({ error: "Price is required" })
+    .int("Price must be a whole number of Rial")
+    .nonnegative("Price must be a whole number of Rial"),
   discountPercent: z
     .string()
     .refine(
@@ -109,7 +107,7 @@ export function ProductForm({ product }: ProductFormProps) {
       tags: product?.tags ?? [],
       shortDescription: product?.shortDescription ?? "",
       longDescription: product?.longDescription ?? "",
-      price: product ? String(product.price) : "",
+      price: product ? product.price : Number.NaN,
       discountPercent: product ? String(product.discountPercent) : "0",
       image: product?.image ?? null,
       isActive: product ? product.status === "ACTIVE" : true,
@@ -139,10 +137,9 @@ export function ProductForm({ product }: ProductFormProps) {
   const discountWatch = useWatch({ control, name: "discountPercent" });
 
   const finalPrice = useMemo(() => {
-    const price = Number(priceWatch);
-    if (!priceWatch || Number.isNaN(price) || price < 0) return null;
+    if (priceWatch === undefined || Number.isNaN(priceWatch) || priceWatch < 0) return null;
     const discount = discountWatch && !Number.isNaN(Number(discountWatch)) ? Number(discountWatch) : 0;
-    return Math.round(price * (1 - discount / 100));
+    return Math.round(priceWatch * (1 - discount / 100));
   }, [priceWatch, discountWatch]);
 
   async function onSubmit(values: ProductFormValues) {
@@ -164,7 +161,7 @@ export function ProductForm({ product }: ProductFormProps) {
       tags: values.tags,
       shortDescription: values.shortDescription,
       longDescription: values.longDescription,
-      price: Number(values.price),
+      price: values.price,
       discountPercent: values.discountPercent === "" ? 0 : Number(values.discountPercent),
       image,
       status: values.isActive ? "ACTIVE" : "INACTIVE",
@@ -241,7 +238,7 @@ export function ProductForm({ product }: ProductFormProps) {
                 rows={5}
               />
               <div className="grid grid-cols-2 gap-4">
-                <TextField control={control} name="price" label="Price (Rial)" type="number" isRequired />
+                <RialInput control={control} name="price" label="Price (Rial)" isRequired />
                 <TextField control={control} name="discountPercent" label="Discount %" type="number" />
               </div>
               <div>

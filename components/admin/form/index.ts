@@ -4,4 +4,5 @@ export { SelectField, type SelectFieldProps, type SelectFieldOption } from "./Se
 export { TagsInput, type TagsInputProps } from "./TagsInput";
 export { ImageUploadField, type ImageUploadFieldProps } from "./ImageUploadField";
 export { ToggleField, type ToggleFieldProps } from "./ToggleField";
+export { RialInput, type RialInputProps } from "./RialInput";
 export { FormActions, type FormActionsProps } from "./FormActions";
