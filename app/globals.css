@@ -15,8 +15,58 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Storefront-only named tokens (see design/storefront/Technotopia Design System v2.dc.html).
+     Values are supplied by the [data-scope="storefront"] block below; unscoped they're unset. */
+  --color-ink-900: var(--ink-900);
+  --color-surface-100: var(--surface-100);
+  --color-surface-200: var(--surface-200);
+  --color-gray-500: var(--gray-500);
+  --color-error: var(--danger);
 }
 
 body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Storefront design system — scoped so it never leaks into the admin (indigo) theme above. */
+[data-scope="storefront"] {
+  --font-sans: var(--font-plus-jakarta-sans);
+  --font-mono: var(--font-ibm-plex-mono);
+
+  /* Ink / neutrals */
+  --ink-900: oklch(0.17 0 0);
+  --gray-500: oklch(0.55 0 0);
+  --foreground: var(--ink-900);
+  --muted: var(--gray-500);
+  --background: var(--white);
+
+  /* Accent — signal blue, CTAs and links only */
+  --accent: oklch(0.58 0.2 258);
+  --accent-hover: oklch(0.5 0.21 258);
+  --accent-foreground: var(--white);
+  --link: var(--accent);
+
+  /* Surfaces — card/product-tray fill and image-placeholder fill */
+  --surface-100: oklch(0.96 0.002 240);
+  --surface-200: oklch(0.94 0.002 240);
+  --surface: var(--surface-100);
+  --surface-secondary: var(--surface-200);
+  --surface-shadow: 0 0 0 0 transparent; /* cards: no border, no shadow — the gray fill carries depth */
+
+  /* Hairline borders — inputs/dividers only */
+  --border: oklch(0.92 0 0);
+  --separator: oklch(0.93 0 0);
+
+  /* Status */
+  --success: oklch(0.62 0.15 148);
+  --warning: oklch(0.75 0.15 80);
+  --danger: oklch(0.6 0.2 25); /* error / discount */
+}
+
+[data-scope="storefront"] h1,
+[data-scope="storefront"] h2,
+[data-scope="storefront"] h3 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
