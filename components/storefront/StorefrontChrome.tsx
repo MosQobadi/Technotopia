@@ -10,7 +10,7 @@ import { Navbar } from "./Navbar";
 const NO_FOOTER_PREFIXES = ["/account"];
 
 // Minimal Header, no Footer: focused, low-distraction flows (auth, checkout, order status).
-const MINIMAL_HEADER_PREFIXES = ["/login", "/signup", "/checkout", "/orders"];
+const MINIMAL_HEADER_PREFIXES = ["/login", "/checkout", "/orders"];
 
 function matchesPrefix(pathname: string, prefixes: string[]) {
   return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
