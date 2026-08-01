@@ -13,6 +13,17 @@ export interface StorefrontProductView {
   stockStatus: InventoryStatus;
 }
 
+export interface StorefrontProductDetail extends StorefrontProductView {
+  tags: string[];
+  shortDescription: string;
+  longDescription: string;
+}
+
+export interface StorefrontProductDetailResult {
+  product: StorefrontProductDetail;
+  related: StorefrontProductView[];
+}
+
 export interface StorefrontFilterOption {
   id: string;
   name: string;

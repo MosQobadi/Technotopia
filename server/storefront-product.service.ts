@@ -2,9 +2,15 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { Status } from "@/lib/generated/prisma/enums";
 import type { InventoryStatus } from "@/types/inventory";
-import type { StorefrontProductView } from "@/types/product";
+import type {
+  StorefrontProductDetail,
+  StorefrontProductDetailResult,
+  StorefrontProductView,
+} from "@/types/product";
 import type { StorefrontProductSort } from "@/lib/validation";
 import { deriveInventoryStatus, stockStatusWhere } from "./inventory.service";
+
+const RELATED_PRODUCT_LIMIT = 4;
 
 export const STOREFRONT_PRODUCT_SELECT = {
   id: true,
@@ -97,4 +103,53 @@ export async function listStorefrontProducts({
   ]);
 
   return { products: products.map(toStorefrontProductView), total };
+}
+
+const STOREFRONT_PRODUCT_DETAIL_SELECT = {
+  ...STOREFRONT_PRODUCT_SELECT,
+  categoryId: true,
+  tags: true,
+  shortDescription: true,
+  longDescription: true,
+} as const;
+
+type StorefrontProductDetailRow = NonNullable<
+  Awaited<
+    ReturnType<typeof prisma.product.findFirst<{ select: typeof STOREFRONT_PRODUCT_DETAIL_SELECT }>>
+  >
+>;
+
+function toStorefrontProductDetail(product: StorefrontProductDetailRow): StorefrontProductDetail {
+  return {
+    ...toStorefrontProductView(product),
+    tags: product.tags,
+    shortDescription: product.shortDescription,
+    longDescription: product.longDescription,
+  };
+}
+
+export async function getStorefrontProductBySlug(
+  slug: string,
+): Promise<StorefrontProductDetailResult | null> {
+  const product = await prisma.product.findFirst({
+    where: { slug, status: Status.ACTIVE },
+    select: STOREFRONT_PRODUCT_DETAIL_SELECT,
+  });
+  if (!product) return null;
+
+  const related = await prisma.product.findMany({
+    where: {
+      status: Status.ACTIVE,
+      categoryId: product.categoryId,
+      id: { not: product.id },
+    },
+    select: STOREFRONT_PRODUCT_SELECT,
+    orderBy: { createdAt: "desc" },
+    take: RELATED_PRODUCT_LIMIT,
+  });
+
+  return {
+    product: toStorefrontProductDetail(product),
+    related: related.map(toStorefrontProductView),
+  };
 }
