@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { Status } from "@/lib/generated/prisma/enums";
 import { listBrandOptions, type BrandOption } from "./brand.service";
 import { listCategoryOptions, type CategoryOption } from "./category.service";
+import { listStorefrontProducts } from "./storefront-product.service";
 
 const HOME_BANNER_LIMIT = 3;
 const FEATURED_PRODUCT_LIMIT = 10;
@@ -100,39 +101,14 @@ async function getFeaturedProducts(): Promise<HomeProductView[]> {
   return products.map(toProductView);
 }
 
-const BEST_SELLER_SELECT = {
-  ...PRODUCT_SUMMARY_SELECT,
-  brand: { select: { name: true } },
-  createdAt: true,
-} as const;
-
-type BestSellerProduct = Awaited<
-  ReturnType<typeof prisma.product.findMany<{ select: typeof BEST_SELLER_SELECT }>>
->[number];
-
-function toBestSellerView(product: BestSellerProduct, rank: number): HomeBestSellerView {
-  return {
-    ...toProductView(product),
-    brand: product.brand.name,
-    rank,
-    createdAt: product.createdAt.toISOString(),
-  };
-}
-
-/**
- * Stub for Task 17.1 (`GET /api/storefront/products?sort=sold&pageSize=10`), which
- * doesn't exist yet. Swap this for a call to that endpoint's service function once
- * it lands, per Task 16.1's DoD.
- */
 async function getBestSellers(): Promise<HomeBestSellerView[]> {
-  const products = await prisma.product.findMany({
-    where: { status: Status.ACTIVE },
-    select: BEST_SELLER_SELECT,
-    orderBy: { salesCount: "desc" },
-    take: BEST_SELLER_LIMIT,
+  const { products } = await listStorefrontProducts({
+    sort: "sold",
+    page: 1,
+    pageSize: BEST_SELLER_LIMIT,
   });
 
-  return products.map((product, index) => toBestSellerView(product, index + 1));
+  return products.map((product, index) => ({ ...product, rank: index + 1 }));
 }
 
 export async function getHomeData(): Promise<HomeData> {

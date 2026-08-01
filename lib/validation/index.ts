@@ -10,3 +10,4 @@ export * from "./settings.schema";
 export * from "./auth.schema";
 export * from "./cart.schema";
 export * from "./wishlist.schema";
+export * from "./search.schema";

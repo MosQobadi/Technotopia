@@ -23,6 +23,8 @@
   --color-surface-200: var(--surface-200);
   --color-gray-500: var(--gray-500);
   --color-error: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
 }
 
 body {

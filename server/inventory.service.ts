@@ -51,6 +51,14 @@ const STOCK_FILTER_BY_STATUS: Record<Exclude<InventoryStatus, "OUT_OF_STOCK">, P
   IN_STOCK: { gte: 10 },
 };
 
+/** Prisma where-clause for a derived stock status — shared with the storefront listing. */
+export function stockStatusWhere(status: InventoryStatus): Prisma.ProductWhereInput {
+  if (status === "OUT_OF_STOCK") {
+    return { OR: [{ inventory: null }, { inventory: { stock: 0 } }] };
+  }
+  return { inventory: { stock: STOCK_FILTER_BY_STATUS[status] } };
+}
+
 export interface ListInventoryParams {
   search?: string;
   categoryId?: string;
@@ -85,10 +93,8 @@ export async function listInventory({
       ],
     });
   }
-  if (status === "OUT_OF_STOCK") {
-    conditions.push({ OR: [{ inventory: null }, { inventory: { stock: 0 } }] });
-  } else if (status) {
-    conditions.push({ inventory: { stock: STOCK_FILTER_BY_STATUS[status] } });
+  if (status) {
+    conditions.push(stockStatusWhere(status));
   }
 
   const where: Prisma.ProductWhereInput = conditions.length ? { AND: conditions } : {};
