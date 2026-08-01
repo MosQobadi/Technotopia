@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 
-const SHIPPING_FLAT_RATE = 800_000;
+export const SHIPPING_FLAT_RATE = 800_000;
 
 const CART_ITEM_INCLUDE = {
   product: {

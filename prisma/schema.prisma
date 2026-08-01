@@ -31,6 +31,11 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -124,12 +129,16 @@ model Order {
   customerId      String
   status          OrderStatus
   paymentStatus   PaymentStatus
+  paymentMethod   PaymentMethod
   subtotal        Int
   discount        Int
   shippingCost    Int
   tax             Int
   total           Int
+  fullName        String
+  phone           String
   shippingAddress String
+  city            String
   postalCode      String
   adminNote       String?       @db.Text
   createdAt       DateTime      @default(now())

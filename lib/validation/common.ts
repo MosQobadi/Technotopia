@@ -32,6 +32,9 @@ export const orderStatusSchema = z.enum([
 /** Mirrors Prisma's `PaymentStatus` enum. */
 export const paymentStatusSchema = z.enum(["UNPAID", "PAID", "REFUNDED"]);
 
+/** Mirrors Prisma's `PaymentMethod` enum. */
+export const paymentMethodSchema = z.enum(["CARD", "BANK_TRANSFER"]);
+
 /** kebab-case slug, e.g. "wireless-microphones". */
 export const slugSchema = z
   .string()

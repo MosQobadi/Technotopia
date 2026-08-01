@@ -280,7 +280,10 @@ async function main() {
     customer: (typeof customers)[number];
     status: "PENDING" | "SENDING" | "DELIVERED" | "CANCELLED";
     paymentStatus: "UNPAID" | "PAID" | "REFUNDED";
+    paymentMethod: "CARD" | "BANK_TRANSFER";
+    phone: string;
     shippingAddress: string;
+    city: string;
     postalCode: string;
     shippingCost: number;
     lines: LineSeed[];
@@ -289,7 +292,10 @@ async function main() {
       customer: customers[0]!,
       status: "PENDING",
       paymentStatus: "UNPAID",
-      shippingAddress: "12 Baker Street, London",
+      paymentMethod: "CARD",
+      phone: "+44 7700 900001",
+      shippingAddress: "12 Baker Street",
+      city: "London",
       postalCode: "NW1 6XE",
       shippingCost: 10,
       lines: [
@@ -301,7 +307,10 @@ async function main() {
       customer: customers[1]!,
       status: "SENDING",
       paymentStatus: "PAID",
-      shippingAddress: "45 Elm Avenue, Manchester",
+      paymentMethod: "BANK_TRANSFER",
+      phone: "+44 7700 900002",
+      shippingAddress: "45 Elm Avenue",
+      city: "Manchester",
       postalCode: "M1 4BT",
       shippingCost: 15,
       lines: [{ product: products[2]!, quantity: 1 }],
@@ -310,7 +319,10 @@ async function main() {
       customer: customers[2]!,
       status: "DELIVERED",
       paymentStatus: "PAID",
-      shippingAddress: "8 Maple Road, Bristol",
+      paymentMethod: "CARD",
+      phone: "+44 7700 900003",
+      shippingAddress: "8 Maple Road",
+      city: "Bristol",
       postalCode: "BS1 5TR",
       shippingCost: 5,
       lines: [
@@ -323,7 +335,10 @@ async function main() {
       customer: customers[3]!,
       status: "CANCELLED",
       paymentStatus: "REFUNDED",
-      shippingAddress: "3 Oak Close, Leeds",
+      paymentMethod: "CARD",
+      phone: "+44 7700 900004",
+      shippingAddress: "3 Oak Close",
+      city: "Leeds",
       postalCode: "LS1 2AB",
       shippingCost: 10,
       lines: [{ product: products[1]!, quantity: 1 }],
@@ -332,7 +347,10 @@ async function main() {
       customer: customers[4]!,
       status: "DELIVERED",
       paymentStatus: "PAID",
-      shippingAddress: "27 Birch Lane, Edinburgh",
+      paymentMethod: "BANK_TRANSFER",
+      phone: "+44 7700 900005",
+      shippingAddress: "27 Birch Lane",
+      city: "Edinburgh",
       postalCode: "EH1 1AA",
       shippingCost: 12,
       lines: [
@@ -354,12 +372,16 @@ async function main() {
         customerId: seed.customer.id,
         status: seed.status,
         paymentStatus: seed.paymentStatus,
+        paymentMethod: seed.paymentMethod,
         subtotal,
         discount,
         shippingCost: seed.shippingCost,
         tax,
         total,
+        fullName: `${seed.customer.firstName} ${seed.customer.lastName}`,
+        phone: seed.phone,
         shippingAddress: seed.shippingAddress,
+        city: seed.city,
         postalCode: seed.postalCode,
         items: {
           create: items.map(({ line, price, lineTotal }) => ({

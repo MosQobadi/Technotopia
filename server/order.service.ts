@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
-import { OrderStatus } from "@/lib/generated/prisma/enums";
-import type { PaymentStatus } from "@/lib/generated/prisma/enums";
+import { OrderStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
+import type { CreateOrderInput } from "@/lib/validation/order.schema";
+import { SHIPPING_FLAT_RATE } from "./cart.service";
 
 const ORDER_LIST_INCLUDE = {
   customer: { select: { firstName: true, lastName: true } },
@@ -235,6 +236,138 @@ export async function updateOrderNote(id: string, adminNote: string): Promise<Up
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return { ok: false, reason: "not_found" };
+    }
+    throw err;
+  }
+}
+
+export interface StockShortfall {
+  productId: string;
+  name: string;
+  available: number;
+  requested: number;
+}
+
+class InsufficientStockError extends Error {
+  constructor(public readonly items: StockShortfall[]) {
+    super("Insufficient stock");
+  }
+}
+
+export type CreateOrderResult =
+  | { ok: true; orderId: string }
+  | { ok: false; reason: "empty_cart" }
+  | { ok: false; reason: "insufficient_stock"; items: StockShortfall[] };
+
+/**
+ * Checkout: verifies stock, creates the Order + OrderItem snapshots, decrements Inventory,
+ * and clears the cart — all atomically so a mid-checkout failure can't leave stock
+ * decremented without an order, or an order created without stock actually reserved.
+ */
+export async function createOrder(
+  customerId: string,
+  input: CreateOrderInput,
+): Promise<CreateOrderResult> {
+  try {
+    const orderId = await prisma.$transaction(async (tx) => {
+      const cart = await tx.cart.findUnique({
+        where: { userId: customerId },
+        include: {
+          items: {
+            include: {
+              product: { select: { id: true, name: true, price: true, discountPercent: true } },
+            },
+          },
+        },
+      });
+
+      if (!cart || cart.items.length === 0) {
+        throw new Error("EMPTY_CART");
+      }
+
+      const shortfalls: StockShortfall[] = [];
+      const lineItems = cart.items.map((item) => {
+        const discountedPrice = item.product.price * (1 - item.product.discountPercent / 100);
+        return {
+          productId: item.productId,
+          name: item.product.name,
+          quantity: item.quantity,
+          price: item.product.price,
+          lineTotal: Math.round(discountedPrice * item.quantity),
+        };
+      });
+
+      for (const item of lineItems) {
+        const decremented = await tx.inventory.updateMany({
+          where: { productId: item.productId, stock: { gte: item.quantity } },
+          data: { stock: { decrement: item.quantity }, lastUpdatedAt: new Date() },
+        });
+        if (decremented.count === 0) {
+          const inventory = await tx.inventory.findUnique({
+            where: { productId: item.productId },
+            select: { stock: true },
+          });
+          shortfalls.push({
+            productId: item.productId,
+            name: item.name,
+            available: inventory?.stock ?? 0,
+            requested: item.quantity,
+          });
+        }
+      }
+
+      if (shortfalls.length > 0) {
+        throw new InsufficientStockError(shortfalls);
+      }
+
+      const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const discountedSubtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
+      const discount = subtotal - discountedSubtotal;
+      const shippingCost = SHIPPING_FLAT_RATE;
+      const tax = 0;
+      const total = discountedSubtotal + shippingCost + tax;
+
+      const order = await tx.order.create({
+        data: {
+          customerId,
+          status: OrderStatus.PENDING,
+          paymentStatus: PaymentStatus.UNPAID,
+          paymentMethod: input.paymentMethod,
+          subtotal,
+          discount,
+          shippingCost,
+          tax,
+          total,
+          fullName: input.fullName,
+          phone: input.phone,
+          shippingAddress: input.address,
+          city: input.city,
+          postalCode: input.postalCode,
+          items: {
+            create: lineItems.map((item) => ({
+              productId: item.productId,
+              productNameSnapshot: item.name,
+              priceSnapshot: item.price,
+              quantity: item.quantity,
+              lineTotal: item.lineTotal,
+            })),
+          },
+        },
+        select: { id: true },
+      });
+
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+      return order.id;
+    });
+
+    return { ok: true, orderId };
+  } catch (err) {
+    if (err instanceof InsufficientStockError) {
+      return { ok: false, reason: "insufficient_stock", items: err.items };
+    }
+    if (err instanceof Error && err.message === "EMPTY_CART") {
+      return { ok: false, reason: "empty_cart" };
     }
     throw err;
   }

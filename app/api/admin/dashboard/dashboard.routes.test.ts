@@ -95,12 +95,16 @@ async function createOrder(status: "PENDING" | "DELIVERED", total: number) {
       customerId,
       status,
       paymentStatus: status === "DELIVERED" ? "PAID" : "UNPAID",
+      paymentMethod: "CARD",
       subtotal: total,
       discount: 0,
       shippingCost: 0,
       tax: 0,
       total,
+      fullName: "Test Customer",
+      phone: "+1 555 0100",
       shippingAddress: "1 Test Street",
+      city: "Test City",
       postalCode: "T3 5T5",
       items: {
         create: [

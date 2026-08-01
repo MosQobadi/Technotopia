@@ -60,12 +60,16 @@ async function main() {
       customerId: customer.id,
       status: "PENDING",
       paymentStatus: "UNPAID",
+      paymentMethod: "CARD",
       subtotal: 25,
       discount: 0,
       shippingCost: 5,
       tax: 2,
       total: 32,
+      fullName: "E2E Customer",
+      phone: "+1 555 0100",
       shippingAddress: "1 Test Street",
+      city: "Test City",
       postalCode: "TE5T 1NG",
       items: {
         create: [

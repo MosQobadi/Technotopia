@@ -103,12 +103,16 @@ async function createOrder(overrides: Record<string, unknown> = {}) {
       customerId,
       status: "PENDING",
       paymentStatus: "UNPAID",
+      paymentMethod: "CARD",
       subtotal: 25,
       discount: 0,
       shippingCost: 5,
       tax: 2,
       total: 32,
+      fullName: "Test Customer",
+      phone: "+1 555 0100",
       shippingAddress: "1 Test Street",
+      city: "Test City",
       postalCode: "T3 5T5",
       items: {
         create: [
