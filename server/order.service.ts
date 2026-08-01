@@ -146,6 +146,7 @@ export interface OrderDetail {
   paymentStatus: PaymentStatus;
   adminNote: string | null;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 function toDetail(order: OrderWithDetailRelations): OrderDetail {
@@ -176,6 +177,7 @@ function toDetail(order: OrderWithDetailRelations): OrderDetail {
     paymentStatus: order.paymentStatus,
     adminNote: order.adminNote,
     createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
   };
 }
 
