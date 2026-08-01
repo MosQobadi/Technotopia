@@ -62,3 +62,6 @@ next-env.d.ts
 
 # claude code — personal local permissions, not shared config
 .claude/settings.local.json
+
+# graphify — generated knowledge-graph output, not source
+/graphify-out
