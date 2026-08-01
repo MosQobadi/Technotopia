@@ -144,8 +144,10 @@ model Order {
 model Banner {
   id           String   @id @default(cuid())
   image        String
+  tag          String?
   headline     String
   subheadline  String?
+  ctaLabel     String?
   link         String?
   displayOrder Int      @default(0)
   status       Status   @default(ACTIVE)

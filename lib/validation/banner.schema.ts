@@ -14,8 +14,10 @@ const linkSchema = z
 
 export const bannerCreateSchema = z.object({
   image: requiredImageSchema,
+  tag: z.string().max(50).nullable().optional(),
   headline: z.string().min(1).max(200),
   subheadline: z.string().max(300).nullable().optional(),
+  ctaLabel: z.string().max(50).nullable().optional(),
   link: linkSchema,
   displayOrder: z.number().int().min(0).default(0),
   status: statusSchema,
