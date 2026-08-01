@@ -24,3 +24,22 @@ export async function requireAdmin(request: NextRequest): Promise<RequireAdminRe
   }
   return { ok: true, payload };
 }
+
+export type RequireUserResult =
+  | { ok: true; payload: AuthTokenPayload }
+  | { ok: false; status: 401; error: string };
+
+/**
+ * Route-handler-level auth check for storefront routes scoped to the logged-in
+ * user (cart, wishlist, account, orders) — any authenticated role, no admin
+ * requirement.
+ */
+export async function requireUser(request: NextRequest): Promise<RequireUserResult> {
+  const token = request.cookies.get(getCookieName())?.value;
+  const payload = token ? await verifyToken(token) : null;
+
+  if (!payload) {
+    return { ok: false, status: 401, error: "Not authenticated." };
+  }
+  return { ok: true, payload };
+}

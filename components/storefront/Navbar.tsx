@@ -19,7 +19,8 @@ const ICON_BUTTON_CLASSES =
 
 export function Navbar() {
   const user = useAuthStore((state) => state.user);
-  const hydrate = useAuthStore((state) => state.hydrate);
+  const hydrateAuth = useAuthStore((state) => state.hydrate);
+  const hydrateCart = useCartStore((state) => state.hydrate);
   const itemCount = useCartStore((state) =>
     state.items.reduce((sum, item) => sum + item.quantity, 0),
   );
@@ -28,8 +29,12 @@ export function Navbar() {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    hydrate();
-  }, [hydrate]);
+    hydrateAuth();
+  }, [hydrateAuth]);
+
+  useEffect(() => {
+    if (user) hydrateCart();
+  }, [user, hydrateCart]);
 
   function handleSearchSubmit(event: FormEvent) {
     event.preventDefault();
