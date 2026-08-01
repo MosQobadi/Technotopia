@@ -184,6 +184,18 @@ export async function getOrderById(id: string): Promise<OrderDetail | null> {
   return order ? toDetail(order) : null;
 }
 
+/** Storefront lookup scoped to the requesting customer, so one customer can't view another's order by guessing an id. */
+export async function getOrderForCustomer(
+  id: string,
+  customerId: string,
+): Promise<OrderDetail | null> {
+  const order = await prisma.order.findFirst({
+    where: { id, customerId },
+    include: ORDER_DETAIL_INCLUDE,
+  });
+  return order ? toDetail(order) : null;
+}
+
 /** Forward-only sequence PENDING -> SENDING -> SENT -> DELIVERED; CANCELLED only from PENDING/SENDING. */
 const VALID_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: [OrderStatus.SENDING, OrderStatus.CANCELLED],
