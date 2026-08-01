@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 import { Status } from "@/lib/generated/prisma/enums";
+import { listBrandOptions, type BrandOption } from "./brand.service";
+import { listCategoryOptions, type CategoryOption } from "./category.service";
 
 const HOME_BANNER_LIMIT = 3;
 const FEATURED_PRODUCT_LIMIT = 10;
@@ -38,10 +40,19 @@ export interface HomeBannerView {
   cta: { label: string; href: string } | null;
 }
 
+export interface HomeBestSellerView extends HomeProductView {
+  brand: string;
+  rank: number;
+  /** ISO timestamp — used only to support the "Newest" sort option, not displayed. */
+  createdAt: string;
+}
+
 export interface HomeData {
   banners: HomeBannerView[];
   featuredProducts: HomeProductView[];
-  bestSellers: HomeProductView[];
+  bestSellers: HomeBestSellerView[];
+  categories: CategoryOption[];
+  brands: BrandOption[];
 }
 
 function toProductView(product: ProductSummary): HomeProductView {
@@ -89,28 +100,49 @@ async function getFeaturedProducts(): Promise<HomeProductView[]> {
   return products.map(toProductView);
 }
 
+const BEST_SELLER_SELECT = {
+  ...PRODUCT_SUMMARY_SELECT,
+  brand: { select: { name: true } },
+  createdAt: true,
+} as const;
+
+type BestSellerProduct = Awaited<
+  ReturnType<typeof prisma.product.findMany<{ select: typeof BEST_SELLER_SELECT }>>
+>[number];
+
+function toBestSellerView(product: BestSellerProduct, rank: number): HomeBestSellerView {
+  return {
+    ...toProductView(product),
+    brand: product.brand.name,
+    rank,
+    createdAt: product.createdAt.toISOString(),
+  };
+}
+
 /**
  * Stub for Task 17.1 (`GET /api/storefront/products?sort=sold&pageSize=10`), which
  * doesn't exist yet. Swap this for a call to that endpoint's service function once
  * it lands, per Task 16.1's DoD.
  */
-async function getBestSellers(): Promise<HomeProductView[]> {
+async function getBestSellers(): Promise<HomeBestSellerView[]> {
   const products = await prisma.product.findMany({
     where: { status: Status.ACTIVE },
-    select: PRODUCT_SUMMARY_SELECT,
+    select: BEST_SELLER_SELECT,
     orderBy: { salesCount: "desc" },
     take: BEST_SELLER_LIMIT,
   });
 
-  return products.map(toProductView);
+  return products.map((product, index) => toBestSellerView(product, index + 1));
 }
 
 export async function getHomeData(): Promise<HomeData> {
-  const [banners, featuredProducts, bestSellers] = await Promise.all([
+  const [banners, featuredProducts, bestSellers, categories, brands] = await Promise.all([
     getHomeBanners(),
     getFeaturedProducts(),
     getBestSellers(),
+    listCategoryOptions(),
+    listBrandOptions(),
   ]);
 
-  return { banners, featuredProducts, bestSellers };
+  return { banners, featuredProducts, bestSellers, categories, brands };
 }
