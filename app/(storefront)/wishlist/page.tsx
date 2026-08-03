@@ -58,8 +58,7 @@ export default function WishlistPage() {
               price={item.price}
               originalPrice={item.originalPrice}
               imageSrc={item.image ?? undefined}
-              isWishlisted
-              onToggleWishlist={() => removeItem(item.productId)}
+              onRemove={() => removeItem(item.productId)}
               onAddToCart={() => addCartItem(item.productId)}
             />
           ))}

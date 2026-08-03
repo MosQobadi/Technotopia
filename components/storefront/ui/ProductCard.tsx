@@ -19,6 +19,7 @@ interface ProductCardProps {
   badge?: ProductCardBadge;
   isWishlisted?: boolean;
   onToggleWishlist?: () => void;
+  onRemove?: () => void;
   onAddToCart?: () => void;
 }
 
@@ -38,6 +39,7 @@ export function ProductCard({
   badge,
   isWishlisted,
   onToggleWishlist,
+  onRemove,
   onAddToCart,
 }: ProductCardProps) {
   return (
@@ -60,16 +62,29 @@ export function ProductCard({
             {badge.label}
           </span>
         )}
-        <Button
-          variant="icon-circle"
-          iconSize="sm"
-          iconTone="white"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          onClick={onToggleWishlist}
-          className="absolute top-2.5 right-2.5 hover:text-error"
-        >
-          {isWishlisted ? "♥" : "♡"}
-        </Button>
+        {onRemove ? (
+          <Button
+            variant="icon-circle"
+            iconSize="sm"
+            iconTone="white"
+            aria-label="Remove from wishlist"
+            onClick={onRemove}
+            className="absolute top-2.5 right-2.5 text-error"
+          >
+            ✕
+          </Button>
+        ) : (
+          <Button
+            variant="icon-circle"
+            iconSize="sm"
+            iconTone="white"
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            onClick={onToggleWishlist}
+            className="absolute top-2.5 right-2.5 hover:text-error"
+          >
+            {isWishlisted ? "♥" : "♡"}
+          </Button>
+        )}
       </div>
       <div className="flex flex-col gap-1.5 p-5">
         <span className="text-accent font-mono text-[11px] tracking-wide uppercase">{category}</span>
