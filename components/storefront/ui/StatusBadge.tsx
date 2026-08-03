@@ -44,12 +44,15 @@ export function StockStatusBadge({ status, variant = "inline", className }: Stoc
   );
 }
 
-type OrderStatus = "Processing" | "Shipped" | "Delivered";
+// Covers every real Order.status value, not just the three the wireframe mock happens to show.
+type OrderStatus = "Order Placed" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
 
 const ORDER_STATUS_CLASSES: Record<OrderStatus, string> = {
-  Delivered: "text-success",
-  Shipped: "text-accent",
+  "Order Placed": "text-gray-500",
   Processing: "text-warning",
+  Shipped: "text-accent",
+  Delivered: "text-success",
+  Cancelled: "text-error",
 };
 
 interface OrderStatusBadgeProps {

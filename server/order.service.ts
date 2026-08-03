@@ -106,6 +106,47 @@ export async function getOrdersForCustomer(customerId: string): Promise<OrderLis
   return orders.map(toListItem);
 }
 
+const ORDER_HISTORY_INCLUDE = {
+  items: { select: { productNameSnapshot: true } },
+} as const;
+
+type OrderWithHistoryRelations = Prisma.OrderGetPayload<{ include: typeof ORDER_HISTORY_INCLUDE }>;
+
+export interface OrderHistoryItem {
+  id: string;
+  itemsSummary: string;
+  total: number;
+  status: OrderStatus;
+  createdAt: Date;
+}
+
+function toHistoryItem(order: OrderWithHistoryRelations): OrderHistoryItem {
+  const [first, ...rest] = order.items;
+  const itemsSummary = first
+    ? rest.length > 0
+      ? `${first.productNameSnapshot} + ${rest.length} more`
+      : first.productNameSnapshot
+    : "";
+
+  return {
+    id: order.id,
+    itemsSummary,
+    total: order.total,
+    status: order.status,
+    createdAt: order.createdAt,
+  };
+}
+
+/** Order History tab on the My Account page — scoped to the requesting customer. */
+export async function getOrderHistoryForCustomer(customerId: string): Promise<OrderHistoryItem[]> {
+  const orders = await prisma.order.findMany({
+    where: { customerId },
+    include: ORDER_HISTORY_INCLUDE,
+    orderBy: { createdAt: "desc" },
+  });
+  return orders.map(toHistoryItem);
+}
+
 const ORDER_DETAIL_INCLUDE = {
   customer: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
   items: {

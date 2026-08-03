@@ -1,7 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { createOrderSchema } from "@/lib/validation";
-import { createOrder } from "@/server/order.service";
+import { createOrder, getOrderHistoryForCustomer } from "@/server/order.service";
+
+export async function GET(request: NextRequest) {
+  const auth = await requireUser(request);
+  if (!auth.ok) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+  }
+
+  const orders = await getOrderHistoryForCustomer(auth.payload.userId);
+  return NextResponse.json({ success: true, data: orders });
+}
 
 export async function POST(request: NextRequest) {
   const auth = await requireUser(request);
