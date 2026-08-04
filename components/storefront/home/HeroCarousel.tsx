@@ -64,7 +64,13 @@ export function HeroCarousel({ banners }: { banners: HomeBannerView[] }) {
 
         <div className="bg-surface-200 relative aspect-4/3 overflow-hidden rounded-3xl">
           {slide.image ? (
-            <Image src={slide.image} alt={slide.headline} fill className="object-cover" />
+            <Image
+              src={slide.image}
+              alt={slide.headline}
+              fill
+              className="object-cover"
+              priority={slideIndex === 0}
+            />
           ) : (
             <div className="flex size-full items-center justify-center font-mono text-[13px] text-gray-500">
               HERO PRODUCT PHOTO
