@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { StorefrontChrome } from "@/components/storefront/StorefrontChrome";
+import { organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: {
@@ -30,6 +31,10 @@ export default function StorefrontLayout({ children }: { children: ReactNode }) 
       data-scope="storefront"
       className={`${plusJakartaSans.variable} ${ibmPlexMono.variable} contents`}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+      />
       <StorefrontChrome>{children}</StorefrontChrome>
     </div>
   );

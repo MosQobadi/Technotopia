@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStorefrontProductBySlug } from "@/server/storefront-product.service";
+import { breadcrumbJsonLd, type BreadcrumbTrailItem } from "@/lib/seo";
 import { ProductDetailContent } from "./ProductDetailContent";
 
 interface ProductDetailPageProps {
@@ -32,7 +33,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   const { product, related } = result;
 
-  const jsonLd = {
+  const breadcrumbItems: BreadcrumbTrailItem[] = [
+    { label: "Home", href: "/" },
+    { label: product.category, href: `/products?category=${encodeURIComponent(product.category)}` },
+    { label: product.name },
+  ];
+
+  const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
@@ -55,9 +62,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
-      <ProductDetailContent product={product} related={related} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }}
+      />
+      <ProductDetailContent product={product} related={related} breadcrumbItems={breadcrumbItems} />
     </>
   );
 }

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import type { InventoryStatus } from "@/types/inventory";
 import type { StorefrontProductListResult } from "@/types/product";
 import type { StorefrontProductSort } from "@/lib/validation";
+import { breadcrumbJsonLd } from "@/lib/seo";
 import { useAuthStore } from "@/lib/store/auth";
 import { useCartStore } from "@/lib/store/cart";
 import { useWishlistStore } from "@/lib/store/wishlist";
@@ -121,6 +122,8 @@ export function ProductsContent() {
     ? (data.categories.find((category) => category.id === activeCategoryId)?.name ?? "All")
     : "All";
 
+  const breadcrumbItems = [{ label: "Home", href: "/" }, { label: activeCategoryLabel }];
+
   function toggleBrand(brandId: string) {
     setSelectedBrandIds((current) => {
       const next = new Set(current);
@@ -141,10 +144,11 @@ export function ProductsContent() {
 
   return (
     <main className="mx-auto max-w-320 px-6 pt-10 pb-24">
-      <Breadcrumb
-        items={[{ label: "Home", href: "/" }, { label: activeCategoryLabel }]}
-        className="mb-5"
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }}
       />
+      <Breadcrumb items={breadcrumbItems} className="mb-5" />
       <h1 className="mb-8 text-[34px] font-extrabold tracking-tight text-ink-900">
         {activeCategoryLabel}
       </h1>

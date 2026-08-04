@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { InventoryStatus } from "@/types/inventory";
 import type { StorefrontProductDetail, StorefrontProductView } from "@/types/product";
 import { formatPrice } from "@/lib/format";
+import type { BreadcrumbTrailItem } from "@/lib/seo";
 import { useAuthStore } from "@/lib/store/auth";
 import { useCartStore } from "@/lib/store/cart";
 import { useWishlistStore } from "@/lib/store/wishlist";
@@ -19,6 +20,7 @@ import { StockStatusBadge } from "@/components/storefront/ui/StatusBadge";
 interface ProductDetailContentProps {
   product: StorefrontProductDetail;
   related: StorefrontProductView[];
+  breadcrumbItems: BreadcrumbTrailItem[];
 }
 
 const STOCK_STATUS: Record<InventoryStatus, "in-stock" | "low-stock" | "out-of-stock"> = {
@@ -27,7 +29,7 @@ const STOCK_STATUS: Record<InventoryStatus, "in-stock" | "low-stock" | "out-of-s
   OUT_OF_STOCK: "out-of-stock",
 };
 
-export function ProductDetailContent({ product, related }: ProductDetailContentProps) {
+export function ProductDetailContent({ product, related, breadcrumbItems }: ProductDetailContentProps) {
   const [quantity, setQuantity] = useState(1);
 
   const user = useAuthStore((state) => state.user);
@@ -47,17 +49,7 @@ export function ProductDetailContent({ product, related }: ProductDetailContentP
 
   return (
     <main className="mx-auto max-w-320 px-6 pt-10 pb-24">
-      <Breadcrumb
-        items={[
-          { label: "Home", href: "/" },
-          {
-            label: product.category,
-            href: `/products?category=${encodeURIComponent(product.category)}`,
-          },
-          { label: product.name },
-        ]}
-        className="mb-7"
-      />
+      <Breadcrumb items={breadcrumbItems} className="mb-7" />
 
       <div className="mb-18 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-14">
         <ProductGallery images={product.image ? [product.image] : []} alt={product.name} />
