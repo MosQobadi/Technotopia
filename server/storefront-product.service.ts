@@ -128,6 +128,18 @@ function toStorefrontProductDetail(product: StorefrontProductDetailRow): Storefr
   };
 }
 
+export interface ProductSitemapEntry {
+  slug: string;
+  updatedAt: Date;
+}
+
+export async function listActiveProductSlugs(): Promise<ProductSitemapEntry[]> {
+  return prisma.product.findMany({
+    where: { status: Status.ACTIVE },
+    select: { slug: true, updatedAt: true },
+  });
+}
+
 export async function getStorefrontProductBySlug(
   slug: string,
 ): Promise<StorefrontProductDetailResult | null> {

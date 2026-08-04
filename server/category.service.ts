@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { Category } from "@/lib/generated/prisma/client";
-import type { Status } from "@/lib/generated/prisma/enums";
+import { Status } from "@/lib/generated/prisma/enums";
 import { slugify } from "@/lib/slugify";
 import type { CategoryCreateInput, CategoryUpdateInput } from "@/lib/validation";
 
@@ -117,6 +117,18 @@ export async function listCategoryOptions(): Promise<CategoryOption[]> {
   return prisma.category.findMany({
     select: { id: true, name: true },
     orderBy: { name: "asc" },
+  });
+}
+
+export interface CategorySitemapEntry {
+  slug: string;
+  updatedAt: Date;
+}
+
+export async function listActiveCategorySlugs(): Promise<CategorySitemapEntry[]> {
+  return prisma.category.findMany({
+    where: { status: Status.ACTIVE },
+    select: { slug: true, updatedAt: true },
   });
 }
 
