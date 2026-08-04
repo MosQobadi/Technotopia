@@ -43,16 +43,18 @@ beforeAll(async () => {
   brandId = brand.id;
 });
 
+// Cleanup is keyed off the shared email prefix (rather than just `customerId`) so it also
+// catches the extra customers the oversell-race test below creates.
 afterAll(async () => {
   await prisma.orderItem.deleteMany({ where: { productNameSnapshot: { startsWith: PREFIX } } });
-  await prisma.order.deleteMany({ where: { customerId } });
-  await prisma.cartItem.deleteMany({ where: { cart: { userId: customerId } } });
-  await prisma.cart.deleteMany({ where: { userId: customerId } });
+  await prisma.order.deleteMany({ where: { customer: { email: { startsWith: PREFIX } } } });
+  await prisma.cartItem.deleteMany({ where: { cart: { user: { email: { startsWith: PREFIX } } } } });
+  await prisma.cart.deleteMany({ where: { user: { email: { startsWith: PREFIX } } } });
   await prisma.inventory.deleteMany({ where: { product: { sku: { startsWith: PREFIX } } } });
   await prisma.product.deleteMany({ where: { sku: { startsWith: PREFIX } } });
   await prisma.brand.deleteMany({ where: { slug: { startsWith: PREFIX } } });
   await prisma.category.deleteMany({ where: { slug: { startsWith: PREFIX } } });
-  await prisma.user.delete({ where: { id: customerId } });
+  await prisma.user.deleteMany({ where: { email: { startsWith: PREFIX } } });
   await prisma.$disconnect();
 });
 
@@ -76,14 +78,29 @@ async function createProduct(overrides: Record<string, unknown> = {}) {
   });
 }
 
-async function addToCart(productId: string, quantity: number) {
+async function addToCart(productId: string, quantity: number, userId: string = customerId) {
   const cart = await prisma.cart.upsert({
-    where: { userId: customerId },
-    create: { userId: customerId },
+    where: { userId },
+    create: { userId },
     update: {},
   });
   await prisma.cartItem.create({ data: { cartId: cart.id, productId, quantity } });
   return cart;
+}
+
+/** A second, independent customer + auth cookie — for tests that need two shoppers at once. */
+async function createRacingCustomer(suffix: string) {
+  const customer = await prisma.user.create({
+    data: {
+      email: `${PREFIX}-race-${suffix}@technotopia.test`,
+      passwordHash: "x",
+      firstName: "Race",
+      lastName: suffix,
+      role: Role.CUSTOMER,
+    },
+  });
+  const cookie = await signToken({ userId: customer.id, role: Role.CUSTOMER });
+  return { id: customer.id, cookie };
 }
 
 const VALID_SHIPPING = {
@@ -181,5 +198,42 @@ describe("POST /api/storefront/orders", () => {
       where: { items: { some: { productId: product.id } } },
     });
     expect(order).toBeNull();
+  });
+
+  it("can't be oversold when two checkouts race for the last unit of stock", async () => {
+    const product = await createProduct({ price: 1000 });
+    await prisma.inventory.create({
+      data: { productId: product.id, stock: 1, lastUpdatedAt: new Date() },
+    });
+
+    const racerA = await createRacingCustomer("a");
+    const racerB = await createRacingCustomer("b");
+    await addToCart(product.id, 1, racerA.id);
+    await addToCart(product.id, 1, racerB.id);
+
+    // Fired together (not awaited one at a time) so both requests' `prisma.$transaction`
+    // calls are in flight against the real Postgres instance at the same time, racing for
+    // the same inventory row rather than running strictly one-after-another.
+    const [responseA, responseB] = await Promise.all([
+      create(req(VALID_SHIPPING, racerA.cookie)),
+      create(req(VALID_SHIPPING, racerB.cookie)),
+    ]);
+    const [bodyA, bodyB] = await Promise.all([responseA.json(), responseB.json()]);
+
+    const statuses = [responseA.status, responseB.status].sort();
+    expect(statuses).toEqual([201, 409]);
+
+    const [winnerBody, loserBody] =
+      responseA.status === 201 ? [bodyA, bodyB] : [bodyB, bodyA];
+    expect(winnerBody.success).toBe(true);
+    expect(loserBody.success).toBe(false);
+
+    const inventory = await prisma.inventory.findUnique({ where: { productId: product.id } });
+    expect(inventory?.stock).toBe(0);
+
+    const orders = await prisma.order.findMany({
+      where: { items: { some: { productId: product.id } } },
+    });
+    expect(orders).toHaveLength(1);
   });
 });
