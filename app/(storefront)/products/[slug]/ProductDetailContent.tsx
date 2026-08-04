@@ -37,6 +37,9 @@ export function ProductDetailContent({ product, related, breadcrumbItems }: Prod
   const hydrateWishlist = useWishlistStore((state) => state.hydrate);
   const addCartItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
+  // `isWishlisted` itself is a stable function reference, so this component also has to
+  // subscribe to `items` directly — otherwise it never re-renders when the wishlist changes.
+  useWishlistStore((state) => state.items);
   const isWishlisted = useWishlistStore((state) => state.isWishlisted);
 
   useEffect(() => {

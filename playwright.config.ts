@@ -35,12 +35,15 @@ export default defineConfig({
         storageState: "e2e/.auth/admin.json",
       },
       dependencies: ["setup"],
-      testIgnore: /login\.spec\.ts/,
+      testIgnore: [/login\.spec\.ts/, /storefront[\\/].*\.spec\.ts/],
     },
     {
       name: "chromium-unauthenticated",
       use: { ...devices["Desktop Chrome"], channel: "chrome" },
-      testMatch: /login\.spec\.ts/,
+      // login.spec.ts covers admin login; storefront specs manage their own customer
+      // sessions (sign up / log in within the test), so neither should start with the
+      // admin storageState from the "setup" project.
+      testMatch: [/login\.spec\.ts/, /storefront[\\/].*\.spec\.ts/],
     },
   ],
 });
