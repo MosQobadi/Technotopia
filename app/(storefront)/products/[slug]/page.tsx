@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
   const { product } = result;
 
   return {
-    title: `${product.name} | Technotopia`,
+    title: product.name,
     description: product.shortDescription,
     openGraph: {
       title: product.name,

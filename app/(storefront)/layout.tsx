@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { StorefrontChrome } from "@/components/storefront/StorefrontChrome";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Technotopia — Cameras, Microphones, Lights & Speakers",
+    template: "%s | Technotopia",
+  },
+  description:
+    "Cameras, microphones, lights and speakers for people who make things worth watching.",
+};
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
