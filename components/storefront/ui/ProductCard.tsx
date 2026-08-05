@@ -1,5 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { Button } from "./Button";
 import { PriceTag } from "./PriceTag";
@@ -42,6 +43,8 @@ export function ProductCard({
   onRemove,
   onAddToCart,
 }: ProductCardProps) {
+  const t = useTranslations("common");
+
   return (
     <div className="bg-surface-100 group overflow-hidden rounded-[20px] transition-transform duration-150 hover:-translate-y-1">
       <div className="bg-surface-200 relative aspect-square">
@@ -55,7 +58,7 @@ export function ProductCard({
         {badge && (
           <span
             className={cn(
-              "absolute top-3 left-3 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold",
+              "absolute start-3 top-3 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold",
               badgeClasses(badge),
             )}
           >
@@ -67,9 +70,9 @@ export function ProductCard({
             variant="icon-circle"
             iconSize="sm"
             iconTone="white"
-            aria-label="Remove from wishlist"
+            aria-label={t("removeFromWishlist")}
             onClick={onRemove}
-            className="absolute top-2.5 right-2.5 text-error"
+            className="text-error absolute end-2.5 top-2.5"
           >
             ✕
           </Button>
@@ -78,22 +81,24 @@ export function ProductCard({
             variant="icon-circle"
             iconSize="sm"
             iconTone="white"
-            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            aria-label={isWishlisted ? t("removeFromWishlist") : t("addToWishlist")}
             onClick={onToggleWishlist}
-            className="absolute top-2.5 right-2.5 hover:text-error"
+            className="hover:text-error absolute end-2.5 top-2.5"
           >
             {isWishlisted ? "♥" : "♡"}
           </Button>
         )}
       </div>
       <div className="flex flex-col gap-1.5 p-5">
-        <span className="text-accent font-mono text-[11px] tracking-wide uppercase">{category}</span>
-        <Link href={href} className="text-[17px] font-bold tracking-tight text-ink-900">
+        <span className="text-accent font-mono text-[11px] tracking-wide uppercase">
+          {category}
+        </span>
+        <Link href={href} className="text-ink-900 text-[17px] font-bold tracking-tight">
           {name}
         </Link>
         <PriceTag price={price} originalPrice={originalPrice} size="sm" className="mb-1" />
         <Button variant="primary" fullWidth onClick={onAddToCart}>
-          Add to Cart
+          {t("addToCart")}
         </Button>
       </div>
     </div>

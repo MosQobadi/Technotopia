@@ -1,7 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { usePathname } from "next/navigation";
+// Locale-aware: strips any "/fa" prefix before returning the pathname, so
+// the prefix matching below doesn't need to special-case locale-prefixed
+// routes (e.g. "/fa/login" reports as "/login", same as English).
+import { usePathname } from "@/i18n/navigation";
 import { Footer } from "./Footer";
 import { MinimalHeader } from "./MinimalHeader";
 import { Navbar } from "./Navbar";

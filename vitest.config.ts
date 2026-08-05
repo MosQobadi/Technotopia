@@ -11,10 +11,21 @@ export default defineConfig({
     // e2e/*.spec.ts are Playwright tests, not Vitest's — Vitest's default glob otherwise
     // picks them up too since both runners treat `.spec.ts` as a test file.
     exclude: [...configDefaults.exclude, "e2e/**"],
+    server: {
+      deps: {
+        // next-intl's middleware imports "next/server" from its own pnpm-isolated
+        // copy of `next`; left externalized (Vitest's default), Node's native ESM
+        // resolver fails on that extensionless subpath (works fine under Next's
+        // own bundler at runtime). Routing it through Vite's transform pipeline
+        // instead lets the "next/server" alias below apply.
+        inline: [/next-intl/],
+      },
+    },
   },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL(".", import.meta.url)),
+      "next/server": fileURLToPath(new URL("./node_modules/next/server.js", import.meta.url)),
     },
   },
 });

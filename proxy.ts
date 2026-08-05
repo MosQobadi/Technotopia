@@ -1,8 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
+import createMiddleware from "next-intl/middleware";
 import { verifyToken, getCookieName } from "@/lib/auth";
 import { Role } from "@/lib/generated/prisma/enums";
+import { routing } from "@/i18n/routing";
 
-export async function proxy(request: NextRequest) {
+const intlMiddleware = createMiddleware(routing);
+
+async function adminGuard(request: NextRequest) {
   if (request.nextUrl.pathname === "/admin/login") {
     return NextResponse.next();
   }
@@ -19,6 +23,18 @@ export async function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
+export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    return adminGuard(request);
+  }
+
+  // Everything else (storefront + dev-preview routes): next-intl's own
+  // locale routing ("as-needed" — "/" stays English, "/fa" is Farsi). The
+  // resolved locale reaches app/[locale]/layout.tsx via the route param
+  // next-intl rewrites onto the request, so no header-passing is needed here.
+  return intlMiddleware(request);
+}
+
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/((?!api|_next|.*\\..*).*)"],
 };
