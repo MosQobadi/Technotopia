@@ -192,7 +192,7 @@ export function DataTable<T extends { id: string }>({
         </Table.ScrollContainer>
       </Table.Root>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Pagination.Summary className="text-muted text-sm">
           {total === 0 ? "0 results" : `${rangeStart}-${rangeEnd} of ${total}`}
         </Pagination.Summary>
