@@ -3,6 +3,11 @@ import { SITE_URL } from "@/lib/seo";
 import { listActiveCategorySlugs } from "@/server/category.service";
 import { listActiveProductSlugs } from "@/server/storefront-product.service";
 
+// Reads from the database, so it must be generated per-request rather than
+// prerendered at build time — the build environment isn't guaranteed to have
+// the same DB access as runtime (see Vercel build failure, 2026-08-05).
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, categories] = await Promise.all([
     listActiveProductSlugs(),
