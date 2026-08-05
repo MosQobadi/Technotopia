@@ -1,0 +1,251 @@
+{
+  "meta": {
+    "siteName": "Technotopia",
+    "home": {
+      "title": "Cameras, Microphones, Lights & Speakers",
+      "description": "Shop cameras, microphones, lights and speakers for people who make things worth watching."
+    },
+    "products": {
+      "allTitle": "Shop All Products",
+      "allDescription": "Browse the full Technotopia catalog of cameras, microphones, lights and speakers.",
+      "categoryDescription": "Shop {category} at Technotopia."
+    },
+    "cart": {
+      "title": "Your Cart",
+      "description": "Review the items in your Technotopia cart before checkout."
+    },
+    "checkout": {
+      "title": "Checkout",
+      "description": "Complete your Technotopia order — shipping address and payment."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "categories": "Categories",
+    "searchScope": "Search scope",
+    "searchScopeOptions": {
+      "all": "All",
+      "products": "Products",
+      "categories": "Categories",
+      "brands": "Brands"
+    },
+    "searchPlaceholder": "Search microphones, cameras, lights…",
+    "search": "Search",
+    "wishlist": "Wishlist",
+    "cart": "Cart",
+    "account": "Account",
+    "language": "Language",
+    "switchToEnglish": "Switch to English",
+    "switchToFarsi": "Switch to Persian"
+  },
+  "footer": {
+    "tagline": "Cameras, microphones, lights and speakers for people who make things worth watching.",
+    "shopHeading": "Shop",
+    "supportHeading": "Support",
+    "trackOrder": "Track an order",
+    "returns": "Returns & warranty",
+    "shippingInfo": "Shipping info",
+    "visitHeading": "Visit",
+    "addressLine1": "No. 00, Placeholder St.",
+    "addressLine2": "Tehran, Iran",
+    "addressLine3": "Postal code 00000",
+    "copyright": "© {year} Technotopia. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "categories": {
+      "cameras": "Cameras",
+      "microphones": "Microphones",
+      "lights": "Lights",
+      "speakers": "Speakers",
+      "accessories": "Accessories"
+    }
+  },
+  "auth": {
+    "loginTab": "Log In",
+    "signupTab": "Sign Up",
+    "login": {
+      "heading": "Welcome back",
+      "subheading": "Log in to your Technotopia account",
+      "emailOrPhone": "Email or Phone",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Login",
+      "submitting": "Logging in...",
+      "errorDefault": "Invalid email/phone or password."
+    },
+    "signup": {
+      "heading": "Create your account",
+      "subheading": "Shop faster, track orders, save favorites",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Mostafa Qobadi",
+      "email": "Email",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+98 912 000 00 00",
+      "password": "Password",
+      "submit": "Create Account",
+      "submitting": "Creating account...",
+      "errorDefault": "Could not create your account.",
+      "agreement": "By signing up, you agree to Technotopia's <terms>Terms</terms> and <privacy>Privacy Policy</privacy>."
+    }
+  },
+  "common": {
+    "home": "Home",
+    "breadcrumb": "Breadcrumb",
+    "logIn": "Log In",
+    "browseProducts": "Browse products",
+    "addToCart": "Add to Cart",
+    "addToWishlist": "Add to wishlist",
+    "removeFromWishlist": "Remove from wishlist",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free": "Free",
+    "total": "Total",
+    "orderSummary": "Order Summary",
+    "sort": {
+      "mostSold": "Most Sold",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "newest": "Newest"
+    },
+    "stockStatus": {
+      "inStock": "In Stock",
+      "lowStock": "Low Stock",
+      "outOfStock": "Out of Stock"
+    },
+    "orderStatus": {
+      "PENDING": "Order Placed",
+      "SENDING": "Processing",
+      "SENT": "Shipped",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "cart": {
+    "title": "Your Cart",
+    "loggedOut": "Log in to view your cart.",
+    "empty": "Your cart is empty.",
+    "removeItem": "Remove item",
+    "checkout": "Checkout →"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "loggedOut": "Log in to checkout.",
+    "empty": "Your cart is empty.",
+    "shippingAddress": "Shipping address",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Full name",
+    "phone": "Phone number",
+    "phonePlaceholder": "Phone number",
+    "streetAddress": "Street address",
+    "streetAddressPlaceholder": "Street address",
+    "city": "City",
+    "postalCode": "Postal code",
+    "paymentMethod": "Payment method",
+    "paymentMethodCard": "Credit / debit card",
+    "paymentMethodBankTransfer": "Bank transfer",
+    "placeOrder": "Place Order",
+    "placingOrder": "Placing order...",
+    "errorDefault": "Could not place your order."
+  },
+  "account": {
+    "title": "My Account",
+    "loggedOut": "Log in to view your account.",
+    "tabs": {
+      "profile": "Profile",
+      "orders": "Order History",
+      "addresses": "Addresses"
+    },
+    "profile": {
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "saved": "Changes saved.",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "errorDefault": "Could not save your changes."
+    },
+    "orders": {
+      "empty": "You haven't placed any orders yet."
+    },
+    "addresses": {
+      "empty": "You haven't saved any addresses yet.",
+      "fullName": "Full name",
+      "phone": "Phone",
+      "streetAddress": "Street address",
+      "city": "City",
+      "postalCode": "Postal code",
+      "save": "Save address",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "add": "+ Add address",
+      "errorDefault": "Could not add this address."
+    }
+  },
+  "wishlist": {
+    "title": "Your Wishlist",
+    "loggedOut": "Log in to view your wishlist.",
+    "empty": "You haven't saved anything yet."
+  },
+  "products": {
+    "all": "All",
+    "productsCount": "{count, plural, one {# product} other {# products}}",
+    "sortBy": "Sort by",
+    "noMatch": "No products match these filters.",
+    "filters": {
+      "category": "Category",
+      "brand": "Brand",
+      "priceRange": "Price range",
+      "upTo": "Up to {price}",
+      "maxPrice": "Maximum price",
+      "status": "Status"
+    }
+  },
+  "productDetail": {
+    "subtotal": "Subtotal: {price}",
+    "description": "Description",
+    "relatedEyebrow": "Related",
+    "relatedHeading": "Pairs well with this."
+  },
+  "home": {
+    "hero": {
+      "previousSlide": "Previous slide",
+      "nextSlide": "Next slide",
+      "goToSlide": "Go to slide {number}"
+    },
+    "stars": {
+      "eyebrow": "The Stars",
+      "heading": "Gear that gets all the attention.",
+      "showMore": "Show More",
+      "showLess": "Show Less"
+    },
+    "bestSellers": {
+      "eyebrow": "Best Sellers",
+      "heading": "Gear people actually buy twice.",
+      "brand": "Brand",
+      "sortBy": "Sort by",
+      "noMatch": "No products match these filters.",
+      "soldBadge": "#{rank} SOLD"
+    }
+  },
+  "orders": {
+    "confirmation": {
+      "heading": "Order confirmed",
+      "message": "Thanks — we've received your order and will start preparing it right away. A confirmation has been sent to your account.",
+      "orderNumber": "Order number",
+      "estimatedDelivery": "Estimated delivery",
+      "estimatedDeliveryValue": "3–5 business days",
+      "totalPaid": "Total paid",
+      "trackOrder": "Track order",
+      "continueShopping": "Continue shopping"
+    },
+    "tracking": {
+      "heading": "Track your order",
+      "placed": "Placed {date}",
+      "cancelled": "This order was cancelled.",
+      "orderPlaced": "Order placed",
+      "statusUpdated": "Status updated to {status}"
+    }
+  }
+}

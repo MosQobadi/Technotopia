@@ -6,6 +6,23 @@ export interface BreadcrumbTrailItem {
   href?: string;
 }
 
+/**
+ * hreflang alternates for a storefront path, matching the "as-needed" locale
+ * routing in i18n/routing.ts (English unprefixed at "/", Farsi under "/fa").
+ * `pathname` is locale-free, e.g. "/products" or "/products/some-slug".
+ */
+export function localeAlternates(pathname: string) {
+  const canonicalPath = pathname === "/" ? "" : pathname;
+  return {
+    canonical: `${SITE_URL}${canonicalPath}`,
+    languages: {
+      en: `${SITE_URL}${canonicalPath}`,
+      fa: `${SITE_URL}/fa${canonicalPath}`,
+      "x-default": `${SITE_URL}${canonicalPath}`,
+    },
+  };
+}
+
 export function breadcrumbJsonLd(items: BreadcrumbTrailItem[]) {
   return {
     "@context": "https://schema.org",

@@ -72,3 +72,13 @@ body {
   font-weight: 800;
   letter-spacing: -0.02em;
 }
+
+/* Farsi (RTL) — Plus Jakarta Sans/IBM Plex Mono don't cover Persian glyphs,
+   so swap in Vazirmatn (loaded unconditionally in the storefront layout,
+   see app/[locale]/(storefront)/layout.tsx). `dir` lives on <html>, set by
+   app/[locale]/layout.tsx from the locale route param — hence the ancestor
+   combinator rather than a compound selector. */
+html[dir="rtl"] [data-scope="storefront"] {
+  --font-sans: var(--font-vazirmatn);
+  --font-mono: var(--font-vazirmatn);
+}

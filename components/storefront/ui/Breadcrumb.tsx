@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 
 interface BreadcrumbItem {
@@ -12,12 +13,14 @@ interface BreadcrumbProps {
 }
 
 export function Breadcrumb({ items, className }: BreadcrumbProps) {
+  const t = useTranslations("common");
+
   return (
-    <nav aria-label="Breadcrumb" className={cn("text-[13px] text-gray-500", className)}>
+    <nav aria-label={t("breadcrumb")} className={cn("text-[13px] text-gray-500", className)}>
       {items.map((item, index) => (
         <span key={item.label}>
           {item.href ? (
-            <Link href={item.href} className="text-gray-500 hover:text-ink-900">
+            <Link href={item.href} className="hover:text-ink-900 text-gray-500">
               {item.label}
             </Link>
           ) : (

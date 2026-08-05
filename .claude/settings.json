@@ -3,7 +3,20 @@
     "allow": [
       "Bash(pnpm lint *)",
       "Bash(pnpm test *)",
-      "Bash(pnpm build *)"
+      "Bash(pnpm build *)",
+      "Bash(pnpm add *)",
+      "Bash(cp -r app/dev-preview \"app/\\(dev\\)/dev-preview\")",
+      "Bash(cp -r app/storefront-dev-preview \"app/\\(dev\\)/storefront-dev-preview\")",
+      "Bash(timeout 300 pnpm test:e2e --grep \"storefront\")",
+      "Bash(timeout 300 pnpm test:e2e --grep-invert \"storefront\")",
+      "Bash(curl -s http://localhost:3000/fa/products)",
+      "Bash(curl -s http://localhost:3000/products)",
+      "Bash(curl -s http://localhost:3000/robots.txt)",
+      "Bash(taskkill //F //PID 14252)",
+      "Bash(pnpm format:check)",
+      "Bash(curl -s http://localhost:3004/admin/content/banners -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Read(//c/Users/Victus/Desktop/Code/technotopia/**)",
+      "Bash(powershell -c \"\\(Get-Item prisma\\\\\\\\seed.ts\\).LastWriteTime\")"
     ]
   }
 }

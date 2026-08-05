@@ -1,0 +1,251 @@
+{
+  "meta": {
+    "siteName": "تکنوتوپیا",
+    "home": {
+      "title": "دوربین، میکروفون، نور و بلندگو",
+      "description": "دوربین، میکروفون، نور و بلندگو برای افرادی که چیزهای دیدنی می‌سازند."
+    },
+    "products": {
+      "allTitle": "همه محصولات",
+      "allDescription": "کاتالوگ کامل تکنوتوپیا از دوربین، میکروفون، نور و بلندگو را مرور کنید.",
+      "categoryDescription": "{category} را در تکنوتوپیا بخرید."
+    },
+    "cart": {
+      "title": "سبد خرید شما",
+      "description": "پیش از پرداخت، اقلام سبد خرید تکنوتوپیای خود را بررسی کنید."
+    },
+    "checkout": {
+      "title": "تسویه حساب",
+      "description": "سفارش تکنوتوپیای خود را کامل کنید — آدرس ارسال و پرداخت."
+    }
+  },
+  "nav": {
+    "home": "خانه",
+    "shop": "فروشگاه",
+    "categories": "دسته‌بندی‌ها",
+    "searchScope": "محدوده جستجو",
+    "searchScopeOptions": {
+      "all": "همه",
+      "products": "محصولات",
+      "categories": "دسته‌بندی‌ها",
+      "brands": "برندها"
+    },
+    "searchPlaceholder": "جستجوی میکروفون، دوربین، نور…",
+    "search": "جستجو",
+    "wishlist": "علاقه‌مندی‌ها",
+    "cart": "سبد خرید",
+    "account": "حساب کاربری",
+    "language": "زبان",
+    "switchToEnglish": "تغییر به انگلیسی",
+    "switchToFarsi": "تغییر به فارسی"
+  },
+  "footer": {
+    "tagline": "دوربین، میکروفون، نور و بلندگو برای افرادی که چیزهای دیدنی می‌سازند.",
+    "shopHeading": "فروشگاه",
+    "supportHeading": "پشتیبانی",
+    "trackOrder": "پیگیری سفارش",
+    "returns": "بازگشت کالا و گارانتی",
+    "shippingInfo": "اطلاعات ارسال",
+    "visitHeading": "بازدید",
+    "addressLine1": "خیابان نمونه، پلاک ۰۰",
+    "addressLine2": "تهران، ایران",
+    "addressLine3": "کد پستی ۰۰۰۰۰",
+    "copyright": "© {year} تکنوتوپیا. تمامی حقوق محفوظ است.",
+    "privacy": "حریم خصوصی",
+    "terms": "قوانین",
+    "categories": {
+      "cameras": "دوربین‌ها",
+      "microphones": "میکروفون‌ها",
+      "lights": "نورها",
+      "speakers": "بلندگوها",
+      "accessories": "لوازم جانبی"
+    }
+  },
+  "auth": {
+    "loginTab": "ورود",
+    "signupTab": "ثبت‌نام",
+    "login": {
+      "heading": "خوش برگشتید",
+      "subheading": "به حساب تکنوتوپیای خود وارد شوید",
+      "emailOrPhone": "ایمیل یا شماره تلفن",
+      "emailPlaceholder": "you@example.com",
+      "password": "رمز عبور",
+      "forgotPassword": "رمز عبور را فراموش کرده‌اید؟",
+      "submit": "ورود",
+      "submitting": "در حال ورود...",
+      "errorDefault": "ایمیل/شماره تلفن یا رمز عبور نامعتبر است."
+    },
+    "signup": {
+      "heading": "حساب خود را بسازید",
+      "subheading": "سریع‌تر خرید کنید، سفارش‌ها را پیگیری کنید، علاقه‌مندی‌ها را ذخیره کنید",
+      "fullName": "نام و نام خانوادگی",
+      "fullNamePlaceholder": "مصطفی قبادی",
+      "email": "ایمیل",
+      "phone": "شماره تلفن",
+      "phonePlaceholder": "0912 000 00 00 98+",
+      "password": "رمز عبور",
+      "submit": "ساخت حساب کاربری",
+      "submitting": "در حال ساخت حساب...",
+      "errorDefault": "امکان ساخت حساب کاربری وجود نداشت.",
+      "agreement": "با ثبت‌نام، شما <terms>قوانین</terms> و <privacy>سیاست حریم خصوصی</privacy> تکنوتوپیا را می‌پذیرید."
+    }
+  },
+  "common": {
+    "home": "خانه",
+    "breadcrumb": "مسیر ناوبری",
+    "logIn": "ورود",
+    "browseProducts": "مشاهده محصولات",
+    "addToCart": "افزودن به سبد خرید",
+    "addToWishlist": "افزودن به علاقه‌مندی‌ها",
+    "removeFromWishlist": "حذف از علاقه‌مندی‌ها",
+    "subtotal": "جمع جزء",
+    "shipping": "هزینه ارسال",
+    "free": "رایگان",
+    "total": "جمع کل",
+    "orderSummary": "خلاصه سفارش",
+    "sort": {
+      "mostSold": "پرفروش‌ترین",
+      "priceAsc": "قیمت: کم به زیاد",
+      "priceDesc": "قیمت: زیاد به کم",
+      "newest": "جدیدترین"
+    },
+    "stockStatus": {
+      "inStock": "موجود",
+      "lowStock": "موجودی کم",
+      "outOfStock": "ناموجود"
+    },
+    "orderStatus": {
+      "PENDING": "ثبت شده",
+      "SENDING": "در حال پردازش",
+      "SENT": "ارسال شده",
+      "DELIVERED": "تحویل شده",
+      "CANCELLED": "لغو شده"
+    }
+  },
+  "cart": {
+    "title": "سبد خرید شما",
+    "loggedOut": "برای مشاهده سبد خرید خود وارد شوید.",
+    "empty": "سبد خرید شما خالی است.",
+    "removeItem": "حذف کالا",
+    "checkout": "تسویه حساب ←"
+  },
+  "checkout": {
+    "title": "تسویه حساب",
+    "loggedOut": "برای تسویه حساب وارد شوید.",
+    "empty": "سبد خرید شما خالی است.",
+    "shippingAddress": "آدرس ارسال",
+    "fullName": "نام و نام خانوادگی",
+    "fullNamePlaceholder": "نام و نام خانوادگی",
+    "phone": "شماره تلفن",
+    "phonePlaceholder": "شماره تلفن",
+    "streetAddress": "آدرس دقیق",
+    "streetAddressPlaceholder": "آدرس دقیق",
+    "city": "شهر",
+    "postalCode": "کد پستی",
+    "paymentMethod": "روش پرداخت",
+    "paymentMethodCard": "کارت بانکی",
+    "paymentMethodBankTransfer": "انتقال بانکی",
+    "placeOrder": "ثبت سفارش",
+    "placingOrder": "در حال ثبت سفارش...",
+    "errorDefault": "امکان ثبت سفارش وجود نداشت."
+  },
+  "account": {
+    "title": "حساب کاربری من",
+    "loggedOut": "برای مشاهده حساب کاربری خود وارد شوید.",
+    "tabs": {
+      "profile": "پروفایل",
+      "orders": "تاریخچه سفارش‌ها",
+      "addresses": "آدرس‌ها"
+    },
+    "profile": {
+      "fullName": "نام و نام خانوادگی",
+      "email": "ایمیل",
+      "phone": "تلفن",
+      "saved": "تغییرات ذخیره شد.",
+      "save": "ذخیره تغییرات",
+      "saving": "در حال ذخیره...",
+      "errorDefault": "امکان ذخیره تغییرات وجود نداشت."
+    },
+    "orders": {
+      "empty": "هنوز سفارشی ثبت نکرده‌اید."
+    },
+    "addresses": {
+      "empty": "هنوز آدرسی ذخیره نکرده‌اید.",
+      "fullName": "نام و نام خانوادگی",
+      "phone": "تلفن",
+      "streetAddress": "آدرس دقیق",
+      "city": "شهر",
+      "postalCode": "کد پستی",
+      "save": "ذخیره آدرس",
+      "saving": "در حال ذخیره...",
+      "cancel": "لغو",
+      "add": "+ افزودن آدرس",
+      "errorDefault": "امکان افزودن این آدرس وجود نداشت."
+    }
+  },
+  "wishlist": {
+    "title": "علاقه‌مندی‌های شما",
+    "loggedOut": "برای مشاهده علاقه‌مندی‌های خود وارد شوید.",
+    "empty": "هنوز چیزی ذخیره نکرده‌اید."
+  },
+  "products": {
+    "all": "همه",
+    "productsCount": "{count, plural, one {# محصول} other {# محصول}}",
+    "sortBy": "مرتب‌سازی بر اساس",
+    "noMatch": "هیچ محصولی با این فیلترها مطابقت ندارد.",
+    "filters": {
+      "category": "دسته‌بندی",
+      "brand": "برند",
+      "priceRange": "محدوده قیمت",
+      "upTo": "تا {price}",
+      "maxPrice": "حداکثر قیمت",
+      "status": "وضعیت"
+    }
+  },
+  "productDetail": {
+    "subtotal": "جمع جزء: {price}",
+    "description": "توضیحات",
+    "relatedEyebrow": "مرتبط",
+    "relatedHeading": "این محصولات هم به کارتان می‌آیند."
+  },
+  "home": {
+    "hero": {
+      "previousSlide": "اسلاید قبلی",
+      "nextSlide": "اسلاید بعدی",
+      "goToSlide": "رفتن به اسلاید {number}"
+    },
+    "stars": {
+      "eyebrow": "پرطرفدارها",
+      "heading": "کالاهایی که همه توجه‌ها را جلب می‌کنند.",
+      "showMore": "نمایش بیشتر",
+      "showLess": "نمایش کمتر"
+    },
+    "bestSellers": {
+      "eyebrow": "پرفروش‌ترین‌ها",
+      "heading": "کالاهایی که مردم واقعاً دوباره می‌خرند.",
+      "brand": "برند",
+      "sortBy": "مرتب‌سازی بر اساس",
+      "noMatch": "هیچ محصولی با این فیلترها مطابقت ندارد.",
+      "soldBadge": "#{rank} فروش"
+    }
+  },
+  "orders": {
+    "confirmation": {
+      "heading": "سفارش تایید شد",
+      "message": "متشکریم — سفارش شما دریافت شد و بلافاصله آماده‌سازی آن را آغاز می‌کنیم. تاییدیه‌ای به حساب شما ارسال شده است.",
+      "orderNumber": "شماره سفارش",
+      "estimatedDelivery": "زمان تحویل تخمینی",
+      "estimatedDeliveryValue": "۳ تا ۵ روز کاری",
+      "totalPaid": "مبلغ پرداخت‌شده",
+      "trackOrder": "پیگیری سفارش",
+      "continueShopping": "ادامه خرید"
+    },
+    "tracking": {
+      "heading": "پیگیری سفارش شما",
+      "placed": "ثبت شده در {date}",
+      "cancelled": "این سفارش لغو شده است.",
+      "orderPlaced": "سفارش ثبت شد",
+      "statusUpdated": "وضعیت به «{status}» تغییر کرد"
+    }
+  }
+}
