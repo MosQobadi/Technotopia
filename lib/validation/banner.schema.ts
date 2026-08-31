@@ -1,10 +1,20 @@
 import { z } from "zod";
 import { paginationQuerySchema, statusSchema } from "./common";
 
+/**
+ * Banner images have to come from the upload endpoint, which always writes to
+ * `public/uploads` and returns a root-relative `/uploads/<file>` path. Absolute
+ * URLs are rejected: the storefront renders banners with `next/image`, which
+ * throws on any host not allow-listed in `next.config.ts` — taking the whole
+ * home page down.
+ */
 const requiredImageSchema = z
   .string()
   .min(1, "Image is required")
-  .regex(/^(https?:\/\/|\/)/, "Image must be a valid URL");
+  .regex(
+    /^\/uploads\//,
+    "Image must be uploaded through the admin panel, not linked from an external URL",
+  );
 
 const linkSchema = z
   .string()

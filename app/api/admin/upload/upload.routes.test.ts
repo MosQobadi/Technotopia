@@ -1,15 +1,12 @@
 import { existsSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import path from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { getCookieName, signToken } from "@/lib/auth";
 import { Role } from "@/lib/generated/prisma/enums";
 
-const { putMock } = vi.hoisted(() => ({ putMock: vi.fn() }));
-vi.mock("@vercel/blob", () => ({ put: putMock }));
-
-const { POST: upload } = await import("./route");
+import { POST as upload } from "./route";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
@@ -44,8 +41,6 @@ describe("POST /api/admin/upload", () => {
       await rm(path.join(UPLOAD_DIR, writtenFilename), { force: true });
       writtenFilename = null;
     }
-    delete process.env.VERCEL;
-    putMock.mockReset();
   });
 
   it("requires authentication", async () => {
@@ -98,34 +93,5 @@ describe("POST /api/admin/upload", () => {
 
     writtenFilename = path.basename(body.data.url);
     expect(existsSync(path.join(UPLOAD_DIR, writtenFilename))).toBe(true);
-  });
-
-  it("uploads to Vercel Blob instead of disk when running on Vercel", async () => {
-    process.env.VERCEL = "1";
-    putMock.mockResolvedValue({ url: "https://example.public.blob.vercel-storage.com/uploads/test.png" });
-
-    const adminCookie = await signToken({ userId: "upload-admin", role: Role.ADMIN });
-    const formData = new FormData();
-    formData.set("file", imageFile(10));
-    const response = await upload(req({ formData, cookie: adminCookie }));
-    const body = await response.json();
-
-    expect(response.status).toBe(201);
-    expect(body.data.url).toBe("https://example.public.blob.vercel-storage.com/uploads/test.png");
-    expect(putMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("returns a 500 with a clean error when the blob upload fails", async () => {
-    process.env.VERCEL = "1";
-    putMock.mockRejectedValue(new Error("network error"));
-
-    const adminCookie = await signToken({ userId: "upload-admin", role: Role.ADMIN });
-    const formData = new FormData();
-    formData.set("file", imageFile(10));
-    const response = await upload(req({ formData, cookie: adminCookie }));
-    const body = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(body.success).toBe(false);
   });
 });

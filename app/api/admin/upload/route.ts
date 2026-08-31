@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { put } from "@vercel/blob";
 import { NextResponse, type NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 
@@ -85,34 +84,21 @@ export async function POST(request: NextRequest) {
   const filename = `${randomUUID()}.${extension}`;
 
   try {
-    const url = await storeUpload(filename, buffer, file.type);
-    return NextResponse.json({ success: true, data: { url } }, { status: 201 });
+    // `public/uploads` is a persistent volume on the Docker/Nginx VPS from
+    // DEPLOYMENT.md, so uploads always go to local disk. Hosts with a read-only
+    // filesystem (e.g. Vercel serverless) are not a supported upload target.
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(path.join(uploadDir, filename), buffer);
+
+    return NextResponse.json(
+      { success: true, data: { url: `/uploads/${filename}` } },
+      { status: 201 },
+    );
   } catch {
     return NextResponse.json(
       { success: false, error: "Upload failed. Please try again." },
       { status: 500 },
     );
   }
-}
-
-/**
- * The real deployment target is the Docker/Nginx VPS from DEPLOYMENT.md, where
- * `public/uploads` is a persistent volume — so local disk is the normal path.
- * Vercel is only used for preview builds here, and its serverless functions have
- * a read-only filesystem, so previews fall back to Vercel Blob instead.
- */
-async function storeUpload(filename: string, buffer: Buffer, contentType: string) {
-  if (process.env.VERCEL) {
-    const blob = await put(`uploads/${filename}`, buffer, {
-      access: "public",
-      contentType,
-      addRandomSuffix: false,
-    });
-    return blob.url;
-  }
-
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, filename), buffer);
-  return `/uploads/${filename}`;
 }

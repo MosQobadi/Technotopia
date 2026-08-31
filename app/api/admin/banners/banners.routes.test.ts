@@ -100,6 +100,16 @@ describe("POST /api/admin/banners", () => {
     expect(response.status).toBe(400);
   });
 
+  it("rejects an external image URL with a 400", async () => {
+    const response = await create(
+      req("/api/admin/banners", {
+        method: "POST",
+        body: validBannerBody({ image: "https://picsum.photos/seed/x/1200/400" }),
+      }),
+    );
+    expect(response.status).toBe(400);
+  });
+
   it("rejects a missing headline with a 400", async () => {
     const response = await create(
       req("/api/admin/banners", {
