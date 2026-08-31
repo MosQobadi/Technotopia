@@ -121,6 +121,23 @@ describe("POST /api/admin/categories", () => {
     );
     expect(response.status).toBe(400);
   });
+
+  it("rejects an external image URL with a 400", async () => {
+    const response = await create(
+      req("/api/admin/categories", {
+        method: "POST",
+        body: validCategoryBody({ image: "https://cdn.example.com/categories/cameras.jpg" }),
+      }),
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it("accepts an uploaded image path", async () => {
+    const { response, body } = await createCategoryDirect({ image: "/uploads/cameras.jpg" });
+
+    expect(response.status).toBe(201);
+    expect(body.data.image).toBe("/uploads/cameras.jpg");
+  });
 });
 
 describe("GET /api/admin/categories", () => {

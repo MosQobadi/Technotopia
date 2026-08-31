@@ -9,7 +9,7 @@ describe("categoryCreateSchema", () => {
       tags: ["photography", "video"],
       shortDescription: "Digital cameras for every skill level.",
       longDescription: "From entry-level point-and-shoots to professional mirrorless bodies.",
-      image: "https://cdn.example.com/categories/cameras.jpg",
+      image: "/uploads/categories/cameras.jpg",
       status: "ACTIVE",
     });
 

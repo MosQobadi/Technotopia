@@ -118,6 +118,23 @@ describe("POST /api/admin/brands", () => {
     );
     expect(response.status).toBe(400);
   });
+
+  it("rejects an external logo URL with a 400", async () => {
+    const response = await create(
+      req("/api/admin/brands", {
+        method: "POST",
+        body: validBrandBody({ logo: "https://cdn.example.com/brands/nikon.png" }),
+      }),
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it("accepts an uploaded logo path", async () => {
+    const { response, body } = await createBrandDirect({ logo: "/uploads/nikon.png" });
+
+    expect(response.status).toBe(201);
+    expect(body.data.logo).toBe("/uploads/nikon.png");
+  });
 });
 
 describe("GET /api/admin/brands", () => {

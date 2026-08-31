@@ -161,6 +161,23 @@ describe("POST /api/admin/products", () => {
     );
     expect(response.status).toBe(400);
   });
+
+  it("rejects an external image URL with a 400", async () => {
+    const response = await create(
+      req("/api/admin/products", {
+        method: "POST",
+        body: validProductBody({ image: "https://cdn.example.com/products/boya-bym1.jpg" }),
+      }),
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it("accepts an uploaded image path", async () => {
+    const { response, body } = await createProductDirect({ image: "/uploads/boya-bym1.jpg" });
+
+    expect(response.status).toBe(201);
+    expect(body.data.image).toBe("/uploads/boya-bym1.jpg");
+  });
 });
 
 describe("GET /api/admin/products", () => {

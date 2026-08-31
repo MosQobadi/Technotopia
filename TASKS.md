@@ -27,7 +27,7 @@ in any commit up to `cbb97c7`. Outstanding and deferred tasks keep their full pr
 | 22    | My Account              | ✅ done                       |
 | 23    | SEO & performance       | ✅ done                       |
 | 24    | Testing & hardening     | ✅ done                       |
-| 26    | Cleanup & correctness   | ⬜ 26.1 done ← **start here** |
+| 26    | Cleanup & correctness   | ⬜ 26.2 done ← **start here** |
 | 25    | Deployment              | ⏸ deferred — no VPS yet       |
 
 ---
@@ -173,18 +173,21 @@ Do not weaken what the tests actually verify (banner ordering by displayOrder,
 best sellers ordered by salesCount descending).
 ```
 
-### Task 26.2 — Apply uploads-only image validation to the other resources ⬜
+### Task 26.2 — Apply uploads-only image validation to the other resources ✅
 
-`lib/validation/banner.schema.ts` now accepts only a root-relative `/uploads/...` path.
-The shared `imageUrlSchema` in `lib/validation/common.ts` still accepts any absolute URL,
-so Product, Category, and Brand keep the same latent failure: the storefront renders
-those images with `next/image`, which throws on any host not allow-listed in
-`next.config.ts`, taking the page down.
+The uploads-only rule that `banner.schema.ts` carried locally now lives in
+`lib/validation/common.ts` as `uploadedImagePathSchema`, with `imageUrlSchema` as its
+nullable/optional variant. Product.image, Category.image, and Brand.logo pick the rule
+up through `imageUrlSchema`; `banner.schema.ts` imports the shared one instead of
+keeping its own copy, so there is a single definition of what a valid image path is.
 
-No external URLs exist in those tables today, so nothing is currently broken.
+Absolute URLs are now rejected everywhere, closing the latent failure where the
+storefront would render an external image with `next/image` and throw on any host not
+allow-listed in `next.config.ts`. No external URLs existed in those tables, so no data
+migration was needed.
 
 **DoD:** An external image URL is rejected for Product, Category, and Brand; existing
-`/uploads/...` values still pass; admin uploads work unchanged.
+`/uploads/...` values still pass; admin uploads work unchanged. ✅
 
 **Prompt:**
 

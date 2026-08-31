@@ -6,7 +6,7 @@ describe("brandCreateSchema", () => {
     const result = brandCreateSchema.safeParse({
       name: "Sony",
       slug: "sony",
-      logo: "https://cdn.example.com/brands/sony.png",
+      logo: "/uploads/brands/sony.png",
       status: "ACTIVE",
     });
 

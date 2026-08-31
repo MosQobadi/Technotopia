@@ -13,7 +13,7 @@ describe("productCreateSchema", () => {
       tags: ["microphone", "lavalier"],
       shortDescription: "Compact clip-on lavalier microphone.",
       longDescription: "A budget-friendly lavalier microphone with a 20-foot cable.",
-      image: "https://cdn.example.com/products/boya-bym1.jpg",
+      image: "/uploads/products/boya-bym1.jpg",
       status: "ACTIVE",
     });
 
