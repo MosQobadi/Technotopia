@@ -5,6 +5,18 @@ import { getStorefrontProductBySlug } from "@/server/storefront-product.service"
 import { breadcrumbJsonLd, localeAlternates, type BreadcrumbTrailItem } from "@/lib/seo";
 import { ProductDetailContent } from "./ProductDetailContent";
 
+// ISR: product detail is server-rendered from the database and is identical for
+// every visitor, so each slug is generated on first request and re-used for up
+// to 5 minutes. Price/stock edits in the admin surface within that window.
+export const revalidate = 300;
+
+// Empty on purpose: nothing is prerendered at build time (the build host has no
+// guaranteed DB access — see app/sitemap.ts), but declaring the function is what
+// puts this route on the ISR path instead of rendering it fresh on every request.
+export async function generateStaticParams() {
+  return [];
+}
+
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
 }
