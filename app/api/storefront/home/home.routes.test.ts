@@ -55,6 +55,29 @@ async function createProduct(overrides: Record<string, unknown> = {}) {
   });
 }
 
+/**
+ * The home endpoint returns only the first slice of each list, so a database that
+ * already holds rows (a development database, for instance) would otherwise push
+ * this file's fixtures out of the response entirely. These helpers pin the fixtures
+ * to the leading edge of each ordering — strictly ahead of every pre-existing row —
+ * so they are always inside the endpoint's limit and lead the list it returns.
+ */
+async function lowestActiveBannerOrder() {
+  const { _min } = await prisma.banner.aggregate({
+    where: { status: Status.ACTIVE },
+    _min: { displayOrder: true },
+  });
+  return _min.displayOrder ?? 0;
+}
+
+async function highestActiveSalesCount() {
+  const { _max } = await prisma.product.aggregate({
+    where: { status: Status.ACTIVE },
+    _max: { salesCount: true },
+  });
+  return _max.salesCount ?? 0;
+}
+
 describe("GET /api/storefront/home", () => {
   it("requires no authentication", async () => {
     const response = await getHome();
@@ -62,12 +85,15 @@ describe("GET /api/storefront/home", () => {
   });
 
   it("returns up to 3 active banners ordered by displayOrder with tag/headline/subcopy/cta", async () => {
+    const lowestOrder = await lowestActiveBannerOrder();
+
+    // Lowest displayOrder of the three: it would sort first if INACTIVE banners leaked in.
     await prisma.banner.create({
       data: {
         image: "/uploads/banner-inactive.jpg",
         headline: `${PREFIX} Inactive`,
         status: Status.INACTIVE,
-        displayOrder: 0,
+        displayOrder: lowestOrder - 3,
       },
     });
     await prisma.banner.create({
@@ -79,7 +105,7 @@ describe("GET /api/storefront/home", () => {
         ctaLabel: "Shop now",
         link: "/categories/x",
         status: Status.ACTIVE,
-        displayOrder: 2,
+        displayOrder: lowestOrder - 1,
       },
     });
     await prisma.banner.create({
@@ -91,7 +117,7 @@ describe("GET /api/storefront/home", () => {
         ctaLabel: "Shop the kit",
         link: "/categories/y",
         status: Status.ACTIVE,
-        displayOrder: 1,
+        displayOrder: lowestOrder - 2,
       },
     });
 
@@ -100,10 +126,8 @@ describe("GET /api/storefront/home", () => {
 
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
-    const ownBanners = body.data.banners.filter((b: { headline: string }) =>
-      b.headline.startsWith(PREFIX),
-    );
-    expect(ownBanners).toEqual([
+    const banners: Array<{ headline: string }> = body.data.banners;
+    expect(banners.slice(0, 2)).toEqual([
       {
         id: expect.any(String),
         image: "/uploads/banner-a.jpg",
@@ -121,7 +145,8 @@ describe("GET /api/storefront/home", () => {
         cta: { label: "Shop now", href: "/categories/x" },
       },
     ]);
-    expect(body.data.banners.length).toBeLessThanOrEqual(3);
+    expect(banners.some((b) => b.headline === `${PREFIX} Inactive`)).toBe(false);
+    expect(banners.length).toBeLessThanOrEqual(3);
   });
 
   it("returns featured products with discount fields only when discounted", async () => {
@@ -149,13 +174,14 @@ describe("GET /api/storefront/home", () => {
   });
 
   it("returns best sellers ordered by salesCount descending", async () => {
-    const low = await createProduct({ salesCount: 5 });
-    const high = await createProduct({ salesCount: 50 });
+    const highestSales = await highestActiveSalesCount();
+    const low = await createProduct({ salesCount: highestSales + 1 });
+    const high = await createProduct({ salesCount: highestSales + 2 });
 
     const response = await getHome();
     const body = await response.json();
 
     const ids: string[] = body.data.bestSellers.map((p: { id: string }) => p.id);
-    expect(ids.indexOf(high.id)).toBeLessThan(ids.indexOf(low.id));
+    expect(ids.slice(0, 2)).toEqual([high.id, low.id]);
   });
 });

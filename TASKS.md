@@ -14,21 +14,21 @@ in any commit up to `cbb97c7`. Outstanding and deferred tasks keep their full pr
 
 ## Status at a glance
 
-| Phase | Scope                   | Status                          |
-| ----- | ----------------------- | ------------------------------- |
-| 0–14  | Admin panel             | ✅ done                         |
-| 15    | Storefront foundations  | ✅ done                         |
-| 16    | Home page               | ✅ done                         |
-| 17    | Product listing         | ✅ done                         |
-| 18    | Product detail          | ✅ done                         |
-| 19    | Cart & checkout         | ✅ done                         |
-| 20    | Confirmation & tracking | ✅ done                         |
-| 21    | Wishlist page           | ✅ done                         |
-| 22    | My Account              | ✅ done                         |
-| 23    | SEO & performance       | ✅ done                         |
-| 24    | Testing & hardening     | ✅ done                         |
-| 26    | Cleanup & correctness   | ⬜ not started ← **start here** |
-| 25    | Deployment              | ⏸ deferred — no VPS yet         |
+| Phase | Scope                   | Status                        |
+| ----- | ----------------------- | ----------------------------- |
+| 0–14  | Admin panel             | ✅ done                       |
+| 15    | Storefront foundations  | ✅ done                       |
+| 16    | Home page               | ✅ done                       |
+| 17    | Product listing         | ✅ done                       |
+| 18    | Product detail          | ✅ done                       |
+| 19    | Cart & checkout         | ✅ done                       |
+| 20    | Confirmation & tracking | ✅ done                       |
+| 21    | Wishlist page           | ✅ done                       |
+| 22    | My Account              | ✅ done                       |
+| 23    | SEO & performance       | ✅ done                       |
+| 24    | Testing & hardening     | ✅ done                       |
+| 26    | Cleanup & correctness   | ⬜ 26.1 done ← **start here** |
+| 25    | Deployment              | ⏸ deferred — no VPS yet       |
 
 ---
 
@@ -147,14 +147,20 @@ Done outside the task list, after Phase 24:
 
 Items found by auditing the repo, not part of the original plan.
 
-### Task 26.1 — Fix storefront test isolation ⬜
+### Task 26.1 — Fix storefront test isolation ✅
 
-Two tests in `app/api/storefront/home/home.routes.test.ts` currently fail against a
-used development database: the endpoint returns only the top 3 banners by
-`displayOrder` and the top 10 best sellers, and pre-existing rows fill every slot
-before the test's own fixtures appear. The tests assume an empty database.
+Two tests in `app/api/storefront/home/home.routes.test.ts` failed against a used
+development database: the endpoint returns only the top 3 banners by `displayOrder`
+and the top 10 best sellers, and pre-existing rows filled every slot before the
+test's own fixtures appeared. The tests assumed an empty database.
 
-**DoD:** `pnpm test` is green against a database that already contains data.
+Fixed by pinning the fixtures to the leading edge of each ordering — banners below
+the lowest existing active `displayOrder`, best sellers above the highest existing
+`salesCount` — so they always land inside the endpoint's limit. The assertions now
+check that they lead the returned list, which verifies the ordering rather than
+just membership.
+
+**DoD:** `pnpm test` is green against a database that already contains data. ✅
 
 **Prompt:**
 
@@ -192,8 +198,8 @@ URL is rejected and a /uploads/ path is accepted.
 
 The dev database has accumulated test residue: categories and brands named
 `E2E Category ms3fakd2`, `e2e-order-ms3fcb1b Brand`, `Featured Test ms7qf168`, plus
-duplicate banner generations. This is what makes Task 26.1's tests fail, and it makes
-the storefront filter lists unusable for judging real UI.
+duplicate banner generations. It makes the storefront filter lists unusable for
+judging real UI.
 
 **DoD:** Storefront category and brand filters show only real catalog values.
 
