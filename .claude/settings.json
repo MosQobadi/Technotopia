@@ -16,7 +16,9 @@
       "Bash(pnpm format:check)",
       "Bash(curl -s http://localhost:3004/admin/content/banners -o /dev/null -w \"%{http_code}\\\\n\")",
       "Read(//c/Users/Victus/Desktop/Code/technotopia/**)",
-      "Bash(powershell -c \"\\(Get-Item prisma\\\\\\\\seed.ts\\).LastWriteTime\")"
+      "Bash(powershell -c \"\\(Get-Item prisma\\\\\\\\seed.ts\\).LastWriteTime\")",
+      "Bash(vercel env *)",
+      "Bash(pnpm remove *)"
     ]
   }
 }
