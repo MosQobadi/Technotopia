@@ -2,10 +2,11 @@
 
 ## Project
 
-Technotopia — admin panel for an e-commerce platform. Admin area only for now
-(no customer-facing storefront yet). Built wireframe-first: every screen traces
-back to `technotopia-admin-v3.excalidraw`. See `technotopia-claude-code-tasks.md`
-for the phased build order — work through it one task per session, don't jump ahead.
+Technotopia — an e-commerce platform: an admin panel plus a customer-facing
+storefront (EN/FA). Both are built. Built wireframe-first: every screen traces
+back to `technotopia-admin-v3_1.excalidraw`, with storefront design references in
+`design/storefront/`. See `TASKS.md` for the phased build order and current status —
+work through it one task per session, don't jump ahead.
 
 ## Core Principles
 
@@ -207,6 +208,7 @@ don't quietly "improve" scope.
 
 ## Deployment
 
-Out of scope for day-to-day feature tasks. When the project reaches Phase 14 of the
-task list (Docker + Compose + Nginx + Ubuntu VPS), follow `DEPLOYMENT.md` once it
-exists — don't containerize or touch deploy config as a side effect of an unrelated task.
+Out of scope for day-to-day feature tasks. Phase 14 already produced a working
+generic-VPS setup (Dockerfile, compose, nginx, `DEPLOYMENT.md`). Phase 25 — deploying
+to a real host — is **deferred until a server exists**; see `TASKS.md`. Don't
+containerize or touch deploy config as a side effect of an unrelated task.

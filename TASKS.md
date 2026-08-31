@@ -134,10 +134,11 @@ Done outside the task list, after Phase 24:
 - `b3a5498` — basic admin mobile responsiveness (PR #1).
 - `8be37dd` — Farsi (fa) storefront support, SEO-first i18n routing (PR #2).
 - `cbb97c7` — banner/image upload 500 fix on Vercel previews, via Vercel Blob.
-- **Uncommitted** — external upload storage removed entirely. Vercel Blob needed a paid
+- `59ffc14` — external upload storage removed entirely. Vercel Blob needed a paid
   plan and Supabase was ruled out, so `storeUpload`'s `if (process.env.VERCEL)` branch is
   gone: uploads always write to `public/uploads` and return `/uploads/<file>`. Image
-  upload no longer works on Vercel previews — that admin panel is browse-only.
+  upload no longer works on Vercel previews — that admin panel is browse-only. Banner
+  images are now validated as `/uploads/...` paths only.
 
 ---
 
