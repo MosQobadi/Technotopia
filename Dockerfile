@@ -3,6 +3,10 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# `postinstall` runs `prisma generate`, which reads prisma.config.ts and the
+# schema — both must exist before the install or it exits non-zero.
+COPY prisma.config.ts ./prisma.config.ts
+COPY prisma ./prisma
 RUN corepack enable && corepack install
 RUN pnpm install --frozen-lockfile
 
