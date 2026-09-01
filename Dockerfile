@@ -17,6 +17,11 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN corepack install
 RUN pnpm prisma generate
+# `next build` inlines NEXT_PUBLIC_* into the server chunks and the prerendered
+# HTML, so the canonical site URL has to be known here, not at container start.
+# docker-compose.prod.yml passes it from .env.production.
+ARG NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 RUN pnpm build
 
 FROM node:22-alpine AS runner

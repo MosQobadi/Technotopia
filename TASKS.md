@@ -280,8 +280,16 @@ adaptation rather than new work:
 - **25.1** — largely satisfied already. The Dockerfile is multi-stage with a non-root
   `nextjs` user and `EXPOSE 3000`, `.dockerignore` exists, and `output: 'standalone'`
   is set in `next.config.ts`.
+- **25.2** — done. Self-hosted Postgres; the stack was actually run and verified.
 - **25.3** — `nginx.conf` has gzip and the ACME challenge block, but the security
   headers and the whole HTTPS server block are **commented out** pending a real cert.
+  Also fix the upstream while in there: `upstream app { server app:3000; }` resolves
+  once at config load and caches the address forever, so a redeploy that lands `app`
+  on a new IP leaves nginx serving 502 until it's restarted. Reproduced in 25.2 — the
+  address usually gets reused, which makes this an intermittent 502 rather than an
+  obvious one. Fix shape: `resolver 127.0.0.11 valid=10s;` plus a variable
+  `proxy_pass` so nginx re-resolves. DEPLOYMENT.md section 4 carries a
+  `restart nginx` workaround until then.
 
 ### Task 25.1 — Production Dockerfile ⏸
 
@@ -291,14 +299,46 @@ build (pnpm build), runner (standalone output + static + public, non-root user, 
 3000, CMD node server.js). Add .dockerignore.
 ```
 
-### Task 25.2 — docker-compose for the chosen host ⏸
+### Task 25.2 — docker-compose for the chosen host ✅
 
-**DoD:** Decide upfront: self-hosted Postgres container, or a managed database.
+**Decision: self-hosted `postgres:16` in the compose stack, not a managed database.**
+No provider is chosen, so a managed instance would mean writing `DATABASE_URL`, its
+TLS mode and the backup routine against a placeholder; the container runs on any
+generic VPS and is what DEPLOYMENT.md section 7's `pg_dump` routine already assumes.
+The cost is that backups and major-version upgrades are self-run.
+
+Phase 14 had already written the three services, but — as with 25.1 — nobody had run
+them. Doing so turned up three defects:
+
+- **`.env.production` shipped inside the image.** `.dockerignore` excluded `.env` and
+  `.env*.local` but not `.env.production`, and `next build` copies any `.env*` it finds
+  into `.next/standalone`. `DATABASE_URL` and `JWT_SECRET` were readable out of the
+  published image with one `docker run --entrypoint sh`. Now excluded.
+- **The canonical site URL only worked because of that leak.** `next build` inlines
+  `NEXT_PUBLIC_*` into the server chunks, so `NEXT_PUBLIC_SITE_URL` is a build-time
+  value; `env_file` at container start is too late. Removing the leaked file alone
+  would have silently reverted every JSON-LD absolute URL to `http://localhost:3000`.
+  It's a build argument now, passed from `.env.production` — which is also why every
+  compose command in DEPLOYMENT.md gained `--env-file .env.production`.
+- **The dev and prod stacks shared a database volume.** Both compose files live in
+  `technotopia/` and both name their volume `postgres_data`, so both resolved to
+  `technotopia_postgres_data` — the prod stack mounted the dev database, and
+  `--remove-orphans` on one deleted the other's container. The prod file now sets
+  `name: technotopia-prod`.
+
+**Verified** on a rebuilt stack against a fresh volume: postgres reaches `healthy`
+before `app` starts, the entrypoint applies all 10 migrations and only then serves,
+`/en` returns 200, postgres is unreachable from the host, nginx is up on 80/443, the
+`./uploads` bind mount round-trips, and the image no longer contains any `.env` file
+while the built chunks carry the real site URL.
+
+**DoD:** Decide upfront: self-hosted Postgres container, or a managed database. ✅
+
+**Prompt:**
 
 ```
-docker-compose.prod.yml: app service + nginx service. Postgres: [CHOOSE ONE — managed
-database (omit a postgres service, point DATABASE_URL at it), or self-hosted postgres:16
-with a named volume, not exposed publicly]. App service runs `prisma migrate deploy` on
+docker-compose.prod.yml: app service + nginx service. Postgres: self-hosted postgres:16
+with a named volume, not exposed publicly. App service runs `prisma migrate deploy` on
 start before serving traffic.
 ```
 

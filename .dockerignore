@@ -7,8 +7,13 @@ test-results
 playwright-report
 .git
 .gitignore
+# No env file belongs in the build context. `next build` copies whatever .env
+# files it finds into .next/standalone, so a .env.production here would ship
+# DATABASE_URL and JWT_SECRET inside the published image. Build-time values
+# come in as build args instead (see Dockerfile).
 .env
-.env*.local
+.env.*
+!.env.example
 .vscode
 .idea
 npm-debug.log*

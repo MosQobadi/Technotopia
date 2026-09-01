@@ -2,6 +2,14 @@
 
 Deploying Technotopia to an Ubuntu VPS with Docker Compose + nginx + Let's Encrypt.
 
+**Database: self-hosted, not managed.** `docker-compose.prod.yml` runs its own
+`postgres:16` container on a named volume, unpublished, reachable only by the
+`app` container over the internal Docker network. No managed-database provider
+is chosen, and a managed instance would mean writing `DATABASE_URL`, its TLS
+mode and the backup routine against a placeholder. The trade-off is that
+backups and major-version upgrades are yours to run — section 7 covers the
+backup side.
+
 ## 1. Initial VPS setup
 
 Run once per server. Assumes a fresh Ubuntu VPS reachable over SSH as `root`
@@ -70,9 +78,24 @@ defaults matter here:
 - `JWT_SECRET` — generate a strong random value (e.g. `openssl rand -base64
   48`), not the `changeme` placeholder.
 - `NODE_ENV=production`.
+- `NEXT_PUBLIC_SITE_URL` — the real public origin, e.g.
+  `https://your-domain.com`. `next build` inlines every `NEXT_PUBLIC_*` value
+  into the bundle, so this one is read at **build** time, not container start:
+  `docker-compose.prod.yml` passes it to the image as a build argument. Change
+  it and you have to rebuild (`up -d --build`), not just restart. Leave it
+  wrong and the JSON-LD structured data advertises `http://localhost:3000`.
 
 `.env.production` is read by both the `app` and `postgres` services via
 `env_file` in `docker-compose.prod.yml`. Never commit it.
+
+Every `docker compose` command below passes `--env-file .env.production`. It is
+not optional: without it Compose falls back to a `.env` in the directory for
+`${...}` interpolation, so the build argument above would come from the wrong
+file or be missing entirely.
+
+`.env.production` is excluded from the Docker build context (`.dockerignore`) —
+`next build` copies any `.env*` it finds into `.next/standalone`, which would
+put `DATABASE_URL` and `JWT_SECRET` inside the published image.
 
 Also update `nginx.conf`: replace `your-domain.com www.your-domain.com` with
 the real domain in the `server_name` line (both the active HTTP block and the
@@ -85,7 +108,7 @@ Bring the stack up. `nginx.conf` starts with only the HTTP server block
 active, so this serves plain HTTP first:
 
 ```
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
 ```
 
 `app`'s entrypoint (`docker-entrypoint.sh`) runs `prisma migrate deploy`
@@ -106,13 +129,23 @@ For subsequent deploys, from the `technotopia` directory on the VPS:
 
 ```
 git pull
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
 ```
 
 This rebuilds the `app` image and recreates the container; migrations run
 again automatically via the entrypoint (`prisma migrate deploy` is a no-op if
 there's nothing new to apply). `postgres` and `nginx` are untouched unless
 their config changed.
+
+One caveat while the HTTPS server block in `nginx.conf` is still commented
+out (Task 25.3): nginx resolves `app` once, when it loads its config, and
+caches the address. Recreating `app` usually gets the same address back, but
+when it doesn't, nginx serves 502 until it is reloaded. Until 25.3 makes the
+upstream re-resolve, follow a redeploy with:
+
+```
+docker compose --env-file .env.production -f docker-compose.prod.yml restart nginx
+```
 
 This procedure has a brief downtime window while the old `app` container
 stops and the new one starts and passes its migration step. Zero-downtime
@@ -138,7 +171,7 @@ rolling strategy) are a future improvement, not implemented yet.
    certificate exists):
 
    ```
-   docker compose -f docker-compose.prod.yml up -d --build
+   docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
    ```
 
 2. Request a certificate with the official certbot image, using the webroot
@@ -167,7 +200,7 @@ rolling strategy) are a future improvement, not implemented yet.
 4. Reload nginx to pick up the new config and certificate:
 
    ```
-   docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+   docker compose --env-file .env.production -f docker-compose.prod.yml exec nginx nginx -s reload
    ```
 
 The site is now served over HTTPS; plain HTTP requests redirect to it.
@@ -182,7 +215,7 @@ docker run --rm \
   -v "$(pwd)/certbot/www:/var/www/certbot" \
   certbot/certbot renew
 
-docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+docker compose --env-file .env.production -f docker-compose.prod.yml exec nginx nginx -s reload
 ```
 
 Certbot only renews certs within 30 days of expiry, so this is safe to run
@@ -274,14 +307,14 @@ Do this **instead of** section 3's single `up -d --build`.
    avoid:
 
    ```
-   docker compose -f docker-compose.prod.yml up -d postgres
+   docker compose --env-file .env.production -f docker-compose.prod.yml up -d postgres
    ```
 
 5. Restore the dump. `docker compose cp` again avoids shell redirection:
 
    ```
-   docker compose -f docker-compose.prod.yml cp ./technotopia.dump postgres:/tmp/technotopia.dump
-   docker compose -f docker-compose.prod.yml exec postgres \
+   docker compose --env-file .env.production -f docker-compose.prod.yml cp ./technotopia.dump postgres:/tmp/technotopia.dump
+   docker compose --env-file .env.production -f docker-compose.prod.yml exec postgres \
      pg_restore -U technotopia -d technotopia --clean --if-exists /tmp/technotopia.dump
    ```
 
@@ -300,7 +333,7 @@ Do this **instead of** section 3's single `up -d --build`.
 7. Bring the rest of the stack up:
 
    ```
-   docker compose -f docker-compose.prod.yml up -d --build
+   docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
    ```
 
    The entrypoint's `prisma migrate deploy` now applies only the migrations created
@@ -322,9 +355,9 @@ images gives you rows whose pictures 404. Always take them together.
 
 ```
 mkdir -p backups
-docker compose -f docker-compose.prod.yml exec postgres \
+docker compose --env-file .env.production -f docker-compose.prod.yml exec postgres \
   pg_dump -U technotopia -Fc -f /tmp/db.dump technotopia
-docker compose -f docker-compose.prod.yml cp postgres:/tmp/db.dump ./backups/db-$(date +%F).dump
+docker compose --env-file .env.production -f docker-compose.prod.yml cp postgres:/tmp/db.dump ./backups/db-$(date +%F).dump
 tar -czf backups/uploads-$(date +%F).tar.gz uploads
 ```
 
