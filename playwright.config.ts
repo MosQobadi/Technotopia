@@ -1,6 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 3000;
+// Deliberately not 3000. `reuseExistingServer` below adopts whatever is already
+// answering on this port, and it can't tell one Next app from another — a stray dev
+// server from an unrelated project on the default port silently becomes the system
+// under test. This matches the port in .claude/launch.json so a preview server and an
+// E2E run share one technotopia server instead of fighting over it.
+const PORT = 4000;
 const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({
@@ -16,7 +21,7 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "pnpm dev",
+    command: `pnpm dev --port ${PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
