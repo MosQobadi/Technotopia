@@ -106,7 +106,7 @@ function CartLine({ item, onDecrease, onIncrease, onRemove }: CartLineProps) {
     <div className="bg-surface-100 flex gap-4 rounded-[20px] p-4">
       <div className="bg-surface-200 relative size-24 shrink-0 overflow-hidden rounded-[14px]">
         {item.image ? (
-          <Image src={item.image} alt={item.name} fill className="object-cover" />
+          <Image src={item.image} alt={item.name} fill sizes="96px" className="object-cover" />
         ) : (
           <div className="flex size-full items-center justify-center font-mono text-[9px] text-gray-500">
             PHOTO

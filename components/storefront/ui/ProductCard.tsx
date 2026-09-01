@@ -49,7 +49,13 @@ export function ProductCard({
     <div className="bg-surface-100 group overflow-hidden rounded-[20px] transition-transform duration-150 hover:-translate-y-1">
       <div className="bg-surface-200 relative aspect-square">
         {imageSrc ? (
-          <Image src={imageSrc} alt={name} fill className="object-cover" />
+          <Image
+            src={imageSrc}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+            className="object-cover"
+          />
         ) : (
           <div className="flex size-full items-center justify-center font-mono text-[10px] text-gray-500">
             PRODUCT PHOTO
