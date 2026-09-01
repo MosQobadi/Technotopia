@@ -24,6 +24,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      # Admin image uploads are written to disk at runtime. The image bakes
+      # `public/` in at build time, so without this mount every uploaded file
+      # would be lost on the next `up -d --build`. The host directory must be
+      # owned by the container's `nextjs` user (uid 1001) — see DEPLOYMENT.md.
+      - ./uploads:/app/public/uploads
     # Not published to the host — nginx is the only public entry point.
     # docker-entrypoint.sh runs `prisma migrate deploy` before starting the
     # server, so migrations apply on every container start.

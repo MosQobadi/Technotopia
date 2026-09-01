@@ -227,21 +227,33 @@ stray empty directory literally named `nginx.conf;C` in the repo root — it's a
 artifact of a mangled shell redirect and is untracked.
 ```
 
-### Task 26.5 — Decide the real-data entry plan ⬜ _(decide before an admin invests hours)_
+### Task 26.5 — Decide the real-data entry plan ✅
 
-Open question from the last session, still unanswered:
+**Decision: the admin enters real data on the developer's machine, against the local
+dev stack — not on a Vercel preview — and none of it is re-entered later.**
 
-> "I want a preview of this whole project (admin panel & storefront), I want the real
-> admin of this website to add all the real data to it, so later when I deploy it in a
-> real VPS can I use this data or not? I don't want the admin to do it all again."
+Uploads write to `public/uploads` and nowhere else, and Vercel's runtime filesystem is
+read-only, so no image-bearing product, category, brand, or banner can be created on a
+preview at all. The preview stays browse-only. The local dev database and
+`public/uploads` folder are the canonical store until a VPS exists; both move across in
+one pass (`pg_dump -Fc` + restore, and a copy of the uploads folder). Image columns hold
+root-relative `/uploads/<uuid>.<ext>` paths, so nothing needs rewriting as long as the
+folder travels with the dump, and `User` rows carry their bcrypt hashes, so the admin's
+login moves too.
 
-Now that uploads are local-disk only, image upload does **not** work on Vercel previews
-at all — so the admin cannot enter image-bearing data there. The database side of a move
-is straightforward (`pg_dump` / restore); the images are files on disk that have to be
-copied alongside it.
+Two config gaps that would have broken this were fixed while documenting it:
+
+- `docker-compose.prod.yml` had no mount for `public/uploads`. The Dockerfile bakes
+  `public/` into the image, so every uploaded file — including a restored batch — was
+  lost on the next `up -d --build`. Now bind-mounted from `./uploads` (uid 1001).
+- `nginx.conf` had no `client_max_body_size`, so nginx's 1MB default would have
+  rejected uploads between 1MB and the route's own 5MB cap with a 413. Now `5m`.
+
+`DEPLOYMENT.md` sections 6 and 7 carry the answer, the step-by-step move, and a
+backup routine that keeps the dump and the uploads archive together.
 
 **DoD:** A written answer covering where the admin should enter data, and how both rows
-and the `public/uploads` files move to production without re-entry.
+and the `public/uploads` files move to production without re-entry. ✅
 
 **Prompt:**
 

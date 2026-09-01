@@ -51,6 +51,12 @@ next-env.d.ts
 # user-uploaded content (written at runtime, not source)
 /public/uploads
 
+# uploads bind-mount target on the VPS (docker-compose.prod.yml), plus the
+# database dumps and archives used to move real data there — never source
+/uploads
+/backups
+*.dump
+
 # certbot state (certs, account keys) — generated on the VPS, not source
 /certbot
 
