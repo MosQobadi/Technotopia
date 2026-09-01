@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { makeTestCustomer, productCard, signUp } from "./helpers";
+import { cleanUpTestCustomers, makeTestCustomer, productCard, signUp } from "./helpers";
+
+test.afterAll(cleanUpTestCustomers);
 
 // Cheap, always-in-stock seed product (see prisma/seed.ts) so the flow never trips the
 // stock-shortfall path.
@@ -47,6 +49,8 @@ test("add and remove a wishlist item", async ({ page }) => {
   await expect(page).toHaveURL(/\/wishlist$/);
   await expect(page.getByRole("link", { name: PRODUCT_NAME, exact: true })).toBeVisible();
 
-  await productCard(page, PRODUCT_NAME).getByRole("button", { name: "Remove from wishlist" }).click();
+  await productCard(page, PRODUCT_NAME)
+    .getByRole("button", { name: "Remove from wishlist" })
+    .click();
   await expect(page.getByText("You haven't saved anything yet.")).toBeVisible();
 });

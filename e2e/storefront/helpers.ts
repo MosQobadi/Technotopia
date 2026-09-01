@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { cleanUpTestData } from "../cleanup";
 import { uniqueSuffix } from "../constants";
 
 export interface TestCustomer {
@@ -8,8 +9,15 @@ export interface TestCustomer {
   password: string;
 }
 
+/**
+ * Suffixes handed out this file run. Playwright gives each spec file its own worker
+ * process, so this stays scoped to the file that calls `cleanUpTestCustomers()`.
+ */
+const createdSuffixes: string[] = [];
+
 export function makeTestCustomer(): TestCustomer {
   const suffix = uniqueSuffix();
+  createdSuffixes.push(suffix);
   return {
     fullName: `E2E Customer ${suffix}`,
     email: `e2e-customer-${suffix}@example.com`,
@@ -28,6 +36,16 @@ export async function signUp(page: Page, customer: TestCustomer) {
   await page.getByLabel("Password").fill(customer.password);
   await page.getByRole("button", { name: "Create Account" }).click();
   await expect(page).toHaveURL("/");
+}
+
+/**
+ * Deletes the accounts (and their carts, wishlists and orders) that this file signed up.
+ * The storefront creates them through its own sign-up form, so there's no fixture to
+ * hand back ids — they're matched by the suffix `makeTestCustomer()` baked into each email.
+ */
+export function cleanUpTestCustomers() {
+  cleanUpTestData(createdSuffixes);
+  createdSuffixes.length = 0;
 }
 
 export async function logIn(page: Page, identifier: string, password: string) {

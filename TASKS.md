@@ -198,7 +198,7 @@ Keep it nullable/optional where it already is. Add route tests asserting an exte
 URL is rejected and a /uploads/ path is accepted.
 ```
 
-### Task 26.3 — Clean the local development database ⬜
+### Task 26.3 — Clean the local development database ✅
 
 The dev database has accumulated test residue: categories and brands named
 `E2E Category ms3fakd2`, `e2e-order-ms3fcb1b Brand`, `Featured Test ms7qf168`, plus

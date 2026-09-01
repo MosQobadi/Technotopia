@@ -185,7 +185,7 @@ async function main() {
       stock: 8,
     },
     {
-      name: "Roads Ring Light 18\"",
+      name: 'Roads Ring Light 18"',
       sku: "RDS-RING18",
       categoryId: lights.id,
       brandId: roads.id,
@@ -360,15 +360,22 @@ async function main() {
     },
   ];
 
-  for (const seed of orderSeeds) {
+  // Orders have no natural unique key to upsert on (unlike every other model here, which
+  // keys off a slug/sku/email), so they get deterministic ids. Without this, re-seeding
+  // stacked another five orders onto the dev database every run.
+  for (const [index, seed] of orderSeeds.entries()) {
     const { items, subtotal, discount, tax, total } = computeTotals(
       seed.lines,
       seed.shippingCost,
       0.08,
     );
 
-    await prisma.order.create({
-      data: {
+    const id = `seed-order-${index + 1}`;
+    await prisma.order.upsert({
+      where: { id },
+      update: {},
+      create: {
+        id,
         customerId: seed.customer.id,
         status: seed.status,
         paymentStatus: seed.paymentStatus,

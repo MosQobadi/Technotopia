@@ -1,5 +1,14 @@
 import { test, expect, type Page } from "@playwright/test";
+import { cleanUpTestData } from "./cleanup";
 import { uniqueSuffix } from "./constants";
+
+// Hoisted so afterAll can delete the rows this test creates through the admin UI — it
+// never learns their ids, only the suffix it typed into the forms.
+const suffix = uniqueSuffix();
+
+test.afterAll(() => {
+  cleanUpTestData([suffix]);
+});
 
 // The HeroUI Select trigger occasionally doesn't register a click as a "press" (it logs
 // "A PressResponder was rendered without a pressable child" in the browser console when
@@ -16,7 +25,6 @@ async function selectOption(page: Page, fieldLabel: string, optionName: string) 
 test("create a category, a brand, and a product using them, then find it in the products list", async ({
   page,
 }) => {
-  const suffix = uniqueSuffix();
   const categoryName = `E2E Category ${suffix}`;
   const brandName = `E2E Brand ${suffix}`;
   const productName = `E2E Product ${suffix}`;

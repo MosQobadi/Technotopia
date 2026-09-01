@@ -1,8 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test, expect } from "@playwright/test";
+import { cleanUpTestData } from "./cleanup";
 import { uniqueSuffix } from "./constants";
 
 interface OrderFixtureIds {
@@ -15,7 +13,6 @@ interface OrderFixtureIds {
 
 const PREFIX = `e2e-order-${uniqueSuffix()}`;
 let fixture: OrderFixtureIds;
-let tmpDir: string;
 
 test.beforeAll(() => {
   const output = execFileSync(
@@ -27,16 +24,7 @@ test.beforeAll(() => {
 });
 
 test.afterAll(() => {
-  tmpDir = mkdtempSync(join(tmpdir(), "technotopia-e2e-"));
-  const idsFilePath = join(tmpDir, "order-fixture-ids.json");
-  writeFileSync(idsFilePath, JSON.stringify(fixture));
-  try {
-    execFileSync("pnpm", ["exec", "tsx", "e2e/fixtures/deleteOrderFixture.ts", idsFilePath], {
-      shell: true,
-    });
-  } finally {
-    rmSync(tmpDir, { recursive: true, force: true });
-  }
+  cleanUpTestData([PREFIX]);
 });
 
 test("advance an order through its full status sequence", async ({ page }) => {

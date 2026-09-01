@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { logOut, makeTestCustomer, signUp } from "./helpers";
+import { cleanUpTestCustomers, logOut, makeTestCustomer, signUp } from "./helpers";
+
+test.afterAll(cleanUpTestCustomers);
 
 // Cheap, always-in-stock seed product (see prisma/seed.ts) — same one shopping.spec.ts uses,
 // so this flow never trips the stock-shortfall path.

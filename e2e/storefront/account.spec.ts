@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { logIn, logOut, makeTestCustomer, signUp } from "./helpers";
+import { cleanUpTestCustomers, logIn, logOut, makeTestCustomer, signUp } from "./helpers";
 
-const PRODUCT_NAME = "Roads Ring Light 18\"";
+test.afterAll(cleanUpTestCustomers);
+
+const PRODUCT_NAME = 'Roads Ring Light 18"';
 
 test("sign up, place an order, log back in, and see it in order history", async ({ page }) => {
   const customer = makeTestCustomer();
