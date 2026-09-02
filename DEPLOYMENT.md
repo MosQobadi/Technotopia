@@ -678,10 +678,9 @@ Two things to know before running it:
   specs need the seeded admin account to log in with. It is a check on the build,
   not on production data.
 
-Expected: **10 passed, 1 skipped**. The skip is `e2e/storefront/search.spec.ts`, a
-`test.fixme` — the navbar's search box submits nowhere because there is no results
-page yet (`components/storefront/Navbar.tsx`). That ships as a visible dead control
-on the storefront; it is a known gap, not a regression.
+Expected: **12 passed**, nothing skipped. A skip here is a regression in itself —
+`e2e/storefront/search.spec.ts` was a `test.fixme` for a search box that submitted
+nowhere until Task 26.7, and a suite that skips is a suite that stops noticing.
 
 **2. The build output is clean.**
 

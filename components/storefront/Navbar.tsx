@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAuthStore } from "@/lib/store/auth";
 import { useCartStore } from "@/lib/store/cart";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { NavbarSearch } from "./NavbarSearch";
 
 const NAV_LINK_KEYS = [
   { href: "/", key: "home" },
   { href: "/products", key: "shop" },
   { href: "/categories", key: "categories" },
 ] as const;
-
-const SEARCH_SCOPE_KEYS = ["all", "products", "categories", "brands"] as const;
-type SearchScope = (typeof SEARCH_SCOPE_KEYS)[number];
 
 const ICON_BUTTON_CLASSES =
   "flex size-9.5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200";
@@ -28,9 +26,6 @@ export function Navbar() {
     state.items.reduce((sum, item) => sum + item.quantity, 0),
   );
 
-  const [scope, setScope] = useState<SearchScope>("all");
-  const [query, setQuery] = useState("");
-
   useEffect(() => {
     hydrateAuth();
   }, [hydrateAuth]);
@@ -38,11 +33,6 @@ export function Navbar() {
   useEffect(() => {
     if (user) hydrateCart();
   }, [user, hydrateCart]);
-
-  function handleSearchSubmit(event: FormEvent) {
-    event.preventDefault();
-    // Scoped search actually running lands in Task 17.1 — UI only for now.
-  }
 
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "";
 
@@ -66,45 +56,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <form
-          onSubmit={handleSearchSubmit}
-          role="search"
-          className="flex min-w-55 flex-1 items-center overflow-hidden rounded-full bg-gray-100"
-        >
-          <label className="sr-only" htmlFor="navbar-search-scope">
-            {t("searchScope")}
-          </label>
-          <select
-            id="navbar-search-scope"
-            value={scope}
-            onChange={(event) => setScope(event.target.value as SearchScope)}
-            className="h-10 shrink-0 rounded-full bg-transparent py-0 ps-3.5 pe-1.5 text-xs text-gray-500 outline-none"
-          >
-            {SEARCH_SCOPE_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {t(`searchScopeOptions.${key}`)}
-              </option>
-            ))}
-          </select>
-          <label className="sr-only" htmlFor="navbar-search-input">
-            {t("search")}
-          </label>
-          <input
-            id="navbar-search-input"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="h-10 min-w-0 flex-1 bg-transparent px-2 text-sm text-gray-900 outline-none placeholder:text-gray-400"
-          />
-          <button
-            type="submit"
-            aria-label={t("search")}
-            className="bg-accent hover:bg-accent-hover m-0.75 flex size-8.5 shrink-0 items-center justify-center rounded-full text-white"
-          >
-            <SearchArrowIcon />
-          </button>
-        </form>
+        <NavbarSearch />
 
         <div className="flex shrink-0 items-center gap-3.5">
           <LanguageSwitcher />
@@ -136,21 +88,6 @@ export function Navbar() {
         </div>
       </div>
     </header>
-  );
-}
-
-function SearchArrowIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className="size-4"
-      aria-hidden
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0-6-6m6 6-6 6" />
-    </svg>
   );
 }
 

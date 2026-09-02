@@ -45,6 +45,7 @@ export function ProductsContent() {
   const tCommon = useTranslations("common");
   const searchParams = useSearchParams();
   const urlCategoryParam = searchParams.get("category");
+  const urlBrandParam = searchParams.get("brand");
 
   const [data, setData] = useState<StorefrontProductListResult>(EMPTY_RESULT);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +53,8 @@ export function ProductsContent() {
   // undefined = the user hasn't touched the category filter yet, so the URL wins;
   // once they click a category (including "All"), that explicit choice always wins.
   const [manualCategoryId, setManualCategoryId] = useState<string | null | undefined>(undefined);
-  const [selectedBrandIds, setSelectedBrandIds] = useState<Set<string>>(new Set());
+  // Same undefined-means-untouched rule as the category above.
+  const [manualBrandIds, setManualBrandIds] = useState<Set<string> | undefined>(undefined);
   const [selectedStatuses, setSelectedStatuses] = useState<Set<InventoryStatus>>(new Set());
   const [maxPrice, setMaxPrice] = useState(PRICE_RANGE_MAX);
   const [committedMaxPrice, setCommittedMaxPrice] = useState(PRICE_RANGE_MAX);
@@ -90,6 +92,20 @@ export function ProductsContent() {
 
   const activeCategoryId =
     manualCategoryId !== undefined ? manualCategoryId : resolvedUrlCategoryId;
+
+  // The navbar search's brand results deep-link by name (?brand=Sony), the same way the
+  // footer's do for categories. Brands are a client-side filter here rather than an API
+  // one, so this seeds the checkbox selection instead of the request.
+  const resolvedUrlBrandIds = useMemo(() => {
+    if (!urlBrandParam || data.brands.length === 0) return new Set<string>();
+    const match = data.brands.find(
+      (brand) =>
+        brand.id === urlBrandParam || brand.name.toLowerCase() === urlBrandParam.toLowerCase(),
+    );
+    return match ? new Set([match.id]) : new Set<string>();
+  }, [urlBrandParam, data.brands]);
+
+  const selectedBrandIds = manualBrandIds ?? resolvedUrlBrandIds;
 
   useEffect(() => {
     let cancelled = false;
@@ -134,8 +150,8 @@ export function ProductsContent() {
   const breadcrumbItems = [{ label: tCommon("home"), href: "/" }, { label: activeCategoryLabel }];
 
   function toggleBrand(brandId: string) {
-    setSelectedBrandIds((current) => {
-      const next = new Set(current);
+    setManualBrandIds((current) => {
+      const next = new Set(current ?? resolvedUrlBrandIds);
       if (next.has(brandId)) next.delete(brandId);
       else next.add(brandId);
       return next;

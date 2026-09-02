@@ -27,8 +27,8 @@ in any commit up to `cbb97c7`. Outstanding and deferred tasks keep their full pr
 | 22    | My Account              | ✅ done                       |
 | 23    | SEO & performance       | ✅ done                       |
 | 24    | Testing & hardening     | ✅ done                       |
-| 26    | Cleanup & correctness   | ✅ done                    |
-| 25    | Deployment              | ✅ done — waiting on a VPS |
+| 26    | Cleanup & correctness   | ✅ done                       |
+| 25    | Deployment              | ✅ done — waiting on a VPS    |
 
 ---
 
@@ -142,7 +142,7 @@ Done outside the task list, after Phase 24:
 
 ---
 
-# Part 2 — Outstanding
+# Part 2 — Found by audit, after the plan
 
 ## Phase 26 — Cleanup & correctness ✅
 
@@ -304,6 +304,51 @@ the "dev-preview routes" mention in proxy.ts's comment, and the two `app/dev-pre
 paths in AGENTS.md (already stale — the files moved into app/(dev) since). Confirm the
 production build no longer prints ENVIRONMENT_FALLBACK, and note in DEPLOYMENT.md
 section 10 items 2 and 9 that the error and the two routes are gone.
+```
+
+### Task 26.7 — Make the navbar search actually search ✅
+
+**Decision: a suggestions panel under the input, not a results page.** The two things in
+the repo disagreed about this. `GET /api/storefront/search` returns at most five products,
+five categories and five brands, with no paging and no totals — a typeahead's shape, with
+nothing for a results page to page through. The skipped E2E spec, meanwhile, asserted
+`toHaveURL(/search/)`. Nothing in `design/storefront/` draws either one; the design files
+show the input and stop. The panel was chosen because it is what the endpoint already
+answers, and because a results page would have meant inventing both an API contract and a
+screen.
+
+`components/storefront/NavbarSearch.tsx` is the search box and its panel, lifted out of
+`Navbar.tsx` (which had grown to hold the form, its state, and five icons). It debounces
+at 250ms and tags each response with the query and scope that produced it, so "loading" is
+derived rather than stored and the panel can never show the previous query's hits against
+the current text. An `AbortController` cancels the in-flight request on every change,
+which also settles the out-of-order-response problem.
+
+Results link somewhere real: products to `/products/<slug>`, categories to
+`/products?category=<name>` — the listing already resolved that param by name, for the
+footer's Shop links. Brands had no destination at all, so `ProductsContent` learned
+`?brand=<name>` the same way, seeding the brand checkbox instead of the request (brand is
+a client-side filter there). That is the one change outside the search itself.
+
+**What it doesn't do:** no arrow-key navigation through results, and Enter doesn't jump to
+the first hit — it just opens the panel, since there's nowhere else to go. The panel is a
+labelled region with grouped lists of links and an `aria-live` count, rather than an ARIA
+combobox, because a combobox must own a `listbox` and these rows are links.
+
+**Verified**: manually in both locales — the panel renders grouped results, RTL mirrors
+correctly under `/fa`, the scope select narrows the groups, and a brand result lands on
+`/products?brand=Sony` with the Sony checkbox already ticked. The `test.fixme` in
+`e2e/storefront/search.spec.ts` is now two real tests (results and navigation; the
+no-results message and Escape), and the suite runs **12 passed, 0 skipped** against a
+production build.
+
+**Prompt:**
+
+```
+The navbar search box submits nowhere — handleSearchSubmit is a no-op pointing at Task
+17.1, which shipped without it. The GET /api/storefront/search endpoint exists and is
+tested. Wire the box up, un-skip e2e/storefront/search.spec.ts, and make sure every
+result has somewhere to go.
 ```
 
 ---
