@@ -97,15 +97,16 @@ file or be missing entirely.
 `next build` copies any `.env*` it finds into `.next/standalone`, which would
 put `DATABASE_URL` and `JWT_SECRET` inside the published image.
 
-Also update `nginx.conf`: replace `your-domain.com www.your-domain.com` with
-the real domain in the `server_name` line (both the active HTTP block and the
-commented-out HTTPS block), and make sure the domain's DNS `A` record already
-points at the VPS's public IP before continuing.
+Also update `nginx/nginx.conf`: replace `your-domain.com www.your-domain.com`
+with the real domain in the `server_name` line of the HTTP server block. The
+HTTPS block carries the same placeholder but is not active yet — section 5
+covers it. Make sure the domain's DNS `A` record already points at the VPS's
+public IP before continuing.
 
 ## 3. First deploy
 
-Bring the stack up. `nginx.conf` starts with only the HTTP server block
-active, so this serves plain HTTP first:
+Bring the stack up. Only the HTTP server block is active at this point, so
+port 443 isn't listening yet:
 
 ```
 docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
@@ -119,9 +120,12 @@ first boot.
 instead of this step** — restoring a dump wants Postgres up and `app` still
 down, and starting `app` first is a detour, not a disaster.
 
-Then obtain the HTTPS certificate and switch `nginx.conf` over to the HTTPS
-block — see **Obtaining the first certificate** below. Until that's done, the
-site is only reachable over HTTP.
+Note what that HTTP block actually serves: the certbot ACME challenge, and a
+301 to HTTPS for everything else. Until the certificate exists that redirect
+points at a port nothing is listening on, so **the site is not browsable yet** —
+`curl -I http://your-domain.com/` returning `301` is the expected proof that
+nginx is up and configured correctly. Go straight on to the certificate below;
+the site becomes reachable when the HTTPS block is activated.
 
 ## 4. Update / redeploy procedure
 
@@ -137,15 +141,12 @@ again automatically via the entrypoint (`prisma migrate deploy` is a no-op if
 there's nothing new to apply). `postgres` and `nginx` are untouched unless
 their config changed.
 
-One caveat while the HTTPS server block in `nginx.conf` is still commented
-out (Task 25.3): nginx resolves `app` once, when it loads its config, and
-caches the address. Recreating `app` usually gets the same address back, but
-when it doesn't, nginx serves 502 until it is reloaded. Until 25.3 makes the
-upstream re-resolve, follow a redeploy with:
-
-```
-docker compose --env-file .env.production -f docker-compose.prod.yml restart nginx
-```
+No `restart nginx` step is needed after a redeploy. nginx re-resolves the
+`app` container name against Docker's DNS (`resolver 127.0.0.11 valid=10s`)
+instead of caching the address it saw at startup, so a redeploy that lands
+`app` on a different IP is picked up within ten seconds. It also means nginx
+starts fine while `app` is down — serving 502 until the app is back, rather
+than refusing to boot.
 
 This procedure has a brief downtime window while the old `app` container
 stops and the new one starts and passes its migration step. Zero-downtime
@@ -157,18 +158,20 @@ rolling strategy) are a future improvement, not implemented yet.
 ### Prerequisites
 
 - The `docker-compose.prod.yml` stack running (`app`, `postgres`, `nginx`),
-  reachable on ports 80/443.
+  reachable on port 80. (443 is published by compose but nothing listens on
+  it until step 3 below — the challenge is answered over plain HTTP.)
 - The domain's DNS `A` (and `AAAA`, if used) record pointed at the VPS's
   public IP.
-- `nginx.conf`'s `server_name your-domain.com www.your-domain.com;` lines
-  updated to the real domain, in **both** the HTTP server block and the
-  commented-out HTTPS server block.
+- `nginx/nginx.conf`'s `server_name your-domain.com www.your-domain.com;`
+  line updated to the real domain (section 2).
 
 ### Obtaining the first certificate
 
-1. Confirm the stack is up with only the HTTP server block active (the
-   default state of `nginx.conf` — the HTTPS block is commented out until a
-   certificate exists):
+1. Confirm the stack is up with only the HTTP server block active. That is
+   the state the repo ships in: the HTTPS block is the file
+   `nginx/conf.d/https.conf.disabled`, and nginx's `conf.d/*.conf` include
+   skips it until it's copied into place — nginx refuses to start when
+   `ssl_certificate` points at a file that doesn't exist yet:
 
    ```
    docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
@@ -176,7 +179,8 @@ rolling strategy) are a future improvement, not implemented yet.
 
 2. Request a certificate with the official certbot image, using the webroot
    method. It writes the ACME challenge file into `./certbot/www`, the same
-   directory `nginx.conf`'s `/.well-known/acme-challenge/` location serves —
+   directory `nginx/nginx.conf`'s `/.well-known/acme-challenge/` location
+   serves —
    both this command and the `nginx` service mount it, so the challenge is
    visible to Let's Encrypt over plain HTTP:
 
@@ -193,17 +197,36 @@ rolling strategy) are a future improvement, not implemented yet.
    the same path `docker-compose.prod.yml` mounts read-only into the `nginx`
    service at `/etc/letsencrypt`.
 
-3. In `nginx.conf`, uncomment the `# server { ... }` HTTPS block (and its
-   `ssl_certificate`/`ssl_certificate_key` paths, which already point at
-   `/etc/letsencrypt/live/your-domain.com/...`).
-
-4. Reload nginx to pick up the new config and certificate:
+3. Activate the HTTPS server block by copying it into the include path, then
+   replacing `your-domain.com` in the copy — in `server_name` and in both
+   certificate paths:
 
    ```
+   cp nginx/conf.d/https.conf.disabled nginx/conf.d/https.conf
+   nano nginx/conf.d/https.conf
+   ```
+
+   The copy is gitignored, so it survives `git pull` and never conflicts with
+   the shipped template. Leave the `.disabled` original in place.
+
+4. Check the config parses, then reload nginx to pick it up:
+
+   ```
+   docker compose --env-file .env.production -f docker-compose.prod.yml exec nginx nginx -t
    docker compose --env-file .env.production -f docker-compose.prod.yml exec nginx nginx -s reload
    ```
 
-The site is now served over HTTPS; plain HTTP requests redirect to it.
+   `nginx -t` before `-s reload` is worth the extra command: a reload with a
+   broken config is rejected and the running config stays up, but a *restart*
+   with one leaves the container in a crash loop with the site down.
+
+The site is now served over HTTPS; plain HTTP requests redirect to it. Verify
+the certificate and the security headers:
+
+```
+curl -sI https://your-domain.com/ | head -1
+curl -sI https://your-domain.com/ | grep -Ei 'x-frame|x-content-type|referrer'
+```
 
 ### Renewing
 

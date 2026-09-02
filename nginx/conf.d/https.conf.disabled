@@ -1,0 +1,49 @@
+# HTTPS server block — inactive until copied to https.conf in this directory.
+#
+# nginx refuses to start when ssl_certificate points at a file that doesn't
+# exist, and the certificate only exists after certbot has run, so this file
+# stays out of the *.conf include until then:
+#
+#   cp nginx/conf.d/https.conf.disabled nginx/conf.d/https.conf
+#   # replace your-domain.com in the copy (server_name and both cert paths)
+#   docker compose --env-file .env.production -f docker-compose.prod.yml \
+#     exec nginx nginx -s reload
+#
+# gzip, the security headers, client_max_body_size and the resolver are
+# inherited from nginx.conf's http block. Do not add an `add_header` here —
+# one add_header in this block drops all three inherited security headers.
+
+server {
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  http2 on;
+  server_name your-domain.com www.your-domain.com;
+
+  ssl_certificate     /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+  ssl_protocols       TLSv1.2 TLSv1.3;
+  ssl_ciphers         HIGH:!aNULL:!MD5;
+  ssl_session_cache   shared:SSL:10m;
+  ssl_session_timeout 1d;
+
+  # Renewal challenges arrive over port 80 and are answered by the HTTP block
+  # in nginx.conf; this is here so a challenge still resolves if certbot is
+  # ever pointed at the HTTPS vhost instead.
+  location /.well-known/acme-challenge/ {
+    root /var/www/certbot;
+  }
+
+  location / {
+    # Variable upstream, not `upstream app { ... }` — see the resolver note in
+    # nginx.conf. The name is re-resolved instead of cached for the life of the
+    # process, so a redeploy that moves the app container doesn't wedge nginx.
+    set $app_upstream "app:3000";
+    proxy_pass http://$app_upstream;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}

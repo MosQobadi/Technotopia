@@ -60,6 +60,10 @@ next-env.d.ts
 # certbot state (certs, account keys) — generated on the VPS, not source
 /certbot
 
+# the activated HTTPS server block — a copy of nginx/conf.d/https.conf.disabled
+# carrying the real domain and cert paths, made on the VPS (DEPLOYMENT.md §5)
+/nginx/conf.d/https.conf
+
 # playwright
 /e2e/.auth
 /playwright-report

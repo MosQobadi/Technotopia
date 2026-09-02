@@ -274,22 +274,15 @@ Write the answer and the migration steps into DEPLOYMENT.md.
 named ArvanCloud; that provider choice is open again.
 
 Phase 14 already produced a working generic-VPS setup (`Dockerfile`,
-`docker-compose.prod.yml`, `nginx.conf`, `DEPLOYMENT.md`), so much of this is
+`docker-compose.prod.yml`, `nginx/`, `DEPLOYMENT.md`), so much of this is
 adaptation rather than new work:
 
 - **25.1** — largely satisfied already. The Dockerfile is multi-stage with a non-root
   `nextjs` user and `EXPOSE 3000`, `.dockerignore` exists, and `output: 'standalone'`
   is set in `next.config.ts`.
 - **25.2** — done. Self-hosted Postgres; the stack was actually run and verified.
-- **25.3** — `nginx.conf` has gzip and the ACME challenge block, but the security
-  headers and the whole HTTPS server block are **commented out** pending a real cert.
-  Also fix the upstream while in there: `upstream app { server app:3000; }` resolves
-  once at config load and caches the address forever, so a redeploy that lands `app`
-  on a new IP leaves nginx serving 502 until it's restarted. Reproduced in 25.2 — the
-  address usually gets reused, which makes this an intermittent 502 rather than an
-  obvious one. Fix shape: `resolver 127.0.0.11 valid=10s;` plus a variable
-  `proxy_pass` so nginx re-resolves. DEPLOYMENT.md section 4 carries a
-  `restart nginx` workaround until then.
+- **25.3** — done. Security headers are live, the HTTPS block ships as an activatable
+  file instead of a commented-out one, and the cached-upstream 502 is fixed.
 
 ### Task 25.1 — Production Dockerfile ⏸
 
@@ -342,7 +335,53 @@ with a named volume, not exposed publicly. App service runs `prisma migrate depl
 start before serving traffic.
 ```
 
-### Task 25.3 — Nginx reverse proxy config ⏸
+### Task 25.3 — Nginx reverse proxy config ✅
+
+Root `nginx.conf` is now `nginx/nginx.conf` plus `nginx/conf.d/`, and both are mounted
+into the `nginx` service. Three things were wrong with the old single file:
+
+- **The security headers only existed inside the commented-out HTTPS block**, so every
+  response nginx served — the whole pre-certificate deploy included — carried none of
+  them. They're now `add_header ... always` at the `http` level, where both server
+  blocks inherit them. That placement is load-bearing: `add_header` does not merge
+  across levels, so one `add_header` inside a server or location block would silently
+  drop all three. Both config files say so, because the failure is invisible.
+  `server_tokens off` came along with them. `Strict-Transport-Security` is deliberately
+  **not** set — browsers cache it for the full max-age with no way to withdraw it, so it
+  belongs after the certificate and its renewals have run for a while, not on day one.
+- **The HTTPS server block was 25 lines of comment**, activated by uncommenting it on
+  the server, with the domain kept in sync by hand across a live block and a dead one.
+  It's a real file now, `nginx/conf.d/https.conf.disabled`, activated with a `cp` to
+  `https.conf` (gitignored, so `git pull` never fights it). It can't simply ship active:
+  nginx refuses to start when `ssl_certificate` points at a file that doesn't exist,
+  and the certificate only exists after certbot has run. Gained `http2 on` and session
+  caching while it was being rewritten.
+- **The cached upstream**, as diagnosed in 25.2. `upstream app { server app:3000; }` is
+  gone in favour of `resolver 127.0.0.11 valid=10s ipv6=off;` and a variable
+  `proxy_pass`. The second effect matters as much as the re-resolution: the old form
+  also refused to *start* when `app` was down (`host not found in upstream`), so a
+  broken app container took nginx with it.
+
+**Verified** against a real `nginx:alpine` on a Docker network, with a self-signed cert
+and a stub backend named `app`: the shipped pre-certificate state boots, answers the
+ACME challenge over HTTP, 301s everything else, and leaves 443 unbound; with the HTTPS
+block activated, `nginx -t` passes and a request returns HTTP/2 200 through the proxy
+with all three security headers and the correct `Host`/`X-Forwarded-For`/
+`X-Forwarded-Proto`, path and query string intact. For the upstream fix specifically:
+nginx started while no `app` container existed (the old form fails `nginx -t` outright),
+served a clean 502, picked up `app` when it appeared — and after `app` was destroyed and
+recreated on a different IP (172.22.0.3 → 172.22.0.6) kept serving 200 with no restart
+and no reload.
+
+DEPLOYMENT.md sections 2–5 follow the new layout: the `restart nginx` workaround in
+section 4 is deleted, and section 3 no longer claims the site is browsable over HTTP
+before the certificate exists — it isn't, the HTTP block 301s everything but the ACME
+challenge, and a `301` from `curl -I` is the thing to check instead.
+
+**DoD:** gzip, the three security headers, an ACME challenge block, and an HTTPS block
+ready for a cert. ✅
+
+**Prompt:**
 
 ```
 nginx.conf proxying to the app on port 3000: gzip, security headers (X-Frame-Options,
