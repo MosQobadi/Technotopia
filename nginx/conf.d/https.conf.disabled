@@ -5,7 +5,8 @@
 # stays out of the *.conf include until then:
 #
 #   cp nginx/conf.d/https.conf.disabled nginx/conf.d/https.conf
-#   # replace your-domain.com in the copy (server_name and both cert paths)
+#   # replace your-domain.com in the copy — the two certificate paths, and
+#   # nothing else
 #   docker compose --env-file .env.production -f docker-compose.prod.yml \
 #     exec nginx nginx -s reload
 #
@@ -17,7 +18,11 @@ server {
   listen 443 ssl;
   listen [::]:443 ssl;
   http2 on;
-  server_name your-domain.com www.your-domain.com;
+  # `_`, not the real domain: this is the only server block on port 443, so it
+  # is the default server for that port and answers every request whatever the
+  # Host header says. It also keeps the domain out of this tracked template —
+  # the paths below are the only lines the activated copy has to change.
+  server_name _;
 
   ssl_certificate     /etc/letsencrypt/live/your-domain.com/fullchain.pem;
   ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;

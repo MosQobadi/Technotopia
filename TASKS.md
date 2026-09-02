@@ -283,8 +283,10 @@ adaptation rather than new work:
 - **25.2** — done. Self-hosted Postgres; the stack was actually run and verified.
 - **25.3** — done. Security headers are live, the HTTPS block ships as an activatable
   file instead of a commented-out one, and the cached-upstream 502 is fixed.
+- **25.4** — done. The runbook now covers provisioning through day-2 operations, and
+  creating the first admin user, which nothing had accounted for.
 
-### Task 25.1 — Production Dockerfile ⏸
+### Task 25.1 — Production Dockerfile ✅
 
 ```
 Add `output: 'standalone'` to next.config. Multi-stage Dockerfile: deps (pnpm install),
@@ -389,7 +391,62 @@ X-Content-Type-Options, Referrer-Policy), HTTP block for certbot ACME challenge 
 to HTTPS, HTTPS block ready for a cert.
 ```
 
-### Task 25.4 — Deployment runbook ⏸
+### Task 25.4 — Deployment runbook ✅
+
+Sections 1-7 of DEPLOYMENT.md already covered most of the brief — Phase 14 wrote them
+and 25.1-25.3 kept them current. So this was about what the runbook was still missing,
+and one thing it got wrong.
+
+**The gap that mattered: a fresh deploy has no way in.** `prisma migrate deploy` creates
+the schema and nothing else, so the production database comes up with zero rows in
+`User` and nobody who can log into `/admin`. The runbook never said so, and the obvious
+fallback doesn't exist: `prisma/seed.ts` needs `tsx` and the devDependencies, neither of
+which is in the runner image, and it would insert demo catalog data next to a
+`password123` admin anyway. Section 3 now ends with a bootstrap that creates the account
+in Postgres directly, using `pgcrypto`'s `crypt(..., gen_salt('bf', 10))` — a `$2a$`
+bcrypt hash, which is what `bcryptjs` verifies at login — plus the `UPDATE` form for
+rotating it later, since the admin panel has no change-password screen.
+
+**What it got wrong: section 2 told you to edit a tracked file.** Replacing
+`your-domain.com` in `nginx/nginx.conf`'s `server_name` left a local modification to a
+tracked file, which is exactly what makes section 4's `git pull` refuse to fast-forward
+the next time that file changes upstream — the problem 25.3 had already solved for
+`https.conf` and reintroduced here. The edit also bought nothing: each block is the only
+one listening on its port, so it is that port's default server and answers every request
+whatever the `Host` says. Both blocks now ship `server_name _`, and the activated HTTPS
+copy's two `ssl_certificate` paths are the only lines anyone edits on the server.
+
+**Object storage: no bucket, and that is now written down** (section 8). Images go to the
+VPS's own disk — the upload route writes `public/uploads` and stores a root-relative
+path, `docker-compose.prod.yml` bind-mounts `./uploads` over it. The section records what
+that costs (one machine's disk, no CDN, only as safe as the backup routine) and that
+moving to a bucket is not a configuration change: `uploadedImagePathSchema` enforces
+`/^\/uploads\//` server-side, so it needs schema, route, env, `next.config.ts` and a data
+migration. Nothing here assumes a bucket, and none has to be created to go live.
+
+Also added: server sizing and swap (the image is built *on the box*, and `next build` is
+what the OOM killer comes for); the `ufw` caveat that Docker's iptables rules sit ahead
+of ufw's chains, so a `ports:` entry is internet-reachable whatever ufw says — harmless
+now, dangerous the moment someone publishes 5432 to poke at the database; `chmod 600
+.env.production`; a single maintenance script (backup + certbot renewal + image prune)
+behind one cron entry, which is also how `date +%F` avoids crontab's `%` escaping; and a
+day-2 section listing the failures that actually happen, each traced to the config that
+produces it. Section 6 now flags that restoring a dev dump carries the seeded
+`password123` admin into production.
+
+**Verified**, since a runbook is only as good as its commands: the bootstrap SQL was run
+against `postgres:16` with the real migrations applied — 0 users after `migrate deploy`,
+insert lands `ADMIN`/`ACTIVE` with a `$2a$10$` hash, and `bcryptjs.compare` returns true
+for the password and false for a wrong one, before and after the rotation `UPDATE`. Both
+nginx states parse and boot with the `server_name _` change: shipped (HTTP only), and
+with `https.conf` activated against a self-signed cert — TLS serves, all three security
+headers are present on both vhosts, `server_tokens off` holds, and the HTTP block 301s.
+The compose error quoted in the day-2 list is the real string from a run with the env
+file withheld, and the maintenance script passes `sh -n`.
+
+**DoD:** a runbook someone can follow start to finish on a bare Ubuntu box. ✅
+
+**Prompt:**
 
 ```
 DEPLOYMENT.md: creating the server (Ubuntu), installing Docker + Compose, firewall rules

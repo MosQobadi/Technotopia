@@ -12,8 +12,34 @@ backup side.
 
 ## 1. Initial VPS setup
 
-Run once per server. Assumes a fresh Ubuntu VPS reachable over SSH as `root`
-(or a sudo-capable user).
+Run once per server.
+
+**Provisioning the machine.** Any provider works — nothing here assumes more
+than a plain Ubuntu box with a public IPv4 address.
+
+- **Ubuntu 24.04 LTS**, x86_64. Docker is the only thing installed on the host;
+  everything else runs in containers.
+- **2 GB RAM is the practical floor, 4 GB is comfortable.** The image is built
+  *on the server* (section 3's `up -d --build`), and `next build` is the
+  memory-hungry step. A build that dies partway with no error message is
+  usually the OOM killer rather than a code problem — `dmesg | tail` says so.
+  On a small instance, add swap once:
+  ```
+  sudo fallocate -l 2G /swapfile
+  sudo chmod 600 /swapfile
+  sudo mkswap /swapfile
+  sudo swapon /swapfile
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  ```
+- **~25 GB disk.** Postgres' named volume, the uploads directory, local backups
+  and a Docker image cache that grows with every `--build` deploy all live here.
+- **Point the domain's DNS `A` record at the server's IP now.** Certbot
+  validates over HTTP in section 5 and needs the name resolving by then;
+  starting propagation early costs nothing.
+
+Add your SSH key at creation time if the provider offers it. The rest of this
+section assumes you can reach the box over SSH as `root` (or a sudo-capable
+user).
 
 **Create a non-root deploy user** — don't run the app or Docker as root:
 
@@ -56,6 +82,15 @@ Postgres (5432) is never exposed here — `docker-compose.prod.yml` doesn't
 publish it to the host, so it's only reachable from the `app` container over
 the internal Docker network. Nothing to open in `ufw` for it.
 
+One caveat to know before anyone edits the compose file: **`ufw` does not filter
+ports that Docker publishes.** Docker inserts its own iptables rules ahead of
+ufw's chains, so anything under a `ports:` key is reachable from the internet
+whether ufw allows it or not. It doesn't bite this stack — `nginx` is the only
+service publishing anything, on 80 and 443, which ufw allows anyway. It bites the
+moment someone adds `ports: - "5432:5432"` to the `postgres` service to reach the
+database from their laptop: that publishes it to the whole internet, ufw rules
+notwithstanding. Use `docker compose ... exec postgres psql` (section 9) instead.
+
 ## 2. Clone the repo and configure the environment
 
 ```
@@ -86,7 +121,17 @@ defaults matter here:
   wrong and the JSON-LD structured data advertises `http://localhost:3000`.
 
 `.env.production` is read by both the `app` and `postgres` services via
-`env_file` in `docker-compose.prod.yml`. Never commit it.
+`env_file` in `docker-compose.prod.yml`. Never commit it. It carries the database
+password and the JWT secret in the clear, so tighten it once:
+
+```
+chmod 600 .env.production
+```
+
+`JWT_SECRET` and `COOKIE_NAME` have no fallback defaults — `lib/auth` throws when
+either is missing instead of quietly signing sessions with a dev value. A missing
+one surfaces as a 500 on the first login attempt, not as a silently weak
+session.
 
 Every `docker compose` command below passes `--env-file .env.production`. It is
 not optional: without it Compose falls back to a `.env` in the directory for
@@ -97,11 +142,16 @@ file or be missing entirely.
 `next build` copies any `.env*` it finds into `.next/standalone`, which would
 put `DATABASE_URL` and `JWT_SECRET` inside the published image.
 
-Also update `nginx/nginx.conf`: replace `your-domain.com www.your-domain.com`
-with the real domain in the `server_name` line of the HTTP server block. The
-HTTPS block carries the same placeholder but is not active yet — section 5
-covers it. Make sure the domain's DNS `A` record already points at the VPS's
-public IP before continuing.
+**Nothing under `nginx/` needs editing at this point.** Both server blocks use
+`server_name _`, and each is the only block listening on its port, which makes it
+that port's default server: it answers every request whatever the `Host` header
+says, so a single-site deployment never has to write its domain there. The one
+place the real domain does appear is the two `ssl_certificate` paths in the
+activated HTTPS block — a gitignored copy made in section 5. Leaving the tracked
+files unedited is what keeps section 4's `git pull` a clean fast-forward.
+
+Confirm the domain's DNS `A` record already points at the VPS's public IP before
+continuing.
 
 ## 3. First deploy
 
@@ -124,8 +174,62 @@ Note what that HTTP block actually serves: the certbot ACME challenge, and a
 301 to HTTPS for everything else. Until the certificate exists that redirect
 points at a port nothing is listening on, so **the site is not browsable yet** —
 `curl -I http://your-domain.com/` returning `301` is the expected proof that
-nginx is up and configured correctly. Go straight on to the certificate below;
-the site becomes reachable when the HTTPS block is activated.
+nginx is up and configured correctly. Create the admin account below, then get
+the certificate in section 5 — the site becomes reachable when the HTTPS block
+is activated.
+
+### Creating the first admin user
+
+`prisma migrate deploy` creates the schema and nothing else, so a fresh
+production database has **no users at all** — there is nobody to log into
+`/admin` as. (Coming from section 6 instead? Skip this: a restored dump brings
+its own `User` rows, bcrypt hashes included.)
+
+`prisma/seed.ts` is not the answer here. It is a dev fixture — it inserts demo
+categories, brands and products alongside an `admin@technotopia.com` /
+`password123` account whose password is published in this repository — and it
+needs `tsx` and the devDependencies, neither of which exists in the runner image.
+
+Create the account in Postgres directly. `pgcrypto`'s `crypt()` with
+`gen_salt('bf', 10)` produces a `$2a$` bcrypt hash, which is exactly what
+`bcryptjs` verifies at login:
+
+```
+docker compose --env-file .env.production -f docker-compose.prod.yml exec postgres \
+  psql -U technotopia -d technotopia
+```
+
+Then, at the `psql` prompt:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+INSERT INTO "User" (id, email, "passwordHash", "firstName", "lastName", role, "updatedAt")
+VALUES (gen_random_uuid()::text,
+        'you@your-domain.com',
+        crypt('the-real-password', gen_salt('bf', 10)),
+        'Site', 'Owner', 'ADMIN', now());
+```
+
+`id` and `updatedAt` are supplied explicitly because they have no database
+default — Prisma fills those in from the client, so an insert made outside Prisma
+has to do it itself. `status` defaults to `ACTIVE` and `createdAt` to `now()`.
+The role must be `ADMIN`: `authenticateAdmin` turns a `CUSTOMER` away with a 403
+even when the password is right.
+
+There is no change-password screen in the admin panel, so rotating that password
+later is the same statement as an update:
+
+```sql
+UPDATE "User"
+SET "passwordHash" = crypt('the-new-password', gen_salt('bf', 10)),
+    "updatedAt" = now()
+WHERE email = 'you@your-domain.com';
+```
+
+Type these at the interactive prompt rather than passing them with `psql -c`:
+either way the password is in the clear in psql's history inside the container,
+but `-c` puts it in your own shell history on the VPS as well.
 
 ## 4. Update / redeploy procedure
 
@@ -153,6 +257,11 @@ stops and the new one starts and passes its migration step. Zero-downtime
 deploys (e.g. blue-green via a second `app` container swapped in nginx, or a
 rolling strategy) are a future improvement, not implemented yet.
 
+Every `--build` leaves the image it replaced behind, untagged. Those add up on a
+small disk, so run `docker image prune -f` after a few deploys — it removes only
+dangling images, never one a container is using. Section 7's maintenance script
+does it on a schedule.
+
 ## 5. HTTPS certificate (certbot)
 
 ### Prerequisites
@@ -161,9 +270,10 @@ rolling strategy) are a future improvement, not implemented yet.
   reachable on port 80. (443 is published by compose but nothing listens on
   it until step 3 below — the challenge is answered over plain HTTP.)
 - The domain's DNS `A` (and `AAAA`, if used) record pointed at the VPS's
-  public IP.
-- `nginx/nginx.conf`'s `server_name your-domain.com www.your-domain.com;`
-  line updated to the real domain (section 2).
+  public IP, and resolving — certbot validates over HTTP against the name, so a
+  record that hasn't propagated yet fails the challenge.
+- No edit to `nginx/nginx.conf`. The HTTP block is the default server on port 80
+  and answers the challenge whatever the `Host` header says (section 2).
 
 ### Obtaining the first certificate
 
@@ -198,8 +308,8 @@ rolling strategy) are a future improvement, not implemented yet.
    service at `/etc/letsencrypt`.
 
 3. Activate the HTTPS server block by copying it into the include path, then
-   replacing `your-domain.com` in the copy — in `server_name` and in both
-   certificate paths:
+   replacing `your-domain.com` in the copy's two `ssl_certificate` paths — the
+   only two lines in it that carry the domain:
 
    ```
    cp nginx/conf.d/https.conf.disabled nginx/conf.d/https.conf
@@ -241,9 +351,15 @@ docker run --rm \
 docker compose --env-file .env.production -f docker-compose.prod.yml exec nginx nginx -s reload
 ```
 
-Certbot only renews certs within 30 days of expiry, so this is safe to run
-often — e.g. from a daily cron job or systemd timer on the VPS running the
-two commands above.
+Certbot only renews certs within 30 days of expiry, so it is safe to run daily.
+Automate it — section 7's maintenance script does the renewal and the backup in
+one cron entry. A renewal that quietly stops working takes the site down when the
+certificate expires — up to 90 days after the last deploy that looked perfectly
+fine.
+
+One detail when running it unattended: use `docker compose ... exec -T nginx
+nginx -s reload`. Cron has no TTY, and `exec` without `-T` tries to allocate one
+and fails.
 
 ## 6. Real catalog data entered before this VPS existed
 
@@ -270,6 +386,11 @@ Because image columns hold root-relative `/uploads/...` paths rather than absolu
 URLs, nothing needs rewriting: as long as the folder travels with the dump, every row
 still points at its image. The admin's login travels too — `User` rows carry their
 bcrypt hashes, so the same credentials work on the VPS.
+
+**If that login is the seeded one, change it before go-live.** `prisma/seed.ts`
+creates `admin@technotopia.com` with the password `password123`, which anyone can
+read in this repository, and restoring a dev dump carries it straight into
+production. Rotate it with the `UPDATE` in section 3.
 
 ### Giving the admin access to the local instance
 
@@ -384,7 +505,136 @@ docker compose --env-file .env.production -f docker-compose.prod.yml cp postgres
 tar -czf backups/uploads-$(date +%F).tar.gz uploads
 ```
 
-Run it from a cron job on the VPS alongside the certbot renewal, and copy the
-`backups/` directory off the server — a backup that only exists on the machine it
-backs up is not a backup. Restoring is steps 4-7 above with the archive names
-changed.
+Copy the `backups/` directory off the server — a backup that only exists on the
+machine it backs up is not a backup. Restoring is section 6's steps 4-7 with the
+archive names changed.
+
+### Running it on a schedule
+
+Put the backup, the certificate renewal (section 5) and the image cleanup in one
+script rather than three crontab lines. Crontab treats `%` as a line separator,
+so `date +%F` inline needs escaping as `date +\%F` — a footgun avoided entirely
+by keeping the commands in a file:
+
+```
+cat > ~/technotopia/maintenance.sh <<'EOF'
+#!/bin/sh
+set -e
+cd /home/deploy/technotopia
+COMPOSE="docker compose --env-file .env.production -f docker-compose.prod.yml"
+STAMP=$(date +%F)
+
+mkdir -p backups
+$COMPOSE exec -T postgres pg_dump -U technotopia -Fc -f /tmp/db.dump technotopia
+$COMPOSE cp postgres:/tmp/db.dump ./backups/db-$STAMP.dump
+tar -czf backups/uploads-$STAMP.tar.gz uploads
+
+docker run --rm \
+  -v "$PWD/certbot/conf:/etc/letsencrypt" \
+  -v "$PWD/certbot/www:/var/www/certbot" \
+  certbot/certbot renew --quiet
+$COMPOSE exec -T nginx nginx -s reload
+
+find backups -type f -mtime +14 -delete
+docker image prune -f
+EOF
+chmod +x ~/technotopia/maintenance.sh
+```
+
+`exec -T` everywhere, for the no-TTY reason in section 5. Then one crontab entry
+(`crontab -e`), at a quiet hour:
+
+```
+17 3 * * * /home/deploy/technotopia/maintenance.sh >> /home/deploy/maintenance.log 2>&1
+```
+
+Run it once by hand first — cron's environment is not your login shell's, and a
+maintenance script that has never been executed is a guess. Check the log
+afterwards, and check it again a week later: the failure mode here is silence.
+
+The `find ... -mtime +14 -delete` line keeps two weeks of local backups so the
+disk doesn't fill. It is not a retention policy on its own — that depends on the
+copies you keep off the server.
+
+## 8. Where uploaded images live
+
+**On the server's own disk, not in an object storage bucket.** Worth stating
+outright, because it is the kind of thing a deployment is assumed to have.
+
+`app/api/admin/upload/route.ts` writes each uploaded file into `public/uploads`
+and stores a root-relative `/uploads/<uuid>.<ext>` path on the row.
+`docker-compose.prod.yml` bind-mounts the host's `./uploads` directory over
+`/app/public/uploads`, which is what makes those files outlive a deploy — the
+image bakes `public/` in at build time, so without the mount every upload would
+disappear on the next `up -d --build`. The directory must be owned by the
+container's `nextjs` user (uid 1001), the account the server runs as:
+
+```
+mkdir -p uploads
+sudo chown -R 1001:1001 uploads
+```
+
+The trade-offs, on the record: the images sit on one machine's disk, they are
+only as safe as section 7's backup routine, and they are served by Next.js
+through nginx rather than from a CDN. For a single-VPS deployment that is the
+right shape, and it is what the code supports today.
+
+Switching to a bucket is **not** a configuration change, so don't plan a deploy
+around it. `uploadedImagePathSchema` validates every image field against
+`/^\/uploads\//` server-side, which means a move would need: that schema relaxed
+to accept the bucket's URLs, the upload route rewritten to put objects there and
+return the new URL, the bucket's credentials added to the environment,
+`next.config.ts` given the bucket host under `images.remotePatterns`, and the
+existing rows and files migrated. Nothing in this runbook assumes a bucket, and
+none has to be created to go live.
+
+## 9. Day-2: checking on it, and what usually breaks
+
+```
+docker compose --env-file .env.production -f docker-compose.prod.yml ps
+docker compose --env-file .env.production -f docker-compose.prod.yml logs -f app
+docker compose --env-file .env.production -f docker-compose.prod.yml logs --tail=50 nginx
+```
+
+A psql shell on the production database, without publishing the port:
+
+```
+docker compose --env-file .env.production -f docker-compose.prod.yml exec postgres \
+  psql -U technotopia -d technotopia
+```
+
+The failures that actually come up:
+
+- **Compose exits immediately with `set NEXT_PUBLIC_SITE_URL in .env.production`.**
+  The `--env-file .env.production` was left off. Compose read the dev `.env` (or
+  nothing) for interpolation and the required build argument came back empty.
+- **Everything returns 502.** nginx is up and `app` is not. `logs app` says why —
+  most often `prisma migrate deploy` failing at startup because `DATABASE_URL`
+  points at `localhost` instead of the `postgres` service name, which leaves the
+  container in a restart loop. nginx serving 502 rather than refusing to boot is
+  deliberate (section 4).
+- **nginx won't start after activating `https.conf`.** An `ssl_certificate` path
+  that doesn't exist is fatal at startup. Check the path matches what certbot
+  actually wrote under `certbot/conf/live/<domain>/`, and run `nginx -t` before
+  reloading — a bad *reload* is rejected harmlessly, a bad *restart* takes the
+  site down.
+- **Login 500s with `JWT_SECRET environment variable is not set`.** The variable
+  is missing from `.env.production`; `lib/auth` refuses to sign a token rather
+  than fall back to a default.
+- **An image upload fails at just over 5 MB.** Both the upload route and nginx's
+  `client_max_body_size` cap at 5 MB deliberately. Raising one without the other
+  swaps a clean error for a confusing 413.
+- **Security headers missing from a response.** Something added an `add_header`
+  inside a `server` or `location` block. `add_header` doesn't merge across
+  levels: one of them anywhere below `http` drops all three inherited headers
+  silently. Both nginx files carry the warning; this is what it looks like when
+  it happens.
+- **Disk full.** Usually the untagged images left by repeated `--build` deploys.
+  `docker system df` shows the split; `docker image prune -f` reclaims it.
+
+Verifying a deploy from outside, which is what section 5 ends on:
+
+```
+curl -sI https://your-domain.com/ | head -1
+curl -sI https://your-domain.com/ | grep -Ei 'x-frame|x-content-type|referrer'
+```
