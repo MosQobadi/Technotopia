@@ -27,8 +27,8 @@ in any commit up to `cbb97c7`. Outstanding and deferred tasks keep their full pr
 | 22    | My Account              | ✅ done                       |
 | 23    | SEO & performance       | ✅ done                       |
 | 24    | Testing & hardening     | ✅ done                       |
-| 26    | Cleanup & correctness   | ⬜ 26.2 done ← **start here** |
-| 25    | Deployment              | ⏸ deferred — no VPS yet       |
+| 26    | Cleanup & correctness   | ⬜ 26.4, 26.6 left ← **start here** |
+| 25    | Deployment              | ✅ done — waiting on a VPS          |
 
 ---
 
@@ -264,14 +264,40 @@ public/uploads files move to the future VPS without the admin re-entering anythi
 Write the answer and the migration steps into DEPLOYMENT.md.
 ```
 
+### Task 26.6 — Delete the unreachable dev-preview pages ⬜
+
+Found while running the go-live checks (25.5). `app/(dev)` holds `/dev-preview` and
+`/storefront-dev-preview`, the component-preview pages from Phases 5 and 15. Both return
+404 in every environment, dev included — `proxy.ts` sends everything outside `/admin`
+through next-intl's middleware, which rewrites `/dev-preview` to `/en/dev-preview`, and
+they live outside the `[locale]` tree — so they have been dead since the i18n work
+(`8be37dd`). They are still built and prerendered into the production image, and they are
+the source of the `Error: ENVIRONMENT_FALLBACK` that every production build prints
+(confirmed by building with the directory moved aside).
+
+**Prompt:**
+
+```
+Delete app/(dev) — both preview pages plus their demo components — and clean up what
+referenced them: the /dev-preview and /storefront-dev-preview entries in app/robots.ts,
+the "dev-preview routes" mention in proxy.ts's comment, and the two `app/dev-preview/...`
+paths in AGENTS.md (already stale — the files moved into app/(dev) since). Confirm the
+production build no longer prints ENVIRONMENT_FALLBACK, and note in DEPLOYMENT.md
+section 10 items 2 and 9 that the error and the two routes are gone.
+```
+
 ---
 
-# Part 3 — Deferred
+# Part 3 — Deployment (done, waiting on a server)
 
-## Phase 25 — Deployment ⏸
+## Phase 25 — Deployment ✅
 
-**Deferred: no VPS yet.** Do not start these until a server exists. The original list
-named ArvanCloud; that provider choice is open again.
+**All five tasks are done; what's left needs a server.** The phase was written as
+deferred because there was no VPS, and there still isn't one — but every task turned out
+to be work that could be finished and verified locally, so it was. What remains is
+executing `DEPLOYMENT.md` against a real box, plus the items in its section 10 that only
+a running server can answer (backups actually running, TLS, the live-site probes). The
+original list named ArvanCloud; that provider choice is still open.
 
 Phase 14 already produced a working generic-VPS setup (`Dockerfile`,
 `docker-compose.prod.yml`, `nginx/`, `DEPLOYMENT.md`), so much of this is
@@ -285,6 +311,8 @@ adaptation rather than new work:
   file instead of a commented-out one, and the cached-upstream 502 is fixed.
 - **25.4** — done. The runbook now covers provisioning through day-2 operations, and
   creating the first admin user, which nothing had accounted for.
+- **25.5** — done. The checklist is written and every item that can be run without a
+  VPS was run; three defects only a production build shows were fixed.
 
 ### Task 25.1 — Production Dockerfile ✅
 
@@ -456,7 +484,75 @@ certificate, `docker compose -f docker-compose.prod.yml up -d --build`, redeploy
 go there instead of local disk.
 ```
 
-### Task 25.5 — Go-live checklist ⏸
+### Task 25.5 — Go-live checklist ✅
+
+`DEPLOYMENT.md` section 10 is the checklist: ten items, each with the command that
+proves it and what a failure means. Writing it meant running everything that can be run
+without a server, which is where the value was — three of the briefed confirmations
+failed, and all three failed only in a production build.
+
+**The E2E suite could not run against a production build at all.**
+`playwright.config.ts` hardcoded `pnpm dev`, and the obvious substitute doesn't exist:
+`next start` refuses to serve a build with `output: "standalone"` — and it says so
+_after_ logging "Ready", so it looks like it worked. `E2E_PROD=1` now builds, assembles
+the standalone output the way the Dockerfile's two COPY steps do (the static chunks and
+`public/` are left outside `.next/standalone`, so without them the server boots and
+404s every asset), and serves it with `node server.js`, the container's own entry point.
+It also refuses to adopt an existing server on port 4000: reusing the dev server would
+produce a green run of the wrong program, which is the one thing this mode exists to
+prevent. Result — **10 passed, 1 skipped**, the skip being a documented `test.fixme` for
+the navbar search box, which submits nowhere.
+
+**`og:image` pointed at localhost, for every visitor.** No `metadataBase` was set, so
+Next resolved the product page's relative `/uploads/<file>` against its fallback of
+`http://localhost:<port>` — not against the request's host, so it is wrong identically
+for everyone, and ISR caches the page with that URL in it. Phase 23 didn't catch it
+because `next dev` on localhost makes the fallback look right, and the warning is only
+printed by a production build. Now set from `SITE_URL` in `app/[locale]/layout.tsx`.
+
+**`X-Powered-By: Next.js` was on every response**, alongside an nginx that 25.3 had
+already given `server_tokens off`. `poweredByHeader: false` turns off the other half.
+
+Two findings that are not blockers, written into the checklist as such:
+
+- **The production build prints `Error: ENVIRONMENT_FALLBACK`.** It comes from
+  `app/(dev)` — confirmed by building with that directory moved aside. Those two preview
+  pages also turn out to be unreachable in _every_ environment, dev included: `proxy.ts`
+  routes everything outside `/admin` through next-intl's middleware, which rewrites
+  `/dev-preview` to `/en/dev-preview`, and the pages live outside the `[locale]` tree.
+  What ships is two prerendered pages nobody can open. Deleting them is Task 26.6.
+- **pgcrypto cannot answer "is the admin password still `password123`?"** The obvious
+  query — `WHERE "passwordHash" = crypt('password123', "passwordHash")` — silently
+  returns nothing: `crypt()` doesn't understand the `$2b$` hashes `bcryptjs` writes, only
+  the `$2a$` ones it writes itself. (25.4's bootstrap is unaffected; that direction —
+  bcryptjs verifying a `$2a$` hash — works, and was verified there.) The checklist POSTs
+  to `/api/auth/login` instead, which uses the application's own bcrypt and answers the
+  question end to end.
+
+**Verified**, item by item:
+
+- **E2E against the production build**: 10 passed, 1 skipped, run against
+  `node .next/standalone/server.js`. `pnpm lint`, `pnpm tsc --noEmit` and `pnpm test`
+  (244 tests) clean.
+- **No secrets in the image**: built it and looked. `/app` holds no `.env`, it runs as
+  `uid=1001(nextjs)`, the build-arg site URL is present in the server chunks _and_ in the
+  prerendered `en.html` (so changing it really does need a rebuild), and the dev database
+  password appears nowhere. That `.dockerignore` rule is load-bearing rather than
+  theoretical: the local `next build` does write `.next/standalone/.env`.
+- **The default-password probe detects what it claims to**: a POST of
+  `admin@technotopia.com` / `password123` returns 200 against the seeded database and 401
+  for a wrong password. The pgcrypto query returns zero rows for that same account.
+- **SEO absolute URLs**: with `NEXT_PUBLIC_SITE_URL` unset, `sitemap.xml`, `robots.txt`
+  and every canonical emit `http://localhost:3000`; rebuilt with it set, those three plus
+  `og:image` emit the real origin.
+- **Backups**: not verifiable without a server, and the checklist says so — it requires
+  the maintenance script be run once by hand and its dump listed with `pg_restore -l`,
+  rather than treating a crontab line as proof.
+
+**DoD:** a checklist someone can work through before pointing the domain at the box, with
+every item that doesn't need a server already run. ✅
+
+**Prompt:**
 
 ```
 Before pointing the domain here: confirm Phase 23 (SEO) is done, run the E2E suite (24.1)

@@ -8,6 +8,25 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 4000;
 const baseURL = `http://localhost:${PORT}`;
 
+// E2E_PROD=1 runs the suite against a production build instead of `next dev` — the
+// pre-go-live check in DEPLOYMENT.md §10. Two details make it match what the VPS runs:
+//
+//   * `next start` is NOT the production entry point here. `output: "standalone"` is set
+//     in next.config.ts, and Next refuses to serve that build through `next start`
+//     ("does not work with output: standalone"). The Dockerfile's `CMD node server.js` is
+//     the real one, so this runs the same file.
+//   * `next build` leaves the static chunks and `public/` outside `.next/standalone`;
+//     the Dockerfile copies them in as two separate COPY steps. Without that copy the
+//     server boots and serves HTML with every asset 404ing, which looks like a broken
+//     app rather than a broken harness.
+const PROD_SERVER_COMMAND = [
+  "pnpm build",
+  `node -e "const fs=require('fs');fs.cpSync('.next/static','.next/standalone/.next/static',{recursive:true});fs.cpSync('public','.next/standalone/public',{recursive:true})"`,
+  "node .next/standalone/server.js",
+].join(" && ");
+
+const againstProdBuild = process.env["E2E_PROD"] === "1";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -21,10 +40,19 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: `pnpm dev --port ${PORT}`,
+    command: againstProdBuild ? PROD_SERVER_COMMAND : `pnpm dev --port ${PORT}`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    // Never adopt an existing server for a production run: anything already answering on
+    // this port is almost certainly the dev server, which is the one thing this mode
+    // exists to not test. The run would pass and prove nothing.
+    reuseExistingServer: againstProdBuild ? false : !process.env.CI,
+    // The production command builds before it serves, and `next build` is minutes, not
+    // seconds.
+    timeout: againstProdBuild ? 600_000 : 120_000,
+    // `.next/standalone/server.js` chdirs into its own directory, so it reads the `.env`
+    // that `next build` copied there rather than the one in the repo root — but it takes
+    // PORT from the real environment, which is the only value that has to differ.
+    env: { PORT: String(PORT) },
   },
   projects: [
     {

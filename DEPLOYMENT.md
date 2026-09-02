@@ -638,3 +638,240 @@ Verifying a deploy from outside, which is what section 5 ends on:
 curl -sI https://your-domain.com/ | head -1
 curl -sI https://your-domain.com/ | grep -Ei 'x-frame|x-content-type|referrer'
 ```
+
+## 10. Go-live checklist
+
+Everything above gets the stack running. This is what to check before the domain
+points at it and other people can reach it. Run it in order — the first block is on
+your machine, before you deploy the commit; the rest is on the server.
+
+Each item says what proves it, because "looks fine" and "is fine" differ mostly in
+the places nobody looks.
+
+### On your machine, from the commit you are about to deploy
+
+**1. The whole suite passes against a production build, not the dev server.**
+
+```
+pnpm lint
+pnpm tsc --noEmit
+pnpm test
+E2E_PROD=1 pnpm test:e2e
+```
+
+`pnpm test:e2e` on its own runs the browser suite against `next dev`, which is a
+different program: different bundler output, different error handling, and no
+`.next/standalone` at all. `E2E_PROD=1` builds and then serves the build the way
+the container does — `node .next/standalone/server.js`, which is the Dockerfile's
+`CMD node server.js`. It is not `next start`: `output: "standalone"` is set in
+`next.config.ts`, and Next declines to serve that build through `next start`
+("does not work with output: standalone") — in a warning printed *after* it claims
+to be ready, so it is easy to miss.
+
+Two things to know before running it:
+
+- **Stop any dev or preview server on port 4000 first.** The production mode
+  deliberately refuses to reuse an existing server there — adopting the dev server
+  would produce a green run that tested the wrong program — so it fails with
+  "port is already used" instead.
+- **It runs against your local `DATABASE_URL`**, i.e. the dev database, because the
+  specs need the seeded admin account to log in with. It is a check on the build,
+  not on production data.
+
+Expected: **10 passed, 1 skipped**. The skip is `e2e/storefront/search.spec.ts`, a
+`test.fixme` — the navbar's search box submits nowhere because there is no results
+page yet (`components/storefront/Navbar.tsx`). That ships as a visible dead control
+on the storefront; it is a known gap, not a regression.
+
+**2. The build prints one known error, and no others.**
+
+`pnpm build` — and therefore the E2E run above — prints:
+
+```
+Error: ENVIRONMENT_FALLBACK
+  code: 'ENVIRONMENT_FALLBACK'
+```
+
+It comes from `app/(dev)`: `/dev-preview` and `/storefront-dev-preview`, the
+component-preview pages, being prerendered outside any locale context. Confirmed by
+building with that directory moved aside — the error goes with it.
+
+**Neither the error nor the pages shipping is a go-live blocker.** Both routes
+return 404 in every environment, dev included: `proxy.ts` sends everything outside
+`/admin` through next-intl's middleware, which rewrites `/dev-preview` to
+`/en/dev-preview`, and there is no such route — those pages live outside the
+`[locale]` tree. They have been unreachable since the i18n work, so what ships is
+two prerendered pages nobody can open. Removing them is cleanup, not a release
+step; it is listed in `TASKS.md`. Any *other* error in the build output is
+unaccounted for and should be read before deploying.
+
+### On the server, before the domain points at it
+
+**3. The image carries no secrets, and does carry the right site URL.**
+
+```
+docker compose --env-file .env.production -f docker-compose.prod.yml build app
+docker run --rm --entrypoint sh technotopia-prod-app -c 'ls -a /app; id'
+```
+
+There must be **no `.env` file** in that listing, and the user must be
+`uid=1001(nextjs)`. Worth re-checking on every go-live rather than trusting it
+once: `next build` copies any `.env*` it finds in the build context into
+`.next/standalone`, so the only thing keeping `DATABASE_URL` and `JWT_SECRET` out
+of the published image is two lines in `.dockerignore`.
+
+Confirm the positive side too — that the canonical URL really was baked in:
+
+```
+docker run --rm --entrypoint sh technotopia-prod-app \
+  -c 'grep -rl "https://your-domain.com" /app/.next/server/app | head -3'
+```
+
+Non-empty. Empty means `NEXT_PUBLIC_SITE_URL` never reached the build, and every
+absolute URL the site emits is `http://localhost:3000` (item 7). It is a build
+argument, so the fix is a rebuild, not a restart.
+
+**4. `.env.production` holds production values, not the example ones.**
+
+```
+grep -nE 'changeme|localhost|password123|NODE_ENV=development' .env.production
+ls -l .env.production
+```
+
+No output from the `grep`, and mode `-rw-------`. `changeme` is `.env.example`'s
+placeholder for both `JWT_SECRET` and `POSTGRES_PASSWORD`; `localhost` in
+`DATABASE_URL` is the dev value, and it puts the app in a restart loop (section 9).
+
+**5. No admin account still has a default password.**
+
+The seeded admin — `admin@technotopia.com` / `password123` — is published in this
+repository, in `prisma/seed.ts`. It has no business existing in production, and
+section 6's dump-restore path is how it gets there.
+
+List the accounts first:
+
+```
+docker compose --env-file .env.production -f docker-compose.prod.yml exec postgres \
+  psql -U technotopia -d technotopia
+```
+
+```sql
+SELECT email, role, left("passwordHash", 4) AS bcrypt FROM "User" WHERE role = 'ADMIN';
+```
+
+Only accounts you created should be there. The `bcrypt` column is a second signal:
+section 3's bootstrap writes `$2a$` hashes (pgcrypto), while the application's
+`bcryptjs` writes `$2b$`. Nothing in production writes `$2b$` — the admin panel has
+no change-password screen — so a `$2b$` hash means those rows came from a restored
+dev dump, and brought the seeded admin with them.
+
+Then prove it, rather than inferring it, by trying the password against the live
+site:
+
+```
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://your-domain.com/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@technotopia.com","password":"password123"}'
+```
+
+`401` is the answer you want. `200` means the seeded admin is live and can reach
+every admin screen — delete the row, or rotate the password (section 3), before
+going any further. This spends one of five attempts in the login rate limiter's
+15-minute per-IP window, so don't loop it.
+
+**Do not use pgcrypto for this check.** The obvious query is silently wrong:
+
+```sql
+-- WRONG: returns nothing even when the password IS password123
+SELECT email FROM "User" WHERE "passwordHash" = crypt('password123', "passwordHash");
+```
+
+`crypt()` does not understand the `$2b$` hashes `bcryptjs` writes; it returns a
+non-matching string rather than an error. Verified against the seeded development
+database, where the correct answer is one row: the query returns zero. It works
+only on the `$2a$` hashes pgcrypto wrote itself — which is the case you were not
+worried about.
+
+**6. Backups run, and the output restores.**
+
+A cron entry written is not the same as backups working. Run section 7's script by
+hand once, and look at what it produced:
+
+```
+~/technotopia/maintenance.sh
+ls -l backups/
+docker compose --env-file .env.production -f docker-compose.prod.yml exec -T postgres \
+  pg_restore -l /tmp/db.dump | head
+tar -tzf backups/uploads-$(date +%F).tar.gz | head
+```
+
+The dump should be large enough to plausibly be the database, `pg_restore -l`
+should list real tables, and the tarball should list real files. (`pg_restore` runs
+inside the postgres container — the host has no Postgres client installed.) Then
+copy `backups/` off the server and confirm it arrived: a backup that only exists on
+the machine it backs up is not a backup, and that copy is not automated here.
+
+**7. The SEO output points at the domain (Phase 23).**
+
+```
+curl -s https://your-domain.com/robots.txt
+curl -s https://your-domain.com/sitemap.xml | head -5
+curl -s https://your-domain.com/products/<a-real-slug> \
+  | grep -oE '<link rel="canonical"[^>]*>|<meta property="og:image[^>]*>'
+```
+
+Every absolute URL in all three must be `https://your-domain.com`. Any
+`http://localhost:3000` means the build didn't get `NEXT_PUBLIC_SITE_URL` — item
+3's second command catches the same fault earlier and more cheaply.
+
+`og:image` is the one to look at specifically. It is the product row's
+`/uploads/<file>` path made absolute against `metadataBase`, which is set from the
+site URL in `app/[locale]/layout.tsx`. With that unset Next resolves it against
+`http://localhost:<port>` — not against the request's host, so it is wrong
+identically for every visitor — and ISR then caches the page with that URL in it.
+
+**8. Headers, TLS, and what the server admits to.**
+
+```
+curl -sI http://your-domain.com/ | head -1
+curl -sI https://your-domain.com/ | grep -Ei 'x-frame|x-content-type|referrer|^server|x-powered-by'
+```
+
+`301` from the HTTP one. From the HTTPS one: all three security headers present,
+`Server: nginx` with no version (`server_tokens off`), and **no `X-Powered-By`**
+(turned off in `next.config.ts`). A missing security header means an `add_header`
+was added inside a `server` or `location` block — section 9 explains why that drops
+all three at once.
+
+`Strict-Transport-Security` is deliberately absent — see section 5. Add it once
+renewals have run unattended for a while, not on day one.
+
+**9. Nothing dev-only answers.**
+
+```
+for p in /dev-preview /storefront-dev-preview /admin/dashboard; do
+  curl -s -o /dev/null -w "$p %{http_code}\n" https://your-domain.com$p
+done
+```
+
+`404`, `404`, and a redirect to `/admin/login` for the unauthenticated admin
+request.
+
+**10. Certificate renewal is proven, not assumed.**
+
+```
+docker run --rm \
+  -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+  -v "$(pwd)/certbot/www:/var/www/certbot" \
+  certbot/certbot renew --dry-run
+```
+
+A renewal that silently stopped working takes the site down up to 90 days after the
+last deploy that looked perfectly fine (section 5).
+
+### Then, by hand
+
+Log into `/admin` as the real account, place an order on the storefront as a
+customer, and watch it appear in the admin orders list. That exercises the
+database, the session cookie over real HTTPS, and the uploads mount in one pass —
+which is most of what the checks above can only test one layer at a time.
