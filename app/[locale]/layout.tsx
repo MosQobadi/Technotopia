@@ -27,8 +27,8 @@ export const metadata: Metadata = {
 // single app-wide root — deriving lang/dir straight from the `locale` route
 // param (no request-header threading through proxy.ts needed) keeps this
 // segment eligible for static rendering via setRequestLocale below, which
-// matters for storefront SEO/performance. See app/admin/layout.tsx and
-// app/(dev)/layout.tsx for the sibling root layouts this pattern requires.
+// matters for storefront SEO/performance. See app/admin/layout.tsx for the
+// sibling root layout this pattern requires.
 export default async function LocaleLayout({
   children,
   params,

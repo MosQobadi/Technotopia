@@ -683,27 +683,18 @@ Expected: **10 passed, 1 skipped**. The skip is `e2e/storefront/search.spec.ts`,
 page yet (`components/storefront/Navbar.tsx`). That ships as a visible dead control
 on the storefront; it is a known gap, not a regression.
 
-**2. The build prints one known error, and no others.**
+**2. The build output is clean.**
 
-`pnpm build` — and therefore the E2E run above — prints:
+`pnpm build` — and therefore the E2E run above — should print no `Error:` and no
+warnings at all, only the route table. Anything there is unaccounted for and worth
+reading before deploying.
 
-```
-Error: ENVIRONMENT_FALLBACK
-  code: 'ENVIRONMENT_FALLBACK'
-```
-
-It comes from `app/(dev)`: `/dev-preview` and `/storefront-dev-preview`, the
-component-preview pages, being prerendered outside any locale context. Confirmed by
-building with that directory moved aside — the error goes with it.
-
-**Neither the error nor the pages shipping is a go-live blocker.** Both routes
-return 404 in every environment, dev included: `proxy.ts` sends everything outside
-`/admin` through next-intl's middleware, which rewrites `/dev-preview` to
-`/en/dev-preview`, and there is no such route — those pages live outside the
-`[locale]` tree. They have been unreachable since the i18n work, so what ships is
-two prerendered pages nobody can open. Removing them is cleanup, not a release
-step; it is listed in `TASKS.md`. Any *other* error in the build output is
-unaccounted for and should be read before deploying.
+It has not always been silent. Until Task 26.6 it printed
+`Error: ENVIRONMENT_FALLBACK` on every build, from two component-preview pages in
+`app/(dev)` that were prerendered outside any locale context — and that had been
+unreachable in every environment since the i18n work, so they were deleted rather
+than fixed. If that error comes back, something is being rendered outside the
+`[locale]` tree that needs next-intl's request context.
 
 ### On the server, before the domain points at it
 
@@ -846,16 +837,18 @@ all three at once.
 `Strict-Transport-Security` is deliberately absent — see section 5. Add it once
 renewals have run unattended for a while, not on day one.
 
-**9. Nothing dev-only answers.**
+**9. The admin panel is closed to the internet.**
 
 ```
-for p in /dev-preview /storefront-dev-preview /admin/dashboard; do
+for p in /admin /admin/dashboard /admin/orders /api/admin/products; do
   curl -s -o /dev/null -w "$p %{http_code}\n" https://your-domain.com$p
 done
 ```
 
-`404`, `404`, and a redirect to `/admin/login` for the unauthenticated admin
-request.
+The three pages redirect to `/admin/login` (`307`); the API returns `401`. Both
+layers matter: `proxy.ts` does the redirect, and every admin route handler
+re-verifies the JWT and the `ADMIN` role itself, so a routing change can't quietly
+open the data.
 
 **10. Certificate renewal is proven, not assumed.**
 

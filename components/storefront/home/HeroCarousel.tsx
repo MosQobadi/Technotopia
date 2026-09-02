@@ -72,6 +72,9 @@ export function HeroCarousel({ banners }: { banners: HomeBannerView[] }) {
               src={slide.image}
               alt={slide.headline}
               fill
+              // Full width below lg, where the section stacks to one column; above it
+              // the image is the narrower half of the 1.1fr/1fr grid inside max-w-320.
+              sizes="(max-width: 1024px) 100vw, 600px"
               className="object-cover"
               priority={slideIndex === 0}
             />

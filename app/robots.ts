@@ -7,13 +7,7 @@ import { SITE_URL } from "@/lib/seo";
 // robots.txt "disallow" rules are left-anchored, not hierarchical, so each
 // needs its own entry.
 const UNLOCALIZED_DISALLOWED_PATHS = ["/admin", "/api"];
-const LOCALIZED_DISALLOWED_PATHS = [
-  "/cart",
-  "/checkout",
-  "/account",
-  "/dev-preview",
-  "/storefront-dev-preview",
-];
+const LOCALIZED_DISALLOWED_PATHS = ["/cart", "/checkout", "/account"];
 
 export default function robots(): MetadataRoute.Robots {
   return {

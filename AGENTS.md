@@ -69,9 +69,10 @@ depth for its own sake — a flat, obvious structure beats a "correct" deep one.
 
 Generic, module-agnostic list table built on HeroUI's `Table`/`Select`/
 `SearchField`/`Pagination` primitives. Nothing product/order/category-specific
-lives in this file — module screens pass columns and data in as props. Demo
-usage with mock data: `app/dev-preview/DataTableDemo.tsx` (rendered from
-`app/dev-preview/page.tsx`).
+lives in this file — module screens pass columns and data in as props. For real
+usage, read any admin list screen, e.g. `app/admin/products/ProductsTable.tsx`.
+(There used to be a `/dev-preview` page rendering it against mock data; it was
+deleted in Task 26.6 — next-intl's locale routing had made it unreachable.)
 
 ```ts
 interface DataTableColumn<T> {
@@ -129,8 +130,9 @@ Each field wraps React Hook Form's `Controller` (or `useController` directly,
 for fields that need local state alongside the bound value) + a HeroUI
 component + `FieldError`/inline error text. Label above, input below, red
 error text under invalid fields — consistent across every form in the app.
-Demo usage: `app/dev-preview/FormFieldsDemo.tsx` (rendered from
-`app/dev-preview/page.tsx`).
+For real usage, read any admin form screen, e.g. `app/admin/products/ProductForm.tsx`.
+(The `/dev-preview` page that demoed these fields was deleted in Task 26.6 — see
+the note under `components/admin/DataTable`.)
 
 All fields take `control: Control<TFieldValues>` and `name: FieldPath<TFieldValues>`
 plus a `label`, so wiring one into a `react-hook-form` + Zod form is the same

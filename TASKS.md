@@ -27,8 +27,8 @@ in any commit up to `cbb97c7`. Outstanding and deferred tasks keep their full pr
 | 22    | My Account              | ✅ done                       |
 | 23    | SEO & performance       | ✅ done                       |
 | 24    | Testing & hardening     | ✅ done                       |
-| 26    | Cleanup & correctness   | ⬜ 26.4, 26.6 left ← **start here** |
-| 25    | Deployment              | ✅ done — waiting on a VPS          |
+| 26    | Cleanup & correctness   | ✅ done                    |
+| 25    | Deployment              | ✅ done — waiting on a VPS |
 
 ---
 
@@ -144,7 +144,7 @@ Done outside the task list, after Phase 24:
 
 # Part 2 — Outstanding
 
-## Phase 26 — Cleanup & correctness
+## Phase 26 — Cleanup & correctness ✅
 
 Items found by auditing the repo, not part of the original plan.
 
@@ -216,7 +216,17 @@ cleans up after itself so the residue doesn't come back, and check whether
 prisma/seed.ts should reseed a clean baseline afterwards.
 ```
 
-### Task 26.4 — Small polish ⬜
+### Task 26.4 — Small polish ✅
+
+Both things the prompt names had already been dealt with by later work: `ProductCard`
+and `CartContent` carry `sizes` today, and the `nginx.conf;C` directory is gone (25.3
+rewrote that config into `nginx/`). What was left were the three `fill` images nobody had
+listed — `HeroCarousel`'s slide image and `ProductGallery`'s main image and thumbnails —
+so they got the same treatment: viewport-matched `sizes` for the two that scale with the
+layout, a flat `68px` for the fixed-size thumbnail buttons.
+
+Every `next/image` with `fill` in the codebase now has a `sizes`, and `pnpm build` prints
+no warnings at all (with 26.6 removing the one error it still had).
 
 **Prompt:**
 
@@ -264,16 +274,26 @@ public/uploads files move to the future VPS without the admin re-entering anythi
 Write the answer and the migration steps into DEPLOYMENT.md.
 ```
 
-### Task 26.6 — Delete the unreachable dev-preview pages ⬜
+### Task 26.6 — Delete the unreachable dev-preview pages ✅
 
-Found while running the go-live checks (25.5). `app/(dev)` holds `/dev-preview` and
-`/storefront-dev-preview`, the component-preview pages from Phases 5 and 15. Both return
-404 in every environment, dev included — `proxy.ts` sends everything outside `/admin`
-through next-intl's middleware, which rewrites `/dev-preview` to `/en/dev-preview`, and
-they live outside the `[locale]` tree — so they have been dead since the i18n work
-(`8be37dd`). They are still built and prerendered into the production image, and they are
-the source of the `Error: ENVIRONMENT_FALLBACK` that every production build prints
-(confirmed by building with the directory moved aside).
+Deleted, along with the references that outlived them: the two `robots.ts` disallow
+entries (which were disallowing routes that returned 404 anyway), the "dev-preview" half
+of `proxy.ts`'s comment, the sibling-root-layout note in `app/[locale]/layout.tsx`, and
+the two `app/dev-preview/...` paths in `AGENTS.md` — already stale, since the files had
+moved into `app/(dev)` at some point without the docs following. `AGENTS.md` now points
+at a real admin screen for each component instead of a preview page.
+
+The production build is silent as a result: no `ENVIRONMENT_FALLBACK`, no warnings, just
+the route table.
+
+**The finding**, from running the go-live checks (25.5). `app/(dev)` held `/dev-preview`
+and `/storefront-dev-preview`, the component-preview pages from Phases 5 and 15. Both
+returned 404 in every environment, dev included — `proxy.ts` sends everything outside
+`/admin` through next-intl's middleware, which rewrites `/dev-preview` to
+`/en/dev-preview`, and they lived outside the `[locale]` tree — so they had been dead
+since the i18n work (`8be37dd`). They were still built and prerendered into the production
+image, and they were the source of the `Error: ENVIRONMENT_FALLBACK` that every production
+build printed (confirmed by building with the directory moved aside).
 
 **Prompt:**
 

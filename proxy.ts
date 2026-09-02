@@ -28,8 +28,8 @@ export async function proxy(request: NextRequest) {
     return adminGuard(request);
   }
 
-  // Everything else (storefront + dev-preview routes): next-intl's own
-  // locale routing ("as-needed" — "/" stays English, "/fa" is Farsi). The
+  // Everything else (the storefront): next-intl's own locale routing
+  // ("as-needed" — "/" stays English, "/fa" is Farsi). The
   // resolved locale reaches app/[locale]/layout.tsx via the route param
   // next-intl rewrites onto the request, so no header-passing is needed here.
   return intlMiddleware(request);
