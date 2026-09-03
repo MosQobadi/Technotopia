@@ -65,12 +65,10 @@ export function ProductDetailContent({
         <ProductGallery images={product.image ? [product.image] : []} alt={product.name} />
 
         <div>
-          <div className="text-accent mb-2.5 font-mono text-xs tracking-wide uppercase">
+          <div className="text-accent mb-2.5 text-xs tracking-wide uppercase">
             {product.category} · {product.brand}
           </div>
-          <h1 className="text-ink-900 mb-3.5 text-[32px] font-extrabold tracking-tight">
-            {product.name}
-          </h1>
+          <h1 className="text-ink-900 text-title mb-3.5">{product.name}</h1>
           <PriceTag
             price={product.price}
             originalPrice={product.originalPrice}
@@ -84,7 +82,7 @@ export function ProductDetailContent({
               {product.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-gray-200 px-2.5 py-1 font-mono text-[11px] text-gray-600 uppercase"
+                  className="rounded-full border border-gray-200 px-2.5 py-1 text-[11px] text-gray-600 uppercase"
                 >
                   {tag}
                 </span>
@@ -98,7 +96,7 @@ export function ProductDetailContent({
               onDecrease={() => setQuantity((current) => Math.max(1, current - 1))}
               onIncrease={() => setQuantity((current) => current + 1)}
             />
-            <span className="font-mono text-xs text-gray-500">
+            <span className="text-xs text-gray-500">
               {t("subtotal", { price: formatPrice(product.price * quantity) })}
             </span>
           </div>
@@ -121,7 +119,7 @@ export function ProductDetailContent({
           </div>
 
           <div className="border-t border-gray-100 pt-6">
-            <h2 className="text-ink-900 mb-3 text-[17px] font-bold">{t("description")}</h2>
+            <h2 className="text-ink-900 text-subhead mb-3">{t("description")}</h2>
             <p className="text-[15px] leading-relaxed text-gray-600">{product.longDescription}</p>
           </div>
         </div>
@@ -130,9 +128,7 @@ export function ProductDetailContent({
       {related.length > 0 && (
         <section>
           <SectionEyebrow label={t("relatedEyebrow")} />
-          <h2 className="text-ink-900 mb-6 text-[26px] font-extrabold tracking-tight">
-            {t("relatedHeading")}
-          </h2>
+          <h2 className="text-ink-900 text-heading mb-6">{t("relatedHeading")}</h2>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5">
             {related.map((item) => (
               <ProductCard

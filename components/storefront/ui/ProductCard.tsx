@@ -57,14 +57,14 @@ export function ProductCard({
             className="object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center font-mono text-[10px] text-gray-500">
+          <div className="flex size-full items-center justify-center text-[10px] text-gray-500">
             PRODUCT PHOTO
           </div>
         )}
         {badge && (
           <span
             className={cn(
-              "absolute start-3 top-3 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold",
+              "absolute start-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold",
               badgeClasses(badge),
             )}
           >
@@ -96,9 +96,7 @@ export function ProductCard({
         )}
       </div>
       <div className="flex flex-col gap-1.5 p-5">
-        <span className="text-accent font-mono text-[11px] tracking-wide uppercase">
-          {category}
-        </span>
+        <span className="text-accent text-[11px] tracking-wide uppercase">{category}</span>
         <Link href={href} className="text-ink-900 text-[17px] font-bold tracking-tight">
           {name}
         </Link>

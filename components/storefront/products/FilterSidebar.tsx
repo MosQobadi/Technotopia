@@ -48,7 +48,7 @@ export function FilterSidebar({
   return (
     <aside className="bg-surface-100 sticky top-22 h-fit rounded-[20px] p-6">
       <div className="mb-7">
-        <h2 className="mb-3.5 text-[13px] font-bold text-gray-600">{t("category")}</h2>
+        <h2 className="text-label mb-3.5 text-gray-600">{t("category")}</h2>
         <div className="flex flex-col gap-2.5">
           <button
             type="button"
@@ -79,7 +79,7 @@ export function FilterSidebar({
       </div>
 
       <div className="mb-7">
-        <h2 className="mb-3.5 text-[13px] font-bold text-gray-600">{t("brand")}</h2>
+        <h2 className="text-label mb-3.5 text-gray-600">{t("brand")}</h2>
         <div className="flex flex-col gap-2.5">
           {brands.map((brand) => (
             <label key={brand.id} className="flex cursor-pointer items-center gap-2 text-sm">
@@ -96,7 +96,7 @@ export function FilterSidebar({
       </div>
 
       <div className="mb-7">
-        <h2 className="mb-3.5 text-[13px] font-bold text-gray-600">{t("priceRange")}</h2>
+        <h2 className="text-label mb-3.5 text-gray-600">{t("priceRange")}</h2>
         <input
           type="range"
           min={PRICE_RANGE_MIN}
@@ -110,13 +110,13 @@ export function FilterSidebar({
           aria-label={t("maxPrice")}
           className="accent-accent w-full"
         />
-        <div className="mt-2 font-mono text-xs text-gray-500">
+        <div className="mt-2 text-xs text-gray-500">
           {t("upTo", { price: formatPrice(maxPrice) })}
         </div>
       </div>
 
       <div>
-        <h2 className="mb-3.5 text-[13px] font-bold text-gray-600">{t("status")}</h2>
+        <h2 className="text-label mb-3.5 text-gray-600">{t("status")}</h2>
         <div className="flex flex-col gap-2.5">
           {STATUS_OPTIONS.map((option) => (
             <label key={option.value} className="flex cursor-pointer items-center gap-2 text-sm">

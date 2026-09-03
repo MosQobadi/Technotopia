@@ -36,7 +36,7 @@ export default function WishlistPage() {
 
   return (
     <main className="mx-auto max-w-320 px-6 py-10 pb-24">
-      <h1 className="text-ink-900 mb-8 text-[32px] font-extrabold tracking-tight">{t("title")}</h1>
+      <h1 className="text-ink-900 text-title mb-8">{t("title")}</h1>
 
       {showLoggedOut && (
         <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />

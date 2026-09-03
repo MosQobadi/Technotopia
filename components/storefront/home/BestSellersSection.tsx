@@ -59,9 +59,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
   return (
     <section className="mx-auto max-w-320 px-6 pt-6 pb-24">
       <SectionEyebrow label={t("eyebrow")} />
-      <h2 className="text-ink-900 mb-7 text-[32px] font-extrabold tracking-tight">
-        {t("heading")}
-      </h2>
+      <h2 className="text-ink-900 text-title mb-7">{t("heading")}</h2>
 
       <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
@@ -115,7 +113,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-10 text-center font-mono text-[13px] text-gray-500">{t("noMatch")}</p>
+        <p className="py-10 text-center text-[13px] text-gray-500">{t("noMatch")}</p>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
           {filtered.map((product) => (

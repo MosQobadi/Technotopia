@@ -45,12 +45,7 @@ export function QuantityStepper({
       >
         −
       </button>
-      <span
-        className={cn(
-          "text-center font-mono font-semibold text-ink-900",
-          sizeClasses.value,
-        )}
-      >
+      <span className={cn("text-ink-900 text-center font-semibold", sizeClasses.value)}>
         {value}
       </span>
       <button

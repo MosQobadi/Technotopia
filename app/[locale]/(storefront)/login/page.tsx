@@ -76,7 +76,7 @@ function LoginForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900">{t("heading")}</h1>
+      <h1 className="text-heading text-gray-900">{t("heading")}</h1>
       <p className="mt-2 text-sm text-gray-500">{t("subheading")}</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-5">
@@ -144,7 +144,7 @@ function SignupForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900">{t("heading")}</h1>
+      <h1 className="text-heading text-gray-900">{t("heading")}</h1>
       <p className="mt-2 text-sm text-gray-500">{t("subheading")}</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-5">

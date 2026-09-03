@@ -30,9 +30,7 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
         <span className="bg-success size-3.5 rounded-full" aria-hidden />
       </div>
 
-      <h1 className="text-ink-900 mb-3 text-[30px] font-extrabold tracking-tight">
-        {t("heading")}
-      </h1>
+      <h1 className="text-ink-900 text-title mb-3">{t("heading")}</h1>
       <p className="mb-8 text-[15px] leading-relaxed text-gray-500">{t("message")}</p>
 
       <div className="bg-surface-100 mb-8 rounded-[20px] p-7 text-start">

@@ -54,11 +54,10 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
 
   return (
     <main className="mx-auto max-w-180 px-6 py-12">
-      <h1 className="text-ink-900 mb-2 text-[30px] font-extrabold tracking-tight">
-        {t("heading")}
-      </h1>
-      <p className="mb-8 font-mono text-[13px] text-gray-500">
-        {orderNumber} · {t("placed", { date: format(order.createdAt, "MMM d, yyyy") })}
+      <h1 className="text-ink-900 text-title mb-2">{t("heading")}</h1>
+      <p className="mb-8 text-[13px] text-gray-500">
+        <span className="font-mono">{orderNumber}</span> ·{" "}
+        {t("placed", { date: format(order.createdAt, "MMM d, yyyy") })}
       </p>
 
       <div className="bg-surface-100 mb-8 rounded-[20px] px-7 py-8">
@@ -112,9 +111,7 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
             <span className="bg-accent mt-1.5 size-2 shrink-0 rounded-full" aria-hidden />
             <div>
               <div className="text-ink-900 text-sm font-semibold">{entry.label}</div>
-              <div className="font-mono text-xs text-gray-500">
-                {formatTimestamp(entry.timestamp)}
-              </div>
+              <div className="text-xs text-gray-500">{formatTimestamp(entry.timestamp)}</div>
             </div>
           </div>
         ))}

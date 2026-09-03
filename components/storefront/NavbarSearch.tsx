@@ -223,7 +223,7 @@ export function NavbarSearch() {
 function SearchGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="py-1">
-      <p className="px-4 py-1 font-mono text-[10px] font-bold tracking-wide text-gray-400 uppercase">
+      <p className="px-4 py-1 text-[10px] font-bold tracking-wide text-gray-400 uppercase">
         {label}
       </p>
       <ul>{children}</ul>

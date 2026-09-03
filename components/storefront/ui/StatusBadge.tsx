@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
 
-// Stock status and order status are visually distinct (dot+mono text vs. a solid pill)
+// Stock status and order status are visually distinct (dot + label vs. a solid pill)
 // and are never interchangeable, so they're kept as two separate components rather
 // than one component with a "type" switch.
 
@@ -21,7 +21,7 @@ const STOCK_STATUS_CONFIG: Record<
 
 interface StockStatusBadgeProps {
   status: StockStatus;
-  /** "inline" = colored dot + mono text (product detail). "pill" = white pill, no dot (product card badge). */
+  /** "inline" = colored dot + label (product detail). "pill" = white pill, no dot (product card badge). */
   variant?: "inline" | "pill";
   className?: string;
 }
@@ -34,11 +34,7 @@ export function StockStatusBadge({ status, variant = "inline", className }: Stoc
   if (variant === "pill") {
     return (
       <span
-        className={cn(
-          "rounded-full bg-white px-2.5 py-1 font-mono text-[10px] font-bold",
-          text,
-          className,
-        )}
+        className={cn("rounded-full bg-white px-2.5 py-1 text-[10px] font-bold", text, className)}
       >
         {label}
       </span>
@@ -48,7 +44,7 @@ export function StockStatusBadge({ status, variant = "inline", className }: Stoc
   return (
     <span className={cn("inline-flex items-center gap-1.5", className)}>
       <span className={cn("size-1.75 shrink-0 rounded-full", bg)} aria-hidden />
-      <span className={cn("font-mono text-xs", text)}>{label}</span>
+      <span className={cn("text-xs", text)}>{label}</span>
     </span>
   );
 }
@@ -74,7 +70,7 @@ export function OrderStatusBadge({ status, className }: OrderStatusBadgeProps) {
   return (
     <span
       className={cn(
-        "rounded-full bg-white px-3 py-1 font-mono text-[11px] font-bold",
+        "rounded-full bg-white px-3 py-1 text-[11px] font-bold",
         ORDER_STATUS_CLASSES[status],
         className,
       )}

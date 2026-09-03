@@ -34,7 +34,7 @@ export default function AccountPage() {
 
   return (
     <main className="mx-auto max-w-225 px-6 py-10 pb-24">
-      <h1 className="text-ink-900 mb-7 text-[32px] font-extrabold tracking-tight">{t("title")}</h1>
+      <h1 className="text-ink-900 text-title mb-7">{t("title")}</h1>
 
       {showLoggedOut && (
         <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />

@@ -98,7 +98,7 @@ export function CheckoutContent() {
 
   return (
     <main className="mx-auto max-w-250 px-6 py-10 pb-24">
-      <h1 className="text-ink-900 mb-8 text-[30px] font-extrabold tracking-tight">{t("title")}</h1>
+      <h1 className="text-ink-900 text-title mb-8">{t("title")}</h1>
 
       {showLoggedOut && (
         <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />
@@ -125,7 +125,7 @@ export function CheckoutContent() {
             )}
 
             <section>
-              <h2 className="text-ink-900 mb-4 text-[17px] font-bold">{t("shippingAddress")}</h2>
+              <h2 className="text-ink-900 text-subhead mb-4">{t("shippingAddress")}</h2>
               <div className="grid grid-cols-2 gap-3.5">
                 <Controller
                   name="fullName"
@@ -182,7 +182,7 @@ export function CheckoutContent() {
             </section>
 
             <section>
-              <h2 className="text-ink-900 mb-4 text-[17px] font-bold">{t("paymentMethod")}</h2>
+              <h2 className="text-ink-900 text-subhead mb-4">{t("paymentMethod")}</h2>
               <div className="flex flex-col gap-2.5">
                 {PAYMENT_METHODS.map((method) => (
                   <label
@@ -208,7 +208,7 @@ export function CheckoutContent() {
           </div>
 
           <div className="bg-surface-100 sticky top-6 rounded-[20px] p-6">
-            <h2 className="text-ink-900 mb-5 text-[17px] font-bold">{tCommon("orderSummary")}</h2>
+            <h2 className="text-ink-900 text-subhead mb-5">{tCommon("orderSummary")}</h2>
             <div className="mb-2.5 flex flex-col gap-2.5">
               {items.map((item) => (
                 <div key={item.id} className="flex justify-between text-[13px] text-gray-500">

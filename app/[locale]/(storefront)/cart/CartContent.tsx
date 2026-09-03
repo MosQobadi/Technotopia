@@ -40,7 +40,7 @@ export function CartContent() {
 
   return (
     <main className="mx-auto max-w-250 px-6 py-10 pb-24">
-      <h1 className="text-ink-900 mb-8 text-[32px] font-extrabold tracking-tight">{t("title")}</h1>
+      <h1 className="text-ink-900 text-title mb-8">{t("title")}</h1>
 
       {showLoggedOut && (
         <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />
@@ -69,7 +69,7 @@ export function CartContent() {
           </div>
 
           <div className="bg-surface-100 sticky top-22 rounded-[20px] p-6">
-            <h2 className="text-ink-900 mb-5 text-[17px] font-bold">{tCommon("orderSummary")}</h2>
+            <h2 className="text-ink-900 text-subhead mb-5">{tCommon("orderSummary")}</h2>
             <div className="mb-2.5 flex justify-between text-sm text-gray-500">
               <span>{tCommon("subtotal")}</span>
               <span>{formatPrice(subtotal)}</span>
@@ -108,17 +108,15 @@ function CartLine({ item, onDecrease, onIncrease, onRemove }: CartLineProps) {
         {item.image ? (
           <Image src={item.image} alt={item.name} fill sizes="96px" className="object-cover" />
         ) : (
-          <div className="flex size-full items-center justify-center font-mono text-[9px] text-gray-500">
+          <div className="flex size-full items-center justify-center text-[9px] text-gray-500">
             PHOTO
           </div>
         )}
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5">
-        <span className="text-accent font-mono text-[10px] tracking-wide uppercase">
-          {item.category}
-        </span>
-        <h3 className="text-ink-900 text-[15px] font-bold">{item.name}</h3>
+        <span className="text-accent text-[10px] tracking-wide uppercase">{item.category}</span>
+        <h3 className="text-ink-900 text-subhead">{item.name}</h3>
         <div className="mt-1.5 flex items-center justify-between">
           <QuantityStepper
             value={item.quantity}

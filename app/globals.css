@@ -13,8 +13,14 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* One set of font utilities, two scopes. The storefront loads its own faces
+     per locale (see app/[locale]/(storefront)/layout.tsx) and defines the
+     --font-storefront-* variables on its scope element; the admin defines
+     neither, so it falls through to Geist. Farsi loads no separate mono face —
+     Vazirmatn covers the Latin digits an order number is made of — so mono
+     falls through to whichever sans that locale did load. */
+  --font-sans: var(--font-storefront-sans, var(--font-geist-sans));
+  --font-mono: var(--font-storefront-mono, var(--font-storefront-sans, var(--font-geist-mono)));
 
   /* Storefront-only named tokens (see design/storefront/Technotopia Design System v2.dc.html).
      Values are supplied by the [data-scope="storefront"] block below; unscoped they're unset. */
@@ -27,15 +33,54 @@
   --color-success: var(--success);
 }
 
+/* Storefront type scale. Five steps, each carrying its own size, line-height,
+   weight and tracking — so a heading is one class picked from a named set
+   rather than four Tailwind classes reinvented at every call site.
+
+   The weights step with the sizes (800, 800, 700, 700, 600) instead of every
+   heading landing on 800 the way the blanket h1/h2/h3 rule this replaced made
+   them. Each one is a weight the storefront actually loads; adding a step
+   means adding its weight to the font calls in
+   app/[locale]/(storefront)/layout.tsx, or the browser will synthesise it. */
+@theme {
+  /* 48px — the hero headline. One per page, at most. */
+  --text-display: 3rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 800;
+
+  /* 32px — a page <h1>, and the home page's section headings, which carry the
+     same weight in the design as the title of a page. */
+  --text-title: 2rem;
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.02em;
+  --text-title--font-weight: 800;
+
+  /* 26px — a section heading below a page title. */
+  --text-heading: 1.625rem;
+  --text-heading--line-height: 1.2;
+  --text-heading--letter-spacing: -0.02em;
+  --text-heading--font-weight: 700;
+
+  /* 17px — the heading of a panel, card or line item. */
+  --text-subhead: 1.0625rem;
+  --text-subhead--line-height: 1.35;
+  --text-subhead--letter-spacing: -0.01em;
+  --text-subhead--font-weight: 700;
+
+  /* 13px — a group label: filter sidebar, footer column. */
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0;
+  --text-label--font-weight: 600;
+}
+
 body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
 /* Storefront design system — scoped so it never leaks into the admin (indigo) theme above. */
 [data-scope="storefront"] {
-  --font-sans: var(--font-plus-jakarta-sans);
-  --font-mono: var(--font-ibm-plex-mono);
-
   /* Ink / neutrals */
   --ink-900: oklch(0.17 0 0);
   --gray-500: oklch(0.55 0 0);
@@ -64,21 +109,4 @@ body {
   --success: oklch(0.62 0.15 148);
   --warning: oklch(0.75 0.15 80);
   --danger: oklch(0.6 0.2 25); /* error / discount */
-}
-
-[data-scope="storefront"] h1,
-[data-scope="storefront"] h2,
-[data-scope="storefront"] h3 {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-/* Farsi (RTL) — Plus Jakarta Sans/IBM Plex Mono don't cover Persian glyphs,
-   so swap in Vazirmatn (loaded unconditionally in the storefront layout,
-   see app/[locale]/(storefront)/layout.tsx). `dir` lives on <html>, set by
-   app/[locale]/layout.tsx from the locale route param — hence the ancestor
-   combinator rather than a compound selector. */
-html[dir="rtl"] [data-scope="storefront"] {
-  --font-sans: var(--font-vazirmatn);
-  --font-mono: var(--font-vazirmatn);
 }

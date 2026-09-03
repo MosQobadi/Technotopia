@@ -35,9 +35,7 @@ export function HeroCarousel({ banners }: { banners: HomeBannerView[] }) {
       <div className="mx-auto grid max-w-320 items-center gap-10 px-6 py-16 lg:grid-cols-[1.1fr_1fr]">
         <div>
           {slide.tag && <SectionEyebrow label={slide.tag} className="mb-4" />}
-          <h1 className="text-ink-900 mb-4.5 text-[48px] leading-[1.05] font-extrabold tracking-tight">
-            {slide.headline}
-          </h1>
+          <h1 className="text-ink-900 text-display mb-4.5">{slide.headline}</h1>
           {slide.subcopy && (
             <p className="mb-7 max-w-115 text-base leading-relaxed text-gray-500">
               {slide.subcopy}
@@ -79,7 +77,7 @@ export function HeroCarousel({ banners }: { banners: HomeBannerView[] }) {
               priority={slideIndex === 0}
             />
           ) : (
-            <div className="flex size-full items-center justify-center font-mono text-[13px] text-gray-500">
+            <div className="flex size-full items-center justify-center text-[13px] text-gray-500">
               HERO PRODUCT PHOTO
             </div>
           )}

@@ -26,9 +26,7 @@ export function StarsSection({ products }: { products: HomeProductView[] }) {
   return (
     <section className="mx-auto max-w-320 px-6 pt-18 pb-10">
       <SectionEyebrow label={t("eyebrow")} />
-      <h2 className="text-ink-900 mb-8 text-[32px] font-extrabold tracking-tight">
-        {t("heading")}
-      </h2>
+      <h2 className="text-ink-900 text-title mb-8">{t("heading")}</h2>
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
         {visible.map((product) => {

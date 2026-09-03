@@ -18,7 +18,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-4 text-xs font-bold text-gray-600">{t("shopHeading")}</h3>
+          <h3 className="text-label mb-4 text-gray-600">{t("shopHeading")}</h3>
           <div className="flex flex-col gap-2.5">
             {SHOP_LINK_KEYS.map((key) => (
               <Link
@@ -33,7 +33,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-4 text-xs font-bold text-gray-600">{t("supportHeading")}</h3>
+          <h3 className="text-label mb-4 text-gray-600">{t("supportHeading")}</h3>
           <div className="flex flex-col gap-2.5">
             <Link href="/orders/track" className="text-sm text-gray-500">
               {t("trackOrder")}
@@ -47,14 +47,14 @@ export function Footer() {
             <Link href="mailto:support@technotopia.example" className="text-sm text-gray-500">
               support@technotopia.example
             </Link>
-            <span className="font-mono text-[13px] text-gray-500" dir="ltr">
+            <span className="text-[13px] text-gray-500" dir="ltr">
               +98 21 0000 0000
             </span>
           </div>
         </div>
 
         <div>
-          <h3 className="mb-4 text-xs font-bold text-gray-600">{t("visitHeading")}</h3>
+          <h3 className="text-label mb-4 text-gray-600">{t("visitHeading")}</h3>
           <address className="text-sm leading-loose text-gray-500 not-italic">
             {t("addressLine1")}
             <br />
@@ -67,7 +67,7 @@ export function Footer() {
 
       <div className="border-t border-gray-200">
         <div className="mx-auto flex max-w-320 flex-wrap items-center justify-between gap-3 px-6 py-5">
-          <span className="font-mono text-xs text-gray-500">
+          <span className="text-xs text-gray-500">
             {t("copyright", { year: new Date().getFullYear() })}
           </span>
           <div className="flex gap-5">

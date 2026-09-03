@@ -47,8 +47,8 @@ export function OrdersTab() {
           className="bg-surface-100 flex flex-wrap items-center justify-between gap-2.5 rounded-[20px] px-5 py-4.5"
         >
           <div>
-            <div className="mb-1 font-mono text-xs text-gray-500">
-              #{order.id.slice(-8).toUpperCase()} ·{" "}
+            <div className="mb-1 text-xs text-gray-500">
+              <span className="font-mono">#{order.id.slice(-8).toUpperCase()}</span> ·{" "}
               {format(new Date(order.createdAt), "MMM d, yyyy")}
             </div>
             <div className="text-ink-900 text-sm font-semibold">{order.itemsSummary}</div>

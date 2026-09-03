@@ -27,7 +27,7 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
             className="object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center font-mono text-[13px] text-gray-500">
+          <div className="flex size-full items-center justify-center text-[13px] text-gray-500">
             PRODUCT PHOTO
           </div>
         )}
