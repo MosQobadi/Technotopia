@@ -30,21 +30,21 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
         <span className="bg-success size-3.5 rounded-full" aria-hidden />
       </div>
 
-      <h1 className="text-ink-900 text-title mb-3">{t("heading")}</h1>
-      <p className="mb-8 text-[15px] leading-relaxed text-gray-500">{t("message")}</p>
+      <h1 className="text-fg text-title mb-3">{t("heading")}</h1>
+      <p className="mb-8 text-[15px] leading-relaxed text-fg-subtle">{t("message")}</p>
 
-      <div className="bg-surface-100 mb-8 rounded-[20px] p-7 text-start">
+      <div className="bg-surface-sunken mb-8 rounded-[20px] p-7 text-start">
         <div className="mb-3 flex justify-between text-sm">
-          <span className="text-gray-500">{t("orderNumber")}</span>
-          <span className="text-ink-900 font-mono font-semibold">{orderNumber}</span>
+          <span className="text-fg-subtle">{t("orderNumber")}</span>
+          <span className="text-fg font-mono font-semibold">{orderNumber}</span>
         </div>
         <div className="mb-3 flex justify-between text-sm">
-          <span className="text-gray-500">{t("estimatedDelivery")}</span>
-          <span className="text-ink-900 font-semibold">{t("estimatedDeliveryValue")}</span>
+          <span className="text-fg-subtle">{t("estimatedDelivery")}</span>
+          <span className="text-fg font-semibold">{t("estimatedDeliveryValue")}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">{t("totalPaid")}</span>
-          <span className="text-ink-900 font-extrabold">{formatPrice(order.total)}</span>
+          <span className="text-fg-subtle">{t("totalPaid")}</span>
+          <span className="text-fg font-extrabold">{formatPrice(order.total)}</span>
         </div>
       </div>
 

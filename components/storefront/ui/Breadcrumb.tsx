@@ -16,11 +16,11 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
   const t = useTranslations("common");
 
   return (
-    <nav aria-label={t("breadcrumb")} className={cn("text-[13px] text-gray-500", className)}>
+    <nav aria-label={t("breadcrumb")} className={cn("text-[13px] text-fg-subtle", className)}>
       {items.map((item, index) => (
         <span key={item.label}>
           {item.href ? (
-            <Link href={item.href} className="hover:text-ink-900 text-gray-500">
+            <Link href={item.href} className="hover:text-fg text-fg-subtle">
               {item.label}
             </Link>
           ) : (

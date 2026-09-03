@@ -41,7 +41,8 @@
     "account": "Account",
     "language": "Language",
     "switchToEnglish": "Switch to English",
-    "switchToFarsi": "Switch to Persian"
+    "switchToFarsi": "Switch to Persian",
+    "toggleTheme": "Toggle dark mode"
   },
   "footer": {
     "tagline": "Cameras, microphones, lights and speakers for people who make things worth watching.",

@@ -24,13 +24,13 @@ export function PriceTag({ price, originalPrice, inStock, size = "md", className
 
   return (
     <div className={cn("flex flex-wrap items-baseline gap-2", className)}>
-      <span className={cn("text-ink-900 font-extrabold", PRICE_SIZE_CLASSES[size])}>
+      <span className={cn("text-fg font-extrabold", PRICE_SIZE_CLASSES[size])}>
         {formatPrice(price)}
       </span>
       {hasDiscount && (
         <>
-          <span className="text-sm text-gray-500 line-through">{formatPrice(originalPrice)}</span>
-          <span className="bg-error rounded-full px-2.5 py-0.5 text-xs font-bold text-white">
+          <span className="text-sm text-fg-subtle line-through">{formatPrice(originalPrice)}</span>
+          <span className="bg-danger-solid rounded-full px-2.5 py-0.5 text-xs font-bold text-danger-foreground">
             -{discountPercent}%
           </span>
         </>

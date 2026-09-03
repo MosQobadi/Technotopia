@@ -174,7 +174,7 @@ export function ProductsContent() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }}
       />
       <Breadcrumb items={breadcrumbItems} className="mb-5" />
-      <h1 className="text-ink-900 text-title mb-8">{activeCategoryLabel}</h1>
+      <h1 className="text-fg text-title mb-8">{activeCategoryLabel}</h1>
 
       <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[220px_1fr]">
         <FilterSidebar
@@ -193,7 +193,7 @@ export function ProductsContent() {
 
         <div>
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-fg-subtle">
               {t("productsCount", { count: filteredProducts.length })}
             </span>
             <label className="sr-only" htmlFor="products-sort">
@@ -203,7 +203,7 @@ export function ProductsContent() {
               id="products-sort"
               value={sort}
               onChange={(event) => setSort(event.target.value as StorefrontProductSort)}
-              className="bg-surface-100 text-ink-900 rounded-full px-3.5 py-2.25 text-[13px]"
+              className="bg-surface-sunken text-fg rounded-full px-3.5 py-2.25 text-[13px]"
             >
               {SORT_VALUES.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -214,7 +214,7 @@ export function ProductsContent() {
           </div>
 
           {!isLoading && filteredProducts.length === 0 ? (
-            <p className="py-15 text-center text-[13px] text-gray-500">{t("noMatch")}</p>
+            <p className="py-15 text-center text-[13px] text-fg-subtle">{t("noMatch")}</p>
           ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5">
               {filteredProducts.map((product) => (

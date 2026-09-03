@@ -98,7 +98,7 @@ export function CheckoutContent() {
 
   return (
     <main className="mx-auto max-w-250 px-6 py-10 pb-24">
-      <h1 className="text-ink-900 text-title mb-8">{t("title")}</h1>
+      <h1 className="text-fg text-title mb-8">{t("title")}</h1>
 
       {showLoggedOut && (
         <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />
@@ -125,7 +125,7 @@ export function CheckoutContent() {
             )}
 
             <section>
-              <h2 className="text-ink-900 text-subhead mb-4">{t("shippingAddress")}</h2>
+              <h2 className="text-fg text-subhead mb-4">{t("shippingAddress")}</h2>
               <div className="grid grid-cols-2 gap-3.5">
                 <Controller
                   name="fullName"
@@ -182,14 +182,14 @@ export function CheckoutContent() {
             </section>
 
             <section>
-              <h2 className="text-ink-900 text-subhead mb-4">{t("paymentMethod")}</h2>
+              <h2 className="text-fg text-subhead mb-4">{t("paymentMethod")}</h2>
               <div className="flex flex-col gap-2.5">
                 {PAYMENT_METHODS.map((method) => (
                   <label
                     key={method.key}
                     className={cn(
-                      "has-focus-visible:outline-accent flex cursor-pointer items-center gap-3 rounded-2xl p-4 outline-none has-focus-visible:outline-2 has-focus-visible:outline-offset-2",
-                      paymentMethod === method.key ? "bg-accent/8" : "bg-surface-100",
+                      "has-focus-visible:outline-accent-readable flex cursor-pointer items-center gap-3 rounded-2xl p-4 outline-none has-focus-visible:outline-2 has-focus-visible:outline-offset-2",
+                      paymentMethod === method.key ? "bg-accent/8" : "bg-surface-sunken",
                     )}
                   >
                     <input
@@ -200,18 +200,18 @@ export function CheckoutContent() {
                       onChange={() => setPaymentMethod(method.key)}
                       className="sr-only"
                     />
-                    <span className="text-ink-900 text-sm font-semibold">{method.label}</span>
+                    <span className="text-fg text-sm font-semibold">{method.label}</span>
                   </label>
                 ))}
               </div>
             </section>
           </div>
 
-          <div className="bg-surface-100 sticky top-6 rounded-[20px] p-6">
-            <h2 className="text-ink-900 text-subhead mb-5">{tCommon("orderSummary")}</h2>
+          <div className="bg-surface-sunken sticky top-6 rounded-[20px] p-6">
+            <h2 className="text-fg text-subhead mb-5">{tCommon("orderSummary")}</h2>
             <div className="mb-2.5 flex flex-col gap-2.5">
               {items.map((item) => (
-                <div key={item.id} className="flex justify-between text-[13px] text-gray-500">
+                <div key={item.id} className="flex justify-between text-[13px] text-fg-subtle">
                   <span>
                     {item.name} × {item.quantity}
                   </span>
@@ -219,15 +219,15 @@ export function CheckoutContent() {
                 </div>
               ))}
             </div>
-            <div className="mt-2.5 flex justify-between border-t border-gray-200 pt-4 text-sm text-gray-500">
+            <div className="mt-2.5 flex justify-between border-t border-line pt-4 text-sm text-fg-subtle">
               <span>{tCommon("subtotal")}</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
-            <div className="mb-4 flex justify-between text-sm text-gray-500">
+            <div className="mb-4 flex justify-between text-sm text-fg-subtle">
               <span>{tCommon("shipping")}</span>
               <span>{shipping > 0 ? formatPrice(shipping) : tCommon("free")}</span>
             </div>
-            <div className="text-ink-900 mb-6 flex justify-between border-t border-gray-200 pt-4 text-lg font-extrabold">
+            <div className="text-fg mb-6 flex justify-between border-t border-line pt-4 text-lg font-extrabold">
               <span>{tCommon("total")}</span>
               <span>{formatPrice(total)}</span>
             </div>

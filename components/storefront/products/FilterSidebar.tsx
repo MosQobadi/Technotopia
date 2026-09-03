@@ -46,16 +46,16 @@ export function FilterSidebar({
   const tAll = useTranslations("products");
 
   return (
-    <aside className="bg-surface-100 sticky top-22 h-fit rounded-[20px] p-6">
+    <aside className="bg-surface-sunken sticky top-22 h-fit rounded-[20px] p-6">
       <div className="mb-7">
-        <h2 className="text-label mb-3.5 text-gray-600">{t("category")}</h2>
+        <h2 className="text-label mb-3.5 text-fg-muted">{t("category")}</h2>
         <div className="flex flex-col gap-2.5">
           <button
             type="button"
             onClick={() => onCategoryChange(null)}
             className={cn(
-              "focus-visible:outline-accent text-start text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-              activeCategoryId === null ? "text-accent font-bold" : "text-ink-900 font-normal",
+              "focus-visible:outline-accent-readable text-start text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+              activeCategoryId === null ? "text-accent-readable font-bold" : "text-fg font-normal",
             )}
           >
             {tAll("all")}
@@ -66,10 +66,10 @@ export function FilterSidebar({
               type="button"
               onClick={() => onCategoryChange(category.id)}
               className={cn(
-                "focus-visible:outline-accent text-start text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+                "focus-visible:outline-accent-readable text-start text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
                 activeCategoryId === category.id
-                  ? "text-accent font-bold"
-                  : "text-ink-900 font-normal",
+                  ? "text-accent-readable font-bold"
+                  : "text-fg font-normal",
               )}
             >
               {category.name}
@@ -79,7 +79,7 @@ export function FilterSidebar({
       </div>
 
       <div className="mb-7">
-        <h2 className="text-label mb-3.5 text-gray-600">{t("brand")}</h2>
+        <h2 className="text-label mb-3.5 text-fg-muted">{t("brand")}</h2>
         <div className="flex flex-col gap-2.5">
           {brands.map((brand) => (
             <label key={brand.id} className="flex cursor-pointer items-center gap-2 text-sm">
@@ -96,7 +96,7 @@ export function FilterSidebar({
       </div>
 
       <div className="mb-7">
-        <h2 className="text-label mb-3.5 text-gray-600">{t("priceRange")}</h2>
+        <h2 className="text-label mb-3.5 text-fg-muted">{t("priceRange")}</h2>
         <input
           type="range"
           min={PRICE_RANGE_MIN}
@@ -110,13 +110,13 @@ export function FilterSidebar({
           aria-label={t("maxPrice")}
           className="accent-accent w-full"
         />
-        <div className="mt-2 text-xs text-gray-500">
+        <div className="mt-2 text-xs text-fg-subtle">
           {t("upTo", { price: formatPrice(maxPrice) })}
         </div>
       </div>
 
       <div>
-        <h2 className="text-label mb-3.5 text-gray-600">{t("status")}</h2>
+        <h2 className="text-label mb-3.5 text-fg-muted">{t("status")}</h2>
         <div className="flex flex-col gap-2.5">
           {STATUS_OPTIONS.map((option) => (
             <label key={option.value} className="flex cursor-pointer items-center gap-2 text-sm">

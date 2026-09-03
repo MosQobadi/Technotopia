@@ -4,24 +4,24 @@ import { cn } from "@/lib/cn";
 
 type ButtonVariant = "primary" | "secondary" | "accent-outline" | "icon-circle" | "disabled";
 type IconSize = "sm" | "md";
-type IconTone = "surface" | "white";
+type IconTone = "sunken" | "surface";
 
 const BASE_CLASSES =
-  "inline-flex items-center justify-center gap-2 rounded-full text-[15px] font-bold whitespace-nowrap transition-colors duration-150 outline-none focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2";
+  "inline-flex items-center justify-center gap-2 rounded-full text-[15px] font-bold whitespace-nowrap transition-colors duration-150 outline-none focus-visible:outline-2 focus-visible:outline-accent-readable focus-visible:outline-offset-2";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-accent text-white hover:bg-accent-hover",
+  primary: "bg-accent text-accent-foreground hover:bg-accent-hover",
   secondary:
-    "border-[1.5px] border-ink-900 bg-white text-ink-900 hover:bg-ink-900 hover:text-white",
+    "border-[1.5px] border-fg bg-surface text-fg hover:bg-fg hover:text-surface",
   "accent-outline":
-    "border-[1.5px] border-accent bg-white text-accent hover:bg-accent hover:text-white",
-  "icon-circle": "text-ink-900",
-  disabled: "cursor-not-allowed bg-gray-100 text-gray-400",
+    "border-[1.5px] border-accent-readable bg-surface text-accent-readable hover:bg-accent hover:text-accent-foreground",
+  "icon-circle": "text-fg",
+  disabled: "cursor-not-allowed bg-surface-sunken text-fg-faint",
 };
 
 const ICON_TONE_CLASSES: Record<IconTone, string> = {
-  surface: "bg-surface-100 hover:bg-surface-200",
-  white: "bg-white hover:bg-surface-100",
+  sunken: "bg-surface-sunken hover:bg-surface-muted",
+  surface: "bg-surface hover:bg-surface-sunken",
 };
 
 const ICON_SIZE_CLASSES: Record<IconSize, string> = {
@@ -49,7 +49,7 @@ interface ButtonProps {
 export function Button({
   variant = "primary",
   iconSize = "md",
-  iconTone = "surface",
+  iconTone = "sunken",
   fullWidth,
   className,
   children,

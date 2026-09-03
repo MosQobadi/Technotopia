@@ -110,7 +110,7 @@ export function NavbarSearch() {
       <form
         onSubmit={handleSubmit}
         role="search"
-        className="flex items-center overflow-hidden rounded-full bg-gray-100"
+        className="flex items-center overflow-hidden rounded-full bg-surface-sunken"
       >
         <label className="sr-only" htmlFor="navbar-search-scope">
           {t("searchScope")}
@@ -119,7 +119,7 @@ export function NavbarSearch() {
           id="navbar-search-scope"
           value={scope}
           onChange={(event) => setScope(event.target.value as SearchScope)}
-          className="h-10 shrink-0 rounded-full bg-transparent py-0 ps-3.5 pe-1.5 text-xs text-gray-500 outline-none"
+          className="h-10 shrink-0 rounded-full bg-transparent py-0 ps-3.5 pe-1.5 text-xs text-fg-subtle outline-none"
         >
           {SEARCH_SCOPE_KEYS.map((key) => (
             <option key={key} value={key}>
@@ -144,12 +144,12 @@ export function NavbarSearch() {
           }}
           placeholder={t("searchPlaceholder")}
           autoComplete="off"
-          className="h-10 min-w-0 flex-1 bg-transparent px-2 text-sm text-gray-900 outline-none placeholder:text-gray-400"
+          className="h-10 min-w-0 flex-1 bg-transparent px-2 text-sm text-fg outline-none placeholder:text-fg-subtle"
         />
         <button
           type="submit"
           aria-label={t("search")}
-          className="bg-accent hover:bg-accent-hover focus-visible:outline-accent m-0.75 flex size-8.5 shrink-0 items-center justify-center rounded-full text-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="bg-accent hover:bg-accent-hover focus-visible:outline-accent-readable m-0.75 flex size-8.5 shrink-0 items-center justify-center rounded-full text-accent-foreground outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <SearchArrowIcon />
         </button>
@@ -159,16 +159,16 @@ export function NavbarSearch() {
         <div
           role="region"
           aria-label={t("searchResults")}
-          className="absolute inset-x-0 top-full z-30 mt-2 max-h-96 overflow-y-auto rounded-2xl border border-gray-200 bg-white py-2 shadow-lg"
+          className="absolute inset-x-0 top-full z-30 mt-2 max-h-96 overflow-y-auto rounded-2xl border border-line bg-surface py-2 shadow-lg"
         >
           <p className="sr-only" aria-live="polite">
             {isLoading ? t("searchLoading") : t("searchResultCount", { count: resultCount })}
           </p>
 
-          {isLoading && <p className="px-4 py-3 text-sm text-gray-500">{t("searchLoading")}</p>}
+          {isLoading && <p className="px-4 py-3 text-sm text-fg-subtle">{t("searchLoading")}</p>}
 
           {!isLoading && resultCount === 0 && (
-            <p className="px-4 py-3 text-sm text-gray-500">
+            <p className="px-4 py-3 text-sm text-fg-subtle">
               {t("searchNoResults", { query: trimmedQuery })}
             </p>
           )}
@@ -223,7 +223,7 @@ export function NavbarSearch() {
 function SearchGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="py-1">
-      <p className="px-4 py-1 text-[10px] font-bold tracking-wide text-gray-400 uppercase">
+      <p className="px-4 py-1 text-[10px] font-bold tracking-wide text-fg-subtle uppercase">
         {label}
       </p>
       <ul>{children}</ul>
@@ -247,10 +247,10 @@ function SearchRow({
       <Link
         href={href}
         onClick={onSelect}
-        className="focus-visible:outline-accent flex items-center justify-between gap-3 px-4 py-2 text-sm text-gray-900 outline-none hover:bg-gray-100 focus-visible:outline-2 focus-visible:-outline-offset-2"
+        className="focus-visible:outline-accent-readable flex items-center justify-between gap-3 px-4 py-2 text-sm text-fg outline-none hover:bg-surface-sunken focus-visible:outline-2 focus-visible:-outline-offset-2"
       >
         <span className="truncate">{label}</span>
-        {meta && <span className="shrink-0 text-xs text-gray-500">{meta}</span>}
+        {meta && <span className="shrink-0 text-xs text-fg-subtle">{meta}</span>}
       </Link>
     </li>
   );

@@ -59,7 +59,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
   return (
     <section className="mx-auto max-w-320 px-6 pt-6 pb-24">
       <SectionEyebrow label={t("eyebrow")} />
-      <h2 className="text-ink-900 text-title mb-7">{t("heading")}</h2>
+      <h2 className="text-fg text-title mb-7">{t("heading")}</h2>
 
       <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
@@ -69,8 +69,8 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
               type="button"
               onClick={() => setActiveCategory(name)}
               className={cn(
-                "focus-visible:outline-accent cursor-pointer rounded-full px-4 py-2.25 text-[13px] font-semibold outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-                name === activeCategory ? "bg-ink-900 text-white" : "bg-surface-100 text-ink-900",
+                "focus-visible:outline-accent-readable cursor-pointer rounded-full px-4 py-2.25 text-[13px] font-semibold outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+                name === activeCategory ? "bg-fg text-surface" : "bg-surface-sunken text-fg",
               )}
             >
               {name}
@@ -86,7 +86,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
             id="best-sellers-brand"
             value={activeBrand}
             onChange={(event) => setActiveBrand(event.target.value)}
-            className="bg-surface-100 text-ink-900 rounded-full px-3.5 py-2.25 text-[13px]"
+            className="bg-surface-sunken text-fg rounded-full px-3.5 py-2.25 text-[13px]"
           >
             {[ALL, ...brands.map((brand) => brand.name)].map((name) => (
               <option key={name} value={name}>
@@ -101,7 +101,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
             id="best-sellers-sort"
             value={activeSort}
             onChange={(event) => setActiveSort(event.target.value as SortOption)}
-            className="bg-surface-100 text-ink-900 rounded-full px-3.5 py-2.25 text-[13px]"
+            className="bg-surface-sunken text-fg rounded-full px-3.5 py-2.25 text-[13px]"
           >
             {SORT_KEYS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -113,7 +113,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-10 text-center text-[13px] text-gray-500">{t("noMatch")}</p>
+        <p className="py-10 text-center text-[13px] text-fg-subtle">{t("noMatch")}</p>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
           {filtered.map((product) => (

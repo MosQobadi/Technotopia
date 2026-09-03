@@ -7,6 +7,7 @@ import { useAuthStore } from "@/lib/store/auth";
 import { useCartStore } from "@/lib/store/cart";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NavbarSearch } from "./NavbarSearch";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV_LINK_KEYS = [
   { href: "/", key: "home" },
@@ -15,7 +16,7 @@ const NAV_LINK_KEYS = [
 ] as const;
 
 const ICON_BUTTON_CLASSES =
-  "flex size-9.5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200";
+  "flex size-9.5 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-fg hover:bg-surface-muted";
 
 export function Navbar() {
   const t = useTranslations("nav");
@@ -37,11 +38,11 @@ export function Navbar() {
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "";
 
   return (
-    <header className="sticky top-0 z-20 border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-20 border-b border-line bg-surface">
       <div className="mx-auto flex max-w-320 flex-wrap items-center gap-6 px-6 py-3.5">
         <Link href="/" className="flex shrink-0 items-center gap-1.5">
           <span className="bg-accent size-2.5 rounded-full" aria-hidden />
-          <span className="text-lg font-extrabold tracking-tight text-gray-900">Technotopia</span>
+          <span className="text-lg font-extrabold tracking-tight text-fg">Technotopia</span>
         </Link>
 
         <nav aria-label="Primary" className="flex shrink-0 gap-5">
@@ -49,7 +50,7 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-semibold text-gray-600 hover:text-gray-900"
+              className="text-sm font-semibold text-fg-muted hover:text-fg"
             >
               {t(link.key)}
             </Link>
@@ -60,6 +61,7 @@ export function Navbar() {
 
         <div className="flex shrink-0 items-center gap-3.5">
           <LanguageSwitcher />
+          <ThemeToggle />
 
           <Link href="/wishlist" aria-label={t("wishlist")} className={ICON_BUTTON_CLASSES}>
             <HeartIcon />
@@ -68,7 +70,7 @@ export function Navbar() {
           <Link href="/cart" aria-label={t("cart")} className={`relative ${ICON_BUTTON_CLASSES}`}>
             <CartIcon />
             {itemCount > 0 && (
-              <span className="bg-accent absolute -end-1 -top-1 flex size-4 items-center justify-center rounded-full text-[10px] font-bold text-white">
+              <span className="bg-accent absolute -end-1 -top-1 flex size-4 items-center justify-center rounded-full text-[10px] font-bold text-accent-foreground">
                 {itemCount > 99 ? "99+" : itemCount}
               </span>
             )}
@@ -79,7 +81,7 @@ export function Navbar() {
             aria-label={t("account")}
             className={
               user
-                ? "flex size-9.5 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white"
+                ? "flex size-9.5 shrink-0 items-center justify-center rounded-full bg-fg text-sm font-bold text-surface"
                 : ICON_BUTTON_CLASSES
             }
           >

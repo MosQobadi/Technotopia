@@ -34,7 +34,7 @@ function LanguageSwitcherLink() {
       href={href}
       locale={targetLocale}
       aria-label={targetLocale === "fa" ? t("switchToFarsi") : t("switchToEnglish")}
-      className="flex h-9.5 shrink-0 items-center justify-center rounded-full bg-gray-100 px-3.5 text-xs font-bold text-gray-900 hover:bg-gray-200"
+      className="flex h-9.5 shrink-0 items-center justify-center rounded-full bg-surface-sunken px-3.5 text-xs font-bold text-fg hover:bg-surface-muted"
     >
       {targetLocale === "fa" ? "فا" : "EN"}
     </Link>
@@ -45,7 +45,7 @@ function LanguageSwitcherFallback() {
   return (
     <span
       aria-hidden
-      className="flex h-9.5 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100"
+      className="flex h-9.5 w-12 shrink-0 items-center justify-center rounded-full bg-surface-sunken"
     />
   );
 }

@@ -11,8 +11,8 @@ interface EmptyStateProps {
 
 export function EmptyState({ message, actionLabel, actionHref, onAction, className }: EmptyStateProps) {
   return (
-    <div className={cn("bg-surface-100 rounded-[20px] px-6 py-16 text-center", className)}>
-      <p className="mb-5 text-base text-gray-500">{message}</p>
+    <div className={cn("bg-surface-sunken rounded-[20px] px-6 py-16 text-center", className)}>
+      <p className="mb-5 text-base text-fg-subtle">{message}</p>
       <Button variant="primary" href={actionHref} onClick={onAction}>
         {actionLabel}
       </Button>

@@ -36,7 +36,7 @@ export function OrdersTab() {
   if (orders === null) return null;
 
   if (orders.length === 0) {
-    return <p className="text-sm text-gray-500">{t("empty")}</p>;
+    return <p className="text-sm text-fg-subtle">{t("empty")}</p>;
   }
 
   return (
@@ -44,17 +44,17 @@ export function OrdersTab() {
       {orders.map((order) => (
         <div
           key={order.id}
-          className="bg-surface-100 flex flex-wrap items-center justify-between gap-2.5 rounded-[20px] px-5 py-4.5"
+          className="bg-surface-sunken flex flex-wrap items-center justify-between gap-2.5 rounded-[20px] px-5 py-4.5"
         >
           <div>
-            <div className="mb-1 text-xs text-gray-500">
+            <div className="mb-1 text-xs text-fg-subtle">
               <span className="font-mono">#{order.id.slice(-8).toUpperCase()}</span> ·{" "}
               {format(new Date(order.createdAt), "MMM d, yyyy")}
             </div>
-            <div className="text-ink-900 text-sm font-semibold">{order.itemsSummary}</div>
+            <div className="text-fg text-sm font-semibold">{order.itemsSummary}</div>
           </div>
           <div className="flex items-center gap-3.5">
-            <span className="text-ink-900 text-[15px] font-extrabold">
+            <span className="text-fg text-[15px] font-extrabold">
               {formatPrice(order.total)}
             </span>
             <OrderStatusBadge status={order.status} />

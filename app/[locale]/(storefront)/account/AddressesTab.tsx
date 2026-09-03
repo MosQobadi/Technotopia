@@ -76,14 +76,14 @@ export function AddressesTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      {addresses.length === 0 && !isAdding && <p className="text-sm text-gray-500">{t("empty")}</p>}
+      {addresses.length === 0 && !isAdding && <p className="text-sm text-fg-subtle">{t("empty")}</p>}
 
       {addresses.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {addresses.map((address) => (
-            <div key={address.id} className="bg-surface-100 rounded-[20px] p-5">
-              <div className="text-ink-900 mb-1.5 text-sm font-bold">{address.fullName}</div>
-              <address className="text-[13px] leading-relaxed text-gray-500 not-italic">
+            <div key={address.id} className="bg-surface-sunken rounded-[20px] p-5">
+              <div className="text-fg mb-1.5 text-sm font-bold">{address.fullName}</div>
+              <address className="text-[13px] leading-relaxed text-fg-subtle not-italic">
                 {address.addressLine}, {address.city}, {address.postalCode}
                 <br />
                 {address.phone}

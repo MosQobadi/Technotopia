@@ -25,9 +25,9 @@ interface ProductCardProps {
 }
 
 function badgeClasses(badge: ProductCardBadge): string {
-  if (badge.kind === "discount") return "bg-error text-white";
-  if (badge.kind === "rank") return "bg-white text-ink-900";
-  return badge.tone === "error" ? "bg-white text-error" : "bg-white text-warning";
+  if (badge.kind === "discount") return "bg-danger-solid text-danger-foreground";
+  if (badge.kind === "rank") return "bg-surface text-fg";
+  return badge.tone === "error" ? "bg-surface text-danger" : "bg-surface text-warning";
 }
 
 export function ProductCard({
@@ -46,8 +46,8 @@ export function ProductCard({
   const t = useTranslations("common");
 
   return (
-    <div className="bg-surface-100 group overflow-hidden rounded-[20px] transition-transform duration-150 hover:-translate-y-1">
-      <div className="bg-surface-200 relative aspect-square">
+    <div className="bg-surface-sunken group overflow-hidden rounded-[20px] transition-transform duration-150 hover:-translate-y-1">
+      <div className="bg-surface-muted relative aspect-square">
         {imageSrc ? (
           <Image
             src={imageSrc}
@@ -57,7 +57,7 @@ export function ProductCard({
             className="object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-[10px] text-gray-500">
+          <div className="flex size-full items-center justify-center text-[10px] text-fg-subtle">
             PRODUCT PHOTO
           </div>
         )}
@@ -75,10 +75,10 @@ export function ProductCard({
           <Button
             variant="icon-circle"
             iconSize="sm"
-            iconTone="white"
+            iconTone="surface"
             aria-label={t("removeFromWishlist")}
             onClick={onRemove}
-            className="text-error absolute end-2.5 top-2.5"
+            className="text-danger absolute end-2.5 top-2.5"
           >
             ✕
           </Button>
@@ -86,18 +86,18 @@ export function ProductCard({
           <Button
             variant="icon-circle"
             iconSize="sm"
-            iconTone="white"
+            iconTone="surface"
             aria-label={isWishlisted ? t("removeFromWishlist") : t("addToWishlist")}
             onClick={onToggleWishlist}
-            className="hover:text-error absolute end-2.5 top-2.5"
+            className="hover:text-danger absolute end-2.5 top-2.5"
           >
             {isWishlisted ? "♥" : "♡"}
           </Button>
         )}
       </div>
       <div className="flex flex-col gap-1.5 p-5">
-        <span className="text-accent text-[11px] tracking-wide uppercase">{category}</span>
-        <Link href={href} className="text-ink-900 text-[17px] font-bold tracking-tight">
+        <span className="text-accent-readable text-[11px] tracking-wide uppercase">{category}</span>
+        <Link href={href} className="text-fg text-[17px] font-bold tracking-tight">
           {name}
         </Link>
         <PriceTag price={price} originalPrice={originalPrice} size="sm" className="mb-1" />

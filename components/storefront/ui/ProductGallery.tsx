@@ -16,7 +16,7 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
 
   return (
     <div className={className}>
-      <div className="bg-surface-200 relative mb-3 aspect-square overflow-hidden rounded-3xl">
+      <div className="bg-surface-muted relative mb-3 aspect-square overflow-hidden rounded-3xl">
         {activeImage ? (
           <Image
             src={activeImage}
@@ -27,7 +27,7 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
             className="object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-[13px] text-gray-500">
+          <div className="flex size-full items-center justify-center text-[13px] text-fg-subtle">
             PRODUCT PHOTO
           </div>
         )}
@@ -42,8 +42,8 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
               aria-current={index === activeIndex}
               onClick={() => setActiveIndex(index)}
               className={cn(
-                "bg-surface-100 relative size-17 shrink-0 overflow-hidden rounded-2xl border-2 outline-none focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2",
-                index === activeIndex ? "border-accent" : "border-transparent",
+                "bg-surface-sunken relative size-17 shrink-0 overflow-hidden rounded-2xl border-2 outline-none focus-visible:outline-2 focus-visible:outline-accent-readable focus-visible:outline-offset-2",
+                index === activeIndex ? "border-accent-readable" : "border-transparent",
               )}
             >
               {/* The thumbnail button is a fixed size-17 square at every breakpoint. */}

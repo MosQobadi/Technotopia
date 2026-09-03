@@ -40,7 +40,7 @@ export function CartContent() {
 
   return (
     <main className="mx-auto max-w-250 px-6 py-10 pb-24">
-      <h1 className="text-ink-900 text-title mb-8">{t("title")}</h1>
+      <h1 className="text-fg text-title mb-8">{t("title")}</h1>
 
       {showLoggedOut && (
         <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />
@@ -68,17 +68,17 @@ export function CartContent() {
             ))}
           </div>
 
-          <div className="bg-surface-100 sticky top-22 rounded-[20px] p-6">
-            <h2 className="text-ink-900 text-subhead mb-5">{tCommon("orderSummary")}</h2>
-            <div className="mb-2.5 flex justify-between text-sm text-gray-500">
+          <div className="bg-surface-sunken sticky top-22 rounded-[20px] p-6">
+            <h2 className="text-fg text-subhead mb-5">{tCommon("orderSummary")}</h2>
+            <div className="mb-2.5 flex justify-between text-sm text-fg-subtle">
               <span>{tCommon("subtotal")}</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
-            <div className="mb-4 flex justify-between text-sm text-gray-500">
+            <div className="mb-4 flex justify-between text-sm text-fg-subtle">
               <span>{tCommon("shipping")}</span>
               <span>{shipping > 0 ? formatPrice(shipping) : tCommon("free")}</span>
             </div>
-            <div className="text-ink-900 mb-6 flex justify-between border-t border-gray-200 pt-4 text-lg font-extrabold">
+            <div className="text-fg mb-6 flex justify-between border-t border-line pt-4 text-lg font-extrabold">
               <span>{tCommon("total")}</span>
               <span>{formatPrice(total)}</span>
             </div>
@@ -103,20 +103,20 @@ function CartLine({ item, onDecrease, onIncrease, onRemove }: CartLineProps) {
   const t = useTranslations("cart");
 
   return (
-    <div className="bg-surface-100 flex gap-4 rounded-[20px] p-4">
-      <div className="bg-surface-200 relative size-24 shrink-0 overflow-hidden rounded-[14px]">
+    <div className="bg-surface-sunken flex gap-4 rounded-[20px] p-4">
+      <div className="bg-surface-muted relative size-24 shrink-0 overflow-hidden rounded-[14px]">
         {item.image ? (
           <Image src={item.image} alt={item.name} fill sizes="96px" className="object-cover" />
         ) : (
-          <div className="flex size-full items-center justify-center text-[9px] text-gray-500">
+          <div className="flex size-full items-center justify-center text-[9px] text-fg-subtle">
             PHOTO
           </div>
         )}
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5">
-        <span className="text-accent text-[10px] tracking-wide uppercase">{item.category}</span>
-        <h3 className="text-ink-900 text-subhead">{item.name}</h3>
+        <span className="text-accent-readable text-[10px] tracking-wide uppercase">{item.category}</span>
+        <h3 className="text-fg text-subhead">{item.name}</h3>
         <div className="mt-1.5 flex items-center justify-between">
           <QuantityStepper
             value={item.quantity}
@@ -124,7 +124,7 @@ function CartLine({ item, onDecrease, onIncrease, onRemove }: CartLineProps) {
             onIncrease={onIncrease}
             size="sm"
           />
-          <span className="text-ink-900 text-[16px] font-extrabold">
+          <span className="text-fg text-[16px] font-extrabold">
             {formatPrice(item.lineTotal)}
           </span>
         </div>
@@ -134,7 +134,7 @@ function CartLine({ item, onDecrease, onIncrease, onRemove }: CartLineProps) {
         type="button"
         aria-label={t("removeItem")}
         onClick={onRemove}
-        className="hover:text-error focus-visible:outline-accent flex size-7 shrink-0 items-center justify-center self-start rounded-full text-sm text-gray-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="hover:text-danger focus-visible:outline-accent-readable flex size-7 shrink-0 items-center justify-center self-start rounded-full text-sm text-fg-subtle outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         ✕
       </button>

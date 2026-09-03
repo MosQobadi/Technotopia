@@ -26,8 +26,8 @@ export default function StorefrontLoginPage() {
   ] as const;
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-120 rounded-lg border border-gray-200 bg-white p-10 shadow-sm">
+    <main className="flex flex-1 items-center justify-center bg-surface-sunken p-6">
+      <div className="w-full max-w-120 rounded-lg border border-line bg-surface p-10 shadow-sm">
         <Tabs
           value={tab}
           onChange={(key) => setTab(key as AuthTab)}
@@ -76,8 +76,8 @@ function LoginForm() {
 
   return (
     <div>
-      <h1 className="text-heading text-gray-900">{t("heading")}</h1>
-      <p className="mt-2 text-sm text-gray-500">{t("subheading")}</p>
+      <h1 className="text-heading text-fg">{t("heading")}</h1>
+      <p className="mt-2 text-sm text-fg-subtle">{t("subheading")}</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-5">
         {formError && (
@@ -144,8 +144,8 @@ function SignupForm() {
 
   return (
     <div>
-      <h1 className="text-heading text-gray-900">{t("heading")}</h1>
-      <p className="mt-2 text-sm text-gray-500">{t("subheading")}</p>
+      <h1 className="text-heading text-fg">{t("heading")}</h1>
+      <p className="mt-2 text-sm text-fg-subtle">{t("subheading")}</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-5">
         {formError && (
@@ -182,7 +182,7 @@ function SignupForm() {
           {isSubmitting ? t("submitting") : t("submit")}
         </Button>
 
-        <p className="text-center text-xs text-gray-500">
+        <p className="text-center text-xs text-fg-subtle">
           {t.rich("agreement", {
             terms: (chunks) => <Link href="#">{chunks}</Link>,
             privacy: (chunks) => <Link href="#">{chunks}</Link>,

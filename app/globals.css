@@ -80,16 +80,41 @@
   --color-line: var(--app-line);
   --color-line-strong: var(--app-line-strong);
 
-  /* `accent` is the brand blue *adjusted to stay readable on the current
-     theme's ground*, so text-accent, border-accent and the focus ring flip with
-     the theme. `accent-solid` is the fill and does not flip: white on it is
-     5.10:1, while white on the lighter blue a dark theme reads text in would
-     not clear AA. A button keeps the fill; text, borders and rings take the
-     readable one. HeroUI's accent-filled components read --accent, which is why
-     that variable stays the fill colour. */
+  /* Two accents, and which one a thing takes is decided by whether the thing
+     is a *fill* or is *read*. `accent` / `accent-solid` is the fill and does
+     not flip: white on it is 5.10:1, while white on the lighter blue a dark
+     theme reads text in would not clear AA. HeroUI's accent-filled components
+     read --accent, which is why that variable stays the fill colour.
+
+     Text, borders and the focus ring take `accent-readable` below, which does
+     flip. Task 27.4 found this the hard way: the comment here used to claim
+     `text-accent` was the readable one, but --accent is the fill, so every
+     link and focus ring measured 2.92:1 in the dark theme. */
   --color-accent-solid: var(--accent);
   --color-accent-solid-hover: var(--accent-hover);
   --color-accent-on-dark: var(--accent-on-dark);
+
+  /* The readable accent, under a name of our own — because `accent` could not
+     be it. HeroUI maps --color-accent to var(--accent), and var(--accent) has
+     to stay the *fill*: its accent-filled components (login's <Button>) put
+     --accent-foreground on it, and white on the lighter blue a dark theme reads
+     text in is 2.55:1. So `bg-accent` is the fill and is right as it stands,
+     while text, borders and the focus ring take this one and flip with the
+     theme. Without it `text-accent` was 2.92:1 on the dark ground — every link,
+     eyebrow and focus ring in the dark theme, unreadable.
+
+     The fallback is what keeps the admin working: --app-* is undefined outside
+     the storefront scope, so there it resolves to the indigo --accent. */
+  --color-accent-readable: var(--app-accent, var(--accent));
+
+  /* Danger has the same split as the accent, and for the same reason. The dark
+     theme lightens --app-danger so it can be read as *text* on a dark ground —
+     which silently broke the one place it is a *fill* under a white label: the
+     discount pill, measured at 2.66:1 on the dark home page. So the fill keeps
+     the light theme's darker red in both themes (white on it 5.12), and only
+     the text rank flips. Success, warning and info need no equivalent: the only
+     fills made of them are dots, which carry no text. */
+  --color-danger-solid: var(--app-danger-solid, var(--danger));
 
   /* Status. `info` is a teal-leaning cyan rather than a blue: with a blue
      accent, a blue "for your information" notice would read as a brand
@@ -97,14 +122,6 @@
      so they are assigned in the scope block rather than remapped here. */
   --color-info: var(--app-info);
   --color-info-soft: var(--app-info-soft);
-
-  /* Aliases kept only so the screens still paint while Task 27.4 sweeps the
-     shade-named classes off them. Delete these five with that sweep. */
-  --color-ink-900: var(--app-fg);
-  --color-gray-500: var(--app-fg-subtle);
-  --color-surface-100: var(--app-surface-sunken);
-  --color-surface-200: var(--app-surface-muted);
-  --color-error: var(--app-danger);
 }
 
 /* Storefront type scale. Five steps, each carrying its own size, line-height,
@@ -249,7 +266,8 @@ body[data-scope="storefront"] {
   --app-success-soft: oklch(0.962 0.03 148); /* 1.10 on surface; success on it 4.66, fg 17.29 */
   --app-warning: oklch(0.545 0.12 68); /* 5.09 / 4.54 — white on it 5.09 */
   --app-warning-soft: oklch(0.963 0.026 68); /* 1.11 on surface; warning on it 4.56, fg 17.12 */
-  --app-danger: oklch(0.56 0.19 25); /* 5.12 / 4.56 — white on it 5.12 */
+  --app-danger-solid: oklch(0.56 0.19 25); /* white on it 5.12, in either theme */
+  --app-danger: var(--app-danger-solid); /* 5.12 / 4.56 */
   --app-danger-soft: oklch(0.958 0.02 25); /* 1.13 on surface; danger on it 4.50, fg 16.81 */
   --app-info: oklch(0.53 0.096 220); /* 5.11 / 4.55 — white on it 5.11 */
   --app-info-soft: oklch(0.962 0.026 220); /* 1.10 on surface; info on it 4.61, fg 17.23 */
@@ -372,6 +390,8 @@ body[data-scope="storefront"] {
   --app-warning: oklch(0.8 0.12 68); /* 8.14 / 9.17 — on its soft 7.21 */
   --app-warning-soft: oklch(0.3 0.05 68); /* 1.12 on surface; fg on it 12.25 */
   --app-danger: oklch(0.72 0.16 25); /* 5.83 / 6.58 — on its soft 5.25 */
+  /* --app-danger-solid is not reassigned: it is the fill under a white
+     label, and white on this lighter red is 2.66. See --color-danger-solid. */
   --app-danger-soft: oklch(0.3 0.06 25); /* 1.11 on surface; fg on it 12.44 */
   --app-info: oklch(0.76 0.09 220); /* 7.42 / 8.37 — on its soft 6.43 */
   --app-info-soft: oklch(0.3 0.045 220); /* 1.15 on surface; fg on it 11.99 */
