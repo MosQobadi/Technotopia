@@ -84,7 +84,11 @@ export default async function StorefrontLayout({
     // ancestor of this element, so the --font-storefront-* variables declared
     // here are not in scope for the `body` rule in globals.css. `display:
     // contents` generates no box, but inheritance still flows through it.
-    <div data-scope="storefront" className={`${fontVariables} ${sans.className} contents`}>
+    //
+    // Fonts only — `data-scope="storefront"`, which used to be here too, now
+    // sits on <body> in the parent layout so the palette reaches the element
+    // the page ground is painted on. See app/[locale]/layout.tsx.
+    <div className={`${fontVariables} ${sans.className} contents`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}

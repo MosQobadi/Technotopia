@@ -1,5 +1,17 @@
 @import "@heroui/styles";
 
+/* Tailwind's `dark:` variant follows the same `[data-theme="dark"]` selector
+   HeroUI's own theme keys on (see @heroui/styles' themes/default/variables.css),
+   so one attribute on <html> flips our tokens and HeroUI's components together.
+   Only the storefront ever sets it — the admin tree has no toggle and stays
+   light.
+
+   An attribute rather than HeroUI's `.dark` class because React owns
+   `<html className>` and rewrites it whenever the locale layout re-renders,
+   which would silently wipe a class a script had added. See
+   lib/storefront/theme.ts. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   /* Indigo accent — primary brand color for the admin UI */
   --accent: #4c6ef5;
@@ -42,8 +54,8 @@
      to HeroUI's own theme and nothing there changes.
 
      They are *roles*, not shades. `surface` is whatever an elevated thing is
-     painted; `fg` is whatever body copy is. That is what will let one attribute
-     on <html> reassign the whole palette in Task 27.3 — reach for a raw
+     painted; `fg` is whatever body copy is. That is what lets one attribute
+     on <html> reassign the whole palette — reach for a raw
      `gray-500` again and it will simply not flip.
 
      Ranked, so picking one is a question of how loud the thing should be:
@@ -141,6 +153,21 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* The page ground, on the element that is the page. Scoped to the storefront so
+   the admin keeps the browser's default canvas, which is what its light-only
+   wireframes assume.
+
+   Without this the ground is whatever the browser paints under a transparent
+   <body>, and `color-scheme: dark` makes that Chrome's own near-black — a
+   colour that is not in this palette and, being darker than --app-surface-sunken,
+   would put the page *behind* the cards that are supposed to be recessed into
+   it. Light mode never showed the problem because the browser's default canvas
+   and --app-surface are both white there. */
+body[data-scope="storefront"] {
+  background: var(--app-surface);
+  color: var(--app-fg);
+}
+
 /* ── The storefront palette ──────────────────────────────────────────────────
    Scoped, so it never leaks into the admin's indigo theme above.
 
@@ -151,8 +178,10 @@ body {
    would then describe a colour nobody sees. Several first-draft values were
    exactly that, which is why the chroma on some of them looks oddly specific.
 
-   Light theme only. Task 27.3 adds the dark half by reassigning --app-* under
-   the theme attribute; nothing below that mapping should need to change.
+   This is the light half. The dark half is the block at the foot of this file,
+   which reassigns the same --app-* names under the theme attribute — the HeroUI
+   mapping at the end of this block is written once and serves both, because a
+   var() resolves against whichever value won on the element.
 
    AA (4.5:1) is met by every pair that carries text. The exceptions are
    deliberate and marked: --app-fg-faint and both line ranks are for icons,
@@ -261,4 +290,89 @@ body {
 
   /* Cards carry depth with their grey fill alone — no border, no shadow. */
   --surface-shadow: 0 0 0 0 transparent;
+}
+
+/* ── The storefront palette, dark ────────────────────────────────────────────
+   Two selectors deep because the theme and the palette live on different
+   elements: `data-theme` goes on <html>, where HeroUI reads it too, while the
+   palette is scoped to the storefront's own wrapper so it never reaches the
+   admin. This block is the intersection — the storefront, in the dark theme.
+   It is unlayered, like the light block, so it outranks HeroUI's own
+   `[data-theme="dark"]` values in @layer base regardless of specificity.
+
+   Only the --app-* roles are reassigned. The HeroUI mapping in the light block
+   above is not repeated: `--background: var(--app-surface)` is still in force
+   here and resolves against whatever --app-surface won on this element.
+
+   Three tokens deliberately do *not* appear below, because they must not flip:
+   --app-accent-solid and its hover are the fills white sits on, and
+   --app-accent-on-dark is for ground that is dark in either theme.
+
+   Ratios are generated the same way as the light block's, and rounded down.
+
+   ── The ranking, and why it does not invert ──
+   `sunken` is darker than `surface` here, exactly as in light. That looks like
+   the opposite of the usual dark-mode advice — lift a card by making it paler —
+   but this design does not lift its cards: they are grey trays *recessed* into
+   the page, with no border and no shadow (--surface-shadow is transparent).
+   Reversing the ranking in dark would turn every recessed tray into a raised
+   one and change what the storefront looks like, which is 27.4's business, not
+   this task's. What inverts is the range the whole palette sits in, not the
+   order of the grounds within it. */
+[data-theme="dark"] [data-scope="storefront"] {
+  /* ── Grounds ──
+     Same jobs, same order, same mutual contrast as light (1.12 and 1.19),
+     moved to the bottom of the scale: page, then card, then inset. */
+  --app-surface: oklch(0.26 0.004 240);
+  --app-surface-sunken: oklch(0.215 0.004 240); /* 1.12 on surface */
+  --app-surface-muted: oklch(0.185 0.004 240); /* 1.19 on surface */
+
+  /* ── Foreground ──
+     Ratios read as surface / surface-sunken / surface-muted. Note that the
+     order of those three is the reverse of the light block's: the lightest
+     ground is the tightest constraint for light text, and here the lightest
+     ground is `surface`. Each rank is tuned to land on the light theme's ratio
+     against its own page ground — fg-subtle is 5.39 in both — so a component
+     that was legible in light is legible here without being re-checked.
+
+     fg is not pure white: 13.83 is far past AA, and full-strength white on a
+     near-black ground is the halation that makes long copy hard to read. */
+  --app-fg: oklch(0.96 0.004 240); /* 13.83 / 15.59 / 16.59 */
+  --app-fg-muted: oklch(0.75 0.004 240); /* 6.98 / 7.87 / 8.37 */
+  --app-fg-subtle: oklch(0.68 0.004 240); /* 5.39 / 6.08 / 6.47 */
+  --app-fg-faint: oklch(0.54 0.004 240); /* 3.07 / 3.46 / 3.68 — icons only, never copy */
+
+  /* ── Lines ──
+     Lighter than the ground rather than darker, and pitched at the same ratios
+     the light block uses (1.26 and 1.55), so the hairline look carries over.
+     The same caveat applies: below 3:1, so a border must never be the only
+     thing marking a control. */
+  --app-line: oklch(0.33 0.006 240); /* 1.27 on surface, 1.43 on sunken */
+  --app-line-strong: oklch(0.38 0.006 240); /* 1.55 on surface, 1.75 on sunken */
+
+  /* The signal blue at 0.545 is 1.9 on this ground — unreadable as text. The
+     readable one is the same blue raised in lightness, which is a value the
+     palette already has: --app-accent-on-dark exists precisely because some
+     grounds are dark whatever the theme is, and in this theme every ground is.
+     Only the *text* token moves; --app-accent-solid stays the fill, so a
+     primary button is the same blue under the same white label in both
+     themes. */
+  --app-accent: var(--app-accent-on-dark); /* 6.22 / 7.02 / 7.47 */
+  --app-accent-soft: oklch(0.3 0.055 258); /* 1.13 on surface; accent on it 5.47, fg 12.16 */
+
+  /* ── Status ──
+     Ratios read as surface / sunken, then the colour on its own soft ground.
+     These are text colours here, not fills under white: the only fill the
+     storefront makes of them is StatusBadge's 7px dot, which carries no text.
+     A light-mode status value used as text on this ground would be under 2:1,
+     which is why all four move rather than staying put the way the accent fill
+     does. */
+  --app-success: oklch(0.76 0.15 148); /* 7.65 / 8.63 — on its soft 6.58 */
+  --app-success-soft: oklch(0.3 0.055 148); /* 1.16 on surface; fg on it 11.89 */
+  --app-warning: oklch(0.8 0.12 68); /* 8.14 / 9.17 — on its soft 7.21 */
+  --app-warning-soft: oklch(0.3 0.05 68); /* 1.12 on surface; fg on it 12.25 */
+  --app-danger: oklch(0.72 0.16 25); /* 5.83 / 6.58 — on its soft 5.25 */
+  --app-danger-soft: oklch(0.3 0.06 25); /* 1.11 on surface; fg on it 12.44 */
+  --app-info: oklch(0.76 0.09 220); /* 7.42 / 8.37 — on its soft 6.43 */
+  --app-info-soft: oklch(0.3 0.045 220); /* 1.15 on surface; fg on it 11.99 */
 }
