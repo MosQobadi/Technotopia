@@ -10,6 +10,20 @@
   --accent-soft-hover: color-mix(in oklab, var(--accent) 20%, transparent);
 
   --radius: 0.5rem;
+
+  /* Literal white, and the one colour here that is not a role. It is the text
+     on a solid accent or status fill — and because those fills do not flip with
+     the theme, neither may the text on them. Anything that *should* follow the
+     theme takes --app-surface instead.
+
+     This is declared here rather than left implicit: the storefront referenced
+     var(--white) without our ever defining it, and it worked only because
+     HeroUI ships a --white primitive on :root (@heroui/styles'
+     themes/default/variables.css). So it was resolving — to the same
+     oklch(100% 0 0) — not, as the task list's finding recorded, to nothing.
+     Declaring our own makes the dependency explicit and stops a HeroUI
+     version bump from silently unpainting every fill's label. */
+  --white: oklch(1 0 0);
 }
 
 @theme inline {
@@ -22,15 +36,63 @@
   --font-sans: var(--font-storefront-sans, var(--font-geist-sans));
   --font-mono: var(--font-storefront-mono, var(--font-storefront-sans, var(--font-geist-mono)));
 
-  /* Storefront-only named tokens (see design/storefront/Technotopia Design System v2.dc.html).
-     Values are supplied by the [data-scope="storefront"] block below; unscoped they're unset. */
-  --color-ink-900: var(--ink-900);
-  --color-surface-100: var(--surface-100);
-  --color-surface-200: var(--surface-200);
-  --color-gray-500: var(--gray-500);
-  --color-error: var(--danger);
-  --color-warning: var(--warning);
-  --color-success: var(--success);
+  /* ── Semantic colour tokens ─────────────────────────────────────────────
+     Storefront-only: the values come from the [data-scope="storefront"] block
+     below, so unscoped — i.e. anywhere in the admin tree — these fall through
+     to HeroUI's own theme and nothing there changes.
+
+     They are *roles*, not shades. `surface` is whatever an elevated thing is
+     painted; `fg` is whatever body copy is. That is what will let one attribute
+     on <html> reassign the whole palette in Task 27.3 — reach for a raw
+     `gray-500` again and it will simply not flip.
+
+     Ranked, so picking one is a question of how loud the thing should be:
+       surface > surface-sunken > surface-muted   page ground, card tray, insets
+       fg > fg-muted > fg-subtle > fg-faint       body copy down to icons
+       line > line-strong                         hairlines, then hover borders
+
+     Only names HeroUI does not already own are declared here. HeroUI maps its
+     own --color-x to var(--x) (see @heroui/styles' themes/shared/theme.css), so
+     surface, foreground, accent, border, success, warning and danger are
+     steered by assigning *those* variables in the scope block instead.
+     Redeclaring them here would replace HeroUI's mapping for the admin too,
+     where --app-* is undefined and they would resolve to nothing. */
+  --color-surface-sunken: var(--app-surface-sunken);
+  --color-surface-muted: var(--app-surface-muted);
+
+  --color-fg: var(--app-fg);
+  --color-fg-muted: var(--app-fg-muted);
+  --color-fg-subtle: var(--app-fg-subtle);
+  --color-fg-faint: var(--app-fg-faint);
+
+  --color-line: var(--app-line);
+  --color-line-strong: var(--app-line-strong);
+
+  /* `accent` is the brand blue *adjusted to stay readable on the current
+     theme's ground*, so text-accent, border-accent and the focus ring flip with
+     the theme. `accent-solid` is the fill and does not flip: white on it is
+     5.10:1, while white on the lighter blue a dark theme reads text in would
+     not clear AA. A button keeps the fill; text, borders and rings take the
+     readable one. HeroUI's accent-filled components read --accent, which is why
+     that variable stays the fill colour. */
+  --color-accent-solid: var(--accent);
+  --color-accent-solid-hover: var(--accent-hover);
+  --color-accent-on-dark: var(--accent-on-dark);
+
+  /* Status. `info` is a teal-leaning cyan rather than a blue: with a blue
+     accent, a blue "for your information" notice would read as a brand
+     flourish rather than as a status. The other three are HeroUI's own names,
+     so they are assigned in the scope block rather than remapped here. */
+  --color-info: var(--app-info);
+  --color-info-soft: var(--app-info-soft);
+
+  /* Aliases kept only so the screens still paint while Task 27.4 sweeps the
+     shade-named classes off them. Delete these five with that sweep. */
+  --color-ink-900: var(--app-fg);
+  --color-gray-500: var(--app-fg-subtle);
+  --color-surface-100: var(--app-surface-sunken);
+  --color-surface-200: var(--app-surface-muted);
+  --color-error: var(--app-danger);
 }
 
 /* Storefront type scale. Five steps, each carrying its own size, line-height,
@@ -79,34 +141,124 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Storefront design system — scoped so it never leaks into the admin (indigo) theme above. */
+/* ── The storefront palette ──────────────────────────────────────────────────
+   Scoped, so it never leaks into the admin's indigo theme above.
+
+   Every ratio quoted below is generated — oklch to sRGB to WCAG relative
+   luminance — and rounded *down*, so no number here overstates a pair. Every
+   value was also checked to sit inside the sRGB gamut: an out-of-gamut oklch()
+   is clamped by the browser, and a ratio computed from the value as written
+   would then describe a colour nobody sees. Several first-draft values were
+   exactly that, which is why the chroma on some of them looks oddly specific.
+
+   Light theme only. Task 27.3 adds the dark half by reassigning --app-* under
+   the theme attribute; nothing below that mapping should need to change.
+
+   AA (4.5:1) is met by every pair that carries text. The exceptions are
+   deliberate and marked: --app-fg-faint and both line ranks are for icons,
+   chevrons and hairlines, never for copy. */
 [data-scope="storefront"] {
-  /* Ink / neutrals */
-  --ink-900: oklch(0.17 0 0);
-  --gray-500: oklch(0.55 0 0);
-  --foreground: var(--ink-900);
-  --muted: var(--gray-500);
-  --background: var(--white);
+  /* ── Grounds ──
+     Ranked lightest to darkest, which in this design means page, then card,
+     then inset: the storefront's cards are grey trays recessed into a white
+     page, so the "sunken" rank is the card fill. The ranking is what the dark
+     theme inverts, not the specific job. Mutual contrast is intentionally tiny
+     — these separate areas, they never carry text. */
+  --app-surface: oklch(1 0 0);
+  --app-surface-sunken: oklch(0.96 0.002 240); /* 1.12 on surface */
+  --app-surface-muted: oklch(0.94 0.002 240); /* 1.19 on surface */
 
-  /* Accent — signal blue, CTAs and links only */
-  --accent: oklch(0.58 0.2 258);
-  --accent-hover: oklch(0.5 0.21 258);
+  /* ── Foreground ──
+     Ratios read as surface / surface-sunken / surface-muted, so a rank can be
+     checked against whichever ground it actually lands on. fg-subtle is the one
+     most secondary copy uses, and it clears 4.5 on all three — which the
+     --gray-500 it replaces (oklch(0.55 0 0)) did not: that was 4.32 inside a
+     card, and inside a card is where most of it sits. */
+  --app-fg: oklch(0.17 0 0); /* 19.12 / 17.02 / 16.04 */
+  --app-fg-muted: oklch(0.465 0 0); /* 6.97 / 6.21 / 5.85 */
+  --app-fg-subtle: oklch(0.525 0 0); /* 5.39 / 4.80 / 4.52 */
+  --app-fg-faint: oklch(0.668 0 0); /* 3.01 / 2.68 / 2.53 — icons only, never copy */
+
+  /* ── Lines ──
+     Both sit below the 3:1 that WCAG 1.4.11 asks of a UI component's boundary.
+     That is a carry-over of the design's hairline look, and it is only safe
+     because a control's affordance here rests on its fill and its focus ring
+     (--app-accent, 5.10) rather than on its border. Don't let a border become
+     the only thing marking a control. */
+  --app-line: oklch(0.92 0 0); /* 1.26 on surface, 1.12 on sunken */
+  --app-line-strong: oklch(0.855 0 0); /* 1.55 on surface, 1.38 on sunken */
+
+  /* ── Accent — signal blue, CTAs and links only ──
+     The fill, and in light mode also the readable one: text-on-ground and
+     white-on-fill are the same pair of luminances, so a single value clears AA
+     in both directions. The oklch(0.58 0.2 258) this replaces was 4.39 and
+     cleared neither — every primary button was failing as a fill and every link
+     as text. Chroma is unchanged, so it reads as the same blue. */
+  --app-accent-solid: oklch(0.545 0.2 258); /* white on it 5.10 */
+  --app-accent-solid-hover: oklch(0.485 0.18 258); /* white on it 6.57 */
+  --app-accent: var(--app-accent-solid); /* 5.10 on surface, 4.54 on sunken */
+  --app-accent-soft: oklch(0.966 0.016 258); /* 1.10 on surface; accent on it 4.62 */
+
+  /* The same blue raised in lightness, for accent text and icons on a ground
+     that is dark *whatever the theme is* — a scrim over a photograph, a caption
+     on a category card. Distinct from --app-accent, which flips: this one has
+     to hold while the rest of the site is still in light mode. */
+  --app-accent-on-dark: oklch(0.72 0.14 258); /* 7.66 on --app-fg, 5.46 on a 0.30 scrim */
+
+  /* ── Status ──
+     Each value is dark enough to serve twice: as text on a ground *and* as a
+     fill under white text. That is one pair of luminances, not two, which is
+     why a single token covers both `text-success` and `bg-success` — and the
+     storefront uses them exactly that way (StatusBadge, PriceTag, ProductCard).
+     Ratios read as surface / sunken, then white-on-it.
+
+     All four were too light before to be read as text on white: success 3.41,
+     warning 2.26, danger 4.35. Warning moved furthest, because an ochre that
+     reads at 4.5 is simply darker than the old amber — that badge is the one
+     visible change in this task, and it is the one that was unreadable. */
+  --app-success: oklch(0.52 0.15 148); /* 5.15 / 4.58 — white on it 5.15 */
+  --app-success-soft: oklch(0.962 0.03 148); /* 1.10 on surface; success on it 4.66, fg 17.29 */
+  --app-warning: oklch(0.545 0.12 68); /* 5.09 / 4.54 — white on it 5.09 */
+  --app-warning-soft: oklch(0.963 0.026 68); /* 1.11 on surface; warning on it 4.56, fg 17.12 */
+  --app-danger: oklch(0.56 0.19 25); /* 5.12 / 4.56 — white on it 5.12 */
+  --app-danger-soft: oklch(0.958 0.02 25); /* 1.13 on surface; danger on it 4.50, fg 16.81 */
+  --app-info: oklch(0.53 0.096 220); /* 5.11 / 4.55 — white on it 5.11 */
+  --app-info-soft: oklch(0.962 0.026 220); /* 1.10 on surface; info on it 4.61, fg 17.23 */
+
+  /* ── Feeding HeroUI ──
+     HeroUI maps --color-x to var(--x), so assigning its variables here is what
+     makes its own components take the storefront's palette instead of the
+     admin's indigo. Roles on the left, HeroUI's vocabulary on the right. */
+  --background: var(--app-surface);
+  --surface: var(--app-surface);
+  --surface-secondary: var(--app-surface-sunken);
+  --surface-tertiary: var(--app-surface-muted);
+  --foreground: var(--app-fg);
+  --muted: var(--app-fg-subtle);
+  --border: var(--app-line);
+  --separator: var(--app-line);
+  --field-border: var(--app-line);
+  --field-border-hover: var(--app-line-strong);
+
+  --accent: var(--app-accent-solid);
+  --accent-hover: var(--app-accent-solid-hover);
   --accent-foreground: var(--white);
-  --link: var(--accent);
+  --accent-soft: var(--app-accent-soft);
+  --accent-soft-foreground: var(--app-accent);
+  --accent-on-dark: var(--app-accent-on-dark);
+  --link: var(--app-accent);
+  --focus: var(--app-accent);
 
-  /* Surfaces — card/product-tray fill and image-placeholder fill */
-  --surface-100: oklch(0.96 0.002 240);
-  --surface-200: oklch(0.94 0.002 240);
-  --surface: var(--surface-100);
-  --surface-secondary: var(--surface-200);
-  --surface-shadow: 0 0 0 0 transparent; /* cards: no border, no shadow — the gray fill carries depth */
+  --success: var(--app-success);
+  --success-soft: var(--app-success-soft);
+  --success-foreground: var(--white);
+  --warning: var(--app-warning);
+  --warning-soft: var(--app-warning-soft);
+  --warning-foreground: var(--white);
+  --danger: var(--app-danger);
+  --danger-soft: var(--app-danger-soft);
+  --danger-foreground: var(--white);
 
-  /* Hairline borders — inputs/dividers only */
-  --border: oklch(0.92 0 0);
-  --separator: oklch(0.93 0 0);
-
-  /* Status */
-  --success: oklch(0.62 0.15 148);
-  --warning: oklch(0.75 0.15 80);
-  --danger: oklch(0.6 0.2 25); /* error / discount */
+  /* Cards carry depth with their grey fill alone — no border, no shadow. */
+  --surface-shadow: 0 0 0 0 transparent;
 }
