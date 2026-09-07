@@ -18,7 +18,8 @@ interface WishlistState {
   isLoading: boolean;
   hydrate: () => Promise<void>;
   addItem: (productId: string) => Promise<void>;
-  removeItem: (productId: string) => Promise<void>;
+  /** Resolves to the list the server has left, or null if the delete failed. */
+  removeItem: (productId: string) => Promise<WishlistItem[] | null>;
   toggle: (productId: string) => Promise<void>;
   isWishlisted: (productId: string) => boolean;
 }
@@ -66,6 +67,10 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
     const response = await fetch(`/api/storefront/wishlist/${productId}`, { method: "DELETE" });
     const items = await parseWishlistResponse(response);
     if (items) set({ items });
+    // Returned as well as stored: the wishlist page renders the server's copy
+    // of this list rather than subscribing to the store (see WishlistGrid), and
+    // this response is what tells it the row is gone.
+    return items;
   },
 
   toggle: async (productId) => {

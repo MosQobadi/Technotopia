@@ -1,7 +1,6 @@
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { verifyToken, getCookieName } from "@/lib/auth";
+import { getSessionPayload } from "@/lib/auth/session";
 import { getOrderForCustomer } from "@/server/order.service";
 import { Button } from "@/components/storefront/ui/Button";
 import { formatPrice } from "@/lib/format";
@@ -13,9 +12,7 @@ interface OrderConfirmationPageProps {
 export default async function OrderConfirmationPage({ params }: OrderConfirmationPageProps) {
   const { orderId } = await params;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(getCookieName())?.value;
-  const payload = token ? await verifyToken(token) : null;
+  const payload = await getSessionPayload();
   if (!payload) notFound();
 
   const order = await getOrderForCustomer(orderId, payload.userId);

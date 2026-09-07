@@ -6,7 +6,9 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FieldError, Input, Label, TextField } from "@heroui/react";
+import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/storefront/ui/Button";
+import { useAuthStore } from "@/lib/store/auth";
 import type { ProfileUpdateInput } from "@/lib/validation";
 import type { SafeUser } from "@/types/auth";
 
@@ -21,8 +23,8 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 interface ProfileTabProps {
+  /** Read on the server by app/[locale]/(storefront)/account/page.tsx. */
   user: SafeUser;
-  onSaved: () => Promise<void>;
 }
 
 /** Mirrors the fullName -> firstName/lastName split registerCustomer() uses at signup. */
@@ -31,8 +33,10 @@ function splitFullName(fullName: string): { firstName: string; lastName: string 
   return { firstName: firstName ?? fullName, lastName: rest.join(" ") };
 }
 
-export function ProfileTab({ user, onSaved }: ProfileTabProps) {
+export function ProfileTab({ user }: ProfileTabProps) {
   const t = useTranslations("account.profile");
+  const router = useRouter();
+  const hydrateAuth = useAuthStore((state) => state.hydrate);
   const [formError, setFormError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -73,7 +77,11 @@ export function ProfileTab({ user, onSaved }: ProfileTabProps) {
       return;
     }
 
-    await onSaved();
+    // Two readers of the same row, and neither can refresh the other: the page
+    // re-renders on the server with the saved values, and the auth store the
+    // navbar draws its initials from re-reads /api/auth/me.
+    router.refresh();
+    await hydrateAuth();
     setSaved(true);
   }
 

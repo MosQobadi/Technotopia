@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,25 +21,18 @@ const addressFormSchema = z.object({
 
 type AddressFormValues = z.infer<typeof addressFormSchema>;
 
-export function AddressesTab() {
+interface AddressesTabProps {
+  /** Read on the server by app/[locale]/(storefront)/account/page.tsx. */
+  initialAddresses: Address[];
+}
+
+export function AddressesTab({ initialAddresses }: AddressesTabProps) {
   const t = useTranslations("account.addresses");
-  const [addresses, setAddresses] = useState<Address[] | null>(null);
+  // The list arrives with the page; this state exists only so a newly added
+  // address appears without a round-trip back to the server render.
+  const [addresses, setAddresses] = useState(initialAddresses);
   const [isAdding, setIsAdding] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch("/api/storefront/account/addresses")
-      .then((response) => response.json())
-      .then((result) => {
-        if (!cancelled && result.success) setAddresses(result.data);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const {
     register,
@@ -67,12 +60,10 @@ export function AddressesTab() {
       return;
     }
 
-    setAddresses((current) => [...(current ?? []), result.data]);
+    setAddresses((current) => [...current, result.data]);
     reset();
     setIsAdding(false);
   }
-
-  if (addresses === null) return null;
 
   return (
     <div className="flex flex-col gap-6">

@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { getTranslations } from "next-intl/server";
-import { verifyToken, getCookieName } from "@/lib/auth";
+import { getSessionPayload } from "@/lib/auth/session";
 import { getOrderForCustomer } from "@/server/order.service";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/cn";
@@ -25,9 +24,7 @@ function formatTimestamp(date: Date): string {
 export default async function OrderTrackingPage({ params }: OrderTrackingPageProps) {
   const { orderId } = await params;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(getCookieName())?.value;
-  const payload = token ? await verifyToken(token) : null;
+  const payload = await getSessionPayload();
   if (!payload) notFound();
 
   const order = await getOrderForCustomer(orderId, payload.userId);

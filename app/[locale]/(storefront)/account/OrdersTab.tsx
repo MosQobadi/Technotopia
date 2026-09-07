@@ -1,39 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 import { OrderStatusBadge } from "@/components/storefront/ui/StatusBadge";
 import { formatPrice } from "@/lib/format";
-import type { OrderStatus } from "@/lib/generated/prisma/enums";
+import type { OrderHistoryItem } from "@/server/order.service";
 
-interface OrderHistoryRow {
-  id: string;
-  itemsSummary: string;
-  total: number;
-  status: OrderStatus;
-  createdAt: string;
+interface OrdersTabProps {
+  orders: OrderHistoryItem[];
 }
 
-export function OrdersTab() {
+export function OrdersTab({ orders }: OrdersTabProps) {
   const t = useTranslations("account.orders");
-  const [orders, setOrders] = useState<OrderHistoryRow[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch("/api/storefront/orders")
-      .then((response) => response.json())
-      .then((result) => {
-        if (!cancelled && result.success) setOrders(result.data);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (orders === null) return null;
 
   if (orders.length === 0) {
     return <p className="text-sm text-fg-subtle">{t("empty")}</p>;
@@ -49,7 +27,7 @@ export function OrdersTab() {
           <div>
             <div className="mb-1 text-xs text-fg-subtle">
               <span className="font-mono">#{order.id.slice(-8).toUpperCase()}</span> ·{" "}
-              {format(new Date(order.createdAt), "MMM d, yyyy")}
+              {format(order.createdAt, "MMM d, yyyy")}
             </div>
             <div className="text-fg text-sm font-semibold">{order.itemsSummary}</div>
           </div>

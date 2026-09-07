@@ -1,58 +1,46 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
-import { useAuthStore } from "@/lib/store/auth";
-import { Tabs } from "@/components/storefront/ui/Tabs";
+import { getTranslations } from "next-intl/server";
+import { getSessionPayload } from "@/lib/auth/session";
+import { getAddresses, getProfile } from "@/server/account.service";
+import { getOrderHistoryForCustomer } from "@/server/order.service";
 import { EmptyState } from "@/components/storefront/ui/EmptyState";
-import { ProfileTab } from "./ProfileTab";
-import { OrdersTab } from "./OrdersTab";
-import { AddressesTab } from "./AddressesTab";
+import { AccountTabs } from "./AccountTabs";
 
-type AccountTab = "profile" | "orders" | "addresses";
+// Reading the session below already makes this route dynamic, but it is spelled
+// out because the failure mode if it ever weren't is serving one customer's
+// profile, orders and addresses to everyone out of the cache.
+export const dynamic = "force-dynamic";
 
-export default function AccountPage() {
-  const t = useTranslations("account");
-  const tCommon = useTranslations("common");
-  const user = useAuthStore((state) => state.user);
-  const authLoading = useAuthStore((state) => state.isLoading);
-  const hydrateAuth = useAuthStore((state) => state.hydrate);
+// Profile, order history and addresses are read through the service layer
+// directly rather than through this app's own /api/storefront/* routes — the
+// same functions those routes serve, minus three HTTP round-trips to ourselves
+// that would each have to forward the session cookie to be let in, and minus
+// the three separate spinners that came with fetching them from the client.
+// The routes stay: they are still the contract for client callers.
+export default async function AccountPage() {
+  const t = await getTranslations("account");
+  const tCommon = await getTranslations("common");
 
-  useEffect(() => {
-    hydrateAuth();
-  }, [hydrateAuth]);
+  const payload = await getSessionPayload();
 
-  const [activeTab, setActiveTab] = useState<AccountTab>("profile");
+  // A token for an account that no longer exists is not a session: a null
+  // profile falls through to the same logged-out state as no token at all.
+  const user = payload ? await getProfile(payload.userId) : null;
 
-  const showLoggedOut = !authLoading && !user;
-
-  const accountTabs = [
-    { key: "profile", label: t("tabs.profile") },
-    { key: "orders", label: t("tabs.orders") },
-    { key: "addresses", label: t("tabs.addresses") },
-  ] as const;
+  // Three independent reads for one screen — issued together rather than
+  // awaited one after another, so the page costs one round-trip's worth of
+  // latency and not three.
+  const [orders, addresses] = user
+    ? await Promise.all([getOrderHistoryForCustomer(user.id), getAddresses(user.id)])
+    : [[], []];
 
   return (
     <main className="mx-auto max-w-225 px-6 py-10 pb-24">
       <h1 className="text-fg text-title mb-7">{t("title")}</h1>
 
-      {showLoggedOut && (
+      {user ? (
+        <AccountTabs user={user} orders={orders} addresses={addresses} />
+      ) : (
         <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />
-      )}
-
-      {user && (
-        <>
-          <Tabs
-            tabs={accountTabs.map(({ key, label }) => ({ key, label }))}
-            value={activeTab}
-            onChange={(key) => setActiveTab(key as AccountTab)}
-            className="mb-8"
-          />
-
-          {activeTab === "profile" && <ProfileTab user={user} onSaved={hydrateAuth} />}
-          {activeTab === "orders" && <OrdersTab />}
-          {activeTab === "addresses" && <AddressesTab />}
-        </>
       )}
     </main>
   );
