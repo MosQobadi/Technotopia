@@ -9,155 +9,757 @@
 <x-dc>
 <helmet>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Vazirmatn:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; background: white; color: oklch(0.17 0 0); font-family: 'Plus Jakarta Sans', sans-serif; }
-    a { color: oklch(0.58 0.2 258); text-decoration: none; }
-    a:hover { color: oklch(0.5 0.21 258); text-decoration: underline; }
-    ::selection { background: oklch(0.58 0.2 258 / 0.2); }
-    *:focus-visible { outline: 2px solid oklch(0.58 0.2 258); outline-offset: 2px; }
+    /* ── The two palettes, transcribed from app/globals.css ──────────────────
+       Every value and every ratio on this page is the one in that file. The
+       swatches below are painted from these variables rather than from literals
+       written into each swatch, so a theme panel cannot drift from the palette
+       it claims to show — there is one place per theme to check against the
+       stylesheet.
+
+       Names are shortened to --t-* here. In the app they are --app-*, scoped to
+       [data-scope="storefront"], and reach components as Tailwind utilities
+       (bg-surface, text-fg-subtle, border-line …). Both are given for each row. */
+    .pal-light {
+      --t-surface: oklch(1 0 0);
+      --t-sunken: oklch(0.96 0.002 240);
+      --t-muted: oklch(0.94 0.002 240);
+      --t-fg: oklch(0.17 0 0);
+      --t-fg-muted: oklch(0.465 0 0);
+      --t-fg-subtle: oklch(0.525 0 0);
+      --t-fg-faint: oklch(0.668 0 0);
+      --t-line: oklch(0.92 0 0);
+      --t-line-strong: oklch(0.855 0 0);
+      --t-accent: oklch(0.545 0.2 258);
+      --t-accent-soft: oklch(0.966 0.016 258);
+      --t-success: oklch(0.52 0.15 148);
+      --t-success-soft: oklch(0.962 0.03 148);
+      --t-warning: oklch(0.545 0.12 68);
+      --t-warning-soft: oklch(0.963 0.026 68);
+      --t-danger: oklch(0.56 0.19 25);
+      --t-danger-soft: oklch(0.958 0.02 25);
+      --t-info: oklch(0.53 0.096 220);
+      --t-info-soft: oklch(0.962 0.026 220);
+    }
+    .pal-dark {
+      --t-surface: oklch(0.26 0.004 240);
+      --t-sunken: oklch(0.215 0.004 240);
+      --t-muted: oklch(0.185 0.004 240);
+      --t-fg: oklch(0.96 0.004 240);
+      --t-fg-muted: oklch(0.75 0.004 240);
+      --t-fg-subtle: oklch(0.68 0.004 240);
+      --t-fg-faint: oklch(0.54 0.004 240);
+      --t-line: oklch(0.33 0.006 240);
+      --t-line-strong: oklch(0.38 0.006 240);
+      --t-accent: oklch(0.72 0.14 258);
+      --t-accent-soft: oklch(0.3 0.055 258);
+      --t-success: oklch(0.76 0.15 148);
+      --t-success-soft: oklch(0.3 0.055 148);
+      --t-warning: oklch(0.8 0.12 68);
+      --t-warning-soft: oklch(0.3 0.05 68);
+      --t-danger: oklch(0.72 0.16 25);
+      --t-danger-soft: oklch(0.3 0.06 25);
+      --t-info: oklch(0.76 0.09 220);
+      --t-info-soft: oklch(0.3 0.045 220);
+    }
+
+    /* These do not belong to either palette: they are the same value in both,
+       which is the whole point of them. */
+    :root {
+      --fixed-accent-solid: oklch(0.545 0.2 258);
+      --fixed-accent-solid-hover: oklch(0.485 0.18 258);
+      --fixed-accent-on-dark: oklch(0.72 0.14 258);
+      --fixed-danger-solid: oklch(0.56 0.19 25);
+      --fixed-white: oklch(1 0 0);
+    }
+
+    body {
+      margin: 0;
+      background: oklch(1 0 0);
+      color: oklch(0.17 0 0);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    a { color: oklch(0.545 0.2 258); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ::selection { background: oklch(0.545 0.2 258 / 0.18); }
+    *:focus-visible { outline: 2px solid oklch(0.545 0.2 258); outline-offset: 2px; }
+
+    .page { max-width: 1180px; margin: 0 auto; padding: 64px 24px 120px; }
+
+    .eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: oklch(0.545 0.2 258);
+    }
+    .sec { margin-bottom: 64px; }
+    .h2 {
+      font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15;
+      margin: 0 0 8px;
+    }
+    .h3 {
+      font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35;
+      margin: 0 0 8px;
+    }
+    .note { color: oklch(0.465 0 0); max-width: 760px; margin: 0 0 24px; }
+    .note code, .mono { font-family: 'IBM Plex Mono', monospace; font-size: 0.9em; }
+    .rule { border: none; border-top: 1px solid oklch(0.92 0 0); margin: 0 0 56px; }
+    .card { background: oklch(0.96 0.002 240); border-radius: 16px; padding: 20px; }
+    .card p { margin: 0; font-size: 14px; color: oklch(0.465 0 0); }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+
+    /* Two theme panels, side by side, each painting itself from its own palette. */
+    .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 860px) { .themes { grid-template-columns: 1fr; } }
+    .theme {
+      background: var(--t-surface);
+      color: var(--t-fg);
+      border: 1px solid var(--t-line);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .themehead {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--t-fg-subtle);
+      margin-bottom: 14px;
+    }
+
+    .stack { display: flex; flex-direction: column; gap: 8px; }
+    .ground {
+      border-radius: 12px; padding: 14px 16px;
+      border: 1px solid var(--t-line);
+    }
+    .tok {
+      font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600;
+      display: block;
+    }
+    .util { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--t-fg-subtle); }
+    .val {
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+      color: var(--t-fg-subtle); display: block; margin-top: 2px;
+    }
+    .ratio {
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.5;
+      color: var(--t-fg-muted); display: block; margin-top: 2px;
+    }
+    .fgline { font-size: 15px; margin-top: 10px; }
+    .fgrow { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    .warn {
+      border-inline-start: 3px solid oklch(0.545 0.12 68);
+      background: oklch(0.963 0.026 68);
+      border-radius: 0 12px 12px 0;
+      padding: 14px 18px;
+      margin: 0 0 24px;
+      max-width: 880px;
+    }
+
+    table.scale { border-collapse: collapse; width: 100%; }
+    table.scale th, table.scale td {
+      text-align: start; padding: 16px 12px; border-bottom: 1px solid oklch(0.92 0 0);
+      vertical-align: baseline;
+    }
+    table.scale th {
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase; color: oklch(0.525 0 0);
+    }
+    .meta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.5; color: oklch(0.525 0 0); }
   </style>
 </helmet>
 
-<div style="max-width: 1120px; margin: 0 auto; padding: 64px 24px 120px;">
+<div class="page">
 
   <header style="margin-bottom: 56px;">
-    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.58 0.2 258); text-transform: uppercase; margin-bottom: 12px;">// design system v2 — boyamic-style direction, for approval</div>
-    <h1 style="font-size: 42px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.02em; line-height: 1.05;">Technotopia</h1>
-    <p style="font-size: 16px; color: oklch(0.45 0 0); max-width: 640px; line-height: 1.6; margin: 0;">Rebuilt to match the reference: white canvas, one restrained blue, big confident type, rounded flat-gray product cards, photography carrying the weight instead of decoration.</p>
+    <div class="eyebrow" style="margin-bottom: 12px;">// design system v2 — the storefront as built, Phase 27</div>
+    <h1 style="font-size: 3rem; font-weight: 800; margin: 0 0 12px; letter-spacing: -0.03em; line-height: 1.05;">Technotopia</h1>
+    <p style="font-size: 17px; color: oklch(0.465 0 0); max-width: 720px; line-height: 1.6; margin: 0 0 16px;">
+      Ranked semantic roles, two themes, five type steps, one font per locale.
+      <strong>The stylesheet is the source of truth</strong> — every value and every ratio below is
+      transcribed from <code class="mono">app/globals.css</code>, where each one carries the comment
+      explaining why it is that number. This page is the map; that file is the territory.
+    </p>
+    <p class="note" style="margin: 0;">
+      Ratios are WCAG relative-luminance figures, generated from the oklch values via sRGB and rounded
+      <em>down</em>, so nothing here overstates a pair. Every value was also checked to sit inside the sRGB
+      gamut — an out-of-gamut <code class="mono">oklch()</code> gets clamped by the browser, and a ratio
+      computed from the value as written would then describe a colour nobody sees.
+    </p>
   </header>
 
-  <section style="margin-bottom: 56px;">
-    <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 20px;">Color tokens</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
-      <div>
-        <div style="height: 72px; background: oklch(0.17 0 0); border-radius: 12px;"></div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">ink-900<br><span style="color: oklch(0.55 0 0);">headlines / nav text</span></div>
-      </div>
-      <div>
-        <div style="height: 72px; background: oklch(0.58 0.2 258); border-radius: 12px;"></div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">accent — signal blue<br><span style="color: oklch(0.55 0 0);">CTAs / links only</span></div>
-      </div>
-      <div>
-        <div style="height: 72px; background: oklch(0.96 0.002 240); border-radius: 12px; border: 1px solid oklch(0.92 0 0);"></div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">surface-100<br><span style="color: oklch(0.55 0 0);">card / product tray fill</span></div>
-      </div>
-      <div>
-        <div style="height: 72px; background: white; border: 1px solid oklch(0.9 0 0); border-radius: 12px;"></div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">white<br><span style="color: oklch(0.55 0 0);">page background</span></div>
-      </div>
-      <div>
-        <div style="height: 72px; background: oklch(0.62 0.15 148); border-radius: 12px;"></div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">success<br><span style="color: oklch(0.55 0 0);">in stock</span></div>
-      </div>
-      <div>
-        <div style="height: 72px; background: oklch(0.75 0.15 80); border-radius: 12px;"></div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">warning<br><span style="color: oklch(0.55 0 0);">low stock</span></div>
-      </div>
-      <div>
-        <div style="height: 72px; background: oklch(0.6 0.2 25); border-radius: 12px;"></div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">error / discount<br><span style="color: oklch(0.55 0 0);">out of stock, -% badge</span></div>
-      </div>
-      <div>
-        <div style="height: 72px; background: oklch(0.55 0 0); border-radius: 12px;"></div>
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px;">gray-500<br><span style="color: oklch(0.55 0 0);">body copy</span></div>
-      </div>
-    </div>
-    <p style="font-size: 13px; color: oklch(0.5 0 0); margin-top: 14px; max-width: 640px;">Blue is the only accent, used only on primary buttons and links — everywhere else stays black, white or gray, matching how sparingly the reference uses color.</p>
-  </section>
+  <!-- ── HOW IT WORKS ─────────────────────────────────────────────────────── -->
+  <section class="sec">
+    <h2 class="h2">Three ideas hold the whole thing up</h2>
+    <p class="note">Everything else on this page follows from these.</p>
+    <div class="cards">
 
-  <section style="margin-bottom: 56px;">
-    <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 20px;">Typography — one family, big weight contrast</h2>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
-      <div style="background: oklch(0.96 0.002 240); border-radius: 16px; padding: 24px;">
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Plus Jakarta Sans 800</div>
-        <div style="font-size: 40px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em;">Explore the gear.</div>
-        <div style="font-size: 13px; color: oklch(0.5 0 0); margin-top: 10px;">H1/H2, hero lines — always this heavy</div>
+      <div class="card">
+        <div class="h3">Roles, not shades</div>
+        <p>
+          <code class="mono">surface</code> is whatever an elevated thing is painted;
+          <code class="mono">fg</code> is whatever body copy is. A job, not a colour. That is what lets one
+          attribute reassign the entire palette — reach for a raw <code class="mono">gray-500</code> again
+          and it will simply not flip.
+        </p>
       </div>
-      <div style="background: oklch(0.96 0.002 240); border-radius: 16px; padding: 24px;">
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Plus Jakarta Sans 400/500</div>
-        <div style="font-size: 16px; line-height: 1.6; color: oklch(0.45 0 0);">Cardioid pickup, 24-bit signal, zero-latency monitoring — built for voice-first content.</div>
-        <div style="font-size: 13px; color: oklch(0.5 0 0); margin-top: 10px;">Paragraphs, UI labels — deliberately light against the bold headline</div>
+
+      <div class="card">
+        <div class="h3">One attribute, both themes</div>
+        <p>
+          <code class="mono">data-theme="dark"</code> on <code class="mono">&lt;html&gt;</code> — one of the
+          selectors HeroUI keys on, so its components flip with ours. An <em>attribute</em>, not a class:
+          React owns <code class="mono">&lt;html className&gt;</code> and rewrites it on every locale switch,
+          which would silently wipe a class a script had added. An inline script sets it before first paint,
+          <code class="mono">ThemeGuard</code> puts it back after a locale switch, and
+          <code class="mono">ThemeToggle</code> is the only thing that changes it — all of it in
+          <code class="mono">lib/storefront/theme.ts</code>.
+        </p>
       </div>
-    </div>
-    <div style="background: oklch(0.96 0.002 240); border-radius: 16px; padding: 24px; margin-top: 16px;">
-      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Mono accent — IBM Plex Mono 500/600</div>
-      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; letter-spacing: 0.03em;">SKU-4471 · 24-BIT · USB-C · CARDIOID</div>
-      <div style="font-size: 13px; color: oklch(0.5 0 0); margin-top: 10px;">Specs, eyebrow labels, SKU tags — the one technical texture kept from before</div>
+
+      <div class="card">
+        <div class="h3">Storefront only</div>
+        <p>
+          The palette is scoped to <code class="mono">[data-scope="storefront"]</code> on
+          <code class="mono">&lt;body&gt;</code>. The admin tree sets neither attribute, keeps HeroUI's indigo,
+          and stays light — its wireframes are drawn light-only, so a dark admin would be invented rather
+          than specified.
+        </p>
+      </div>
+
     </div>
   </section>
 
-  <section style="margin-bottom: 64px;">
-    <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 12px;">Radius, shadow &amp; the record-dot motif</h2>
-    <p style="font-size: 14px; line-height: 1.6; color: oklch(0.4 0 0); max-width: 680px; margin: 0 0 20px;">Buttons are full pills. Cards and product trays are large-radius flat gray, never bordered, never shadowed — depth comes from the gray-on-white fill, not elevation. A small filled dot — a tally-light — sits before every eyebrow label and section tag: the one recurring mark that reads "recording gear" without drawing an icon.</p>
-    <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: center;">
-      <div style="display: flex; align-items: center; gap: 8px; background: oklch(0.96 0.002 240); border-radius: 999px; padding: 10px 18px;">
-        <span style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.6 0.2 25);"></span>
-        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Live · Best Sellers</span>
-      </div>
-      <div style="width: 160px; height: 160px; background: oklch(0.96 0.002 240); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.55 0 0);">PRODUCT TRAY</div>
-      <button style="background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 14px 28px; font-weight: 700; font-size: 15px; cursor: pointer;">Pill button</button>
-    </div>
-  </section>
+  <hr class="rule">
 
-  <hr style="border: none; border-top: 1px solid oklch(0.93 0 0); margin-bottom: 56px;">
-  <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 24px;">Applied to core components</h2>
+  <!-- ── GROUNDS ──────────────────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="eyebrow" style="margin-bottom: 10px;">Ranked roles — 1 of 4</div>
+    <h2 class="h2">Grounds</h2>
+    <p class="note">
+      Ranked page → card → inset. The storefront's cards are grey trays <em>recessed</em> into the page,
+      with no border and no shadow (<code class="mono">--surface-shadow</code> is transparent), so the
+      "sunken" rank is the card fill. <strong>The dark theme keeps that order</strong> rather than inverting
+      it the way dark-mode advice usually says: reversing it would turn every recessed tray into a raised one
+      and change what the storefront looks like. What inverts is the range the palette sits in, not the order
+      within it. Mutual contrast is intentionally tiny — these separate areas, they never carry text.
+    </p>
+    <div class="themes">
 
-  <section style="margin-bottom: 48px;">
-    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px;">Buttons</div>
-    <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
-      <button style="background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 14px 28px; font-weight: 700; font-size: 15px; cursor: pointer; transition: background 0.15s;" style-hover="background: oklch(0.5 0.21 258);">Add to Cart</button>
-      <button style="background: white; color: oklch(0.17 0 0); border: 1.5px solid oklch(0.17 0 0); border-radius: 999px; padding: 12.5px 26px; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.17 0 0); color: white;">View Details</button>
-      <button style="background: white; color: oklch(0.58 0.2 258); border: 1.5px solid oklch(0.58 0.2 258); border-radius: 999px; padding: 12.5px 26px; font-weight: 700; font-size: 15px; cursor: pointer;" style-hover="background: oklch(0.58 0.2 258); color: white;">Learn More</button>
-      <button aria-label="Wishlist" style="width: 46px; height: 46px; border-radius: 50%; background: oklch(0.96 0.002 240); border: none; font-size: 18px; cursor: pointer;" style-hover="color: oklch(0.6 0.2 25);">♡</button>
-      <button style="background: oklch(0.95 0 0); color: oklch(0.6 0 0); border: none; border-radius: 999px; padding: 12.5px 26px; font-weight: 700; font-size: 15px; cursor: not-allowed;">Out of Stock</button>
-    </div>
-  </section>
-
-  <section style="margin-bottom: 48px;">
-    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px;">Price tag with discount</div>
-    <div style="display: flex; gap: 32px; align-items: center; flex-wrap: wrap;">
-      <div style="display: flex; align-items: baseline; gap: 10px;">
-        <span style="font-size: 26px; font-weight: 800; color: oklch(0.17 0 0);">۱۲,۴۰۰,۰۰۰﷼</span>
-        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: oklch(0.65 0 0); text-decoration: line-through;">۱۵,۵۰۰,۰۰۰﷼</span>
-        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 700; color: white; background: oklch(0.6 0.2 25); border-radius: 999px; padding: 3px 10px;">-20%</span>
-      </div>
-      <div style="display: flex; align-items: baseline; gap: 10px;">
-        <span style="font-size: 26px; font-weight: 800; color: oklch(0.17 0 0);">۸,۹۰۰,۰۰۰﷼</span>
-        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.62 0.15 148);">IN STOCK</span>
-      </div>
-    </div>
-  </section>
-
-  <section style="margin-bottom: 48px;">
-    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px;">Section header</div>
-    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-      <span style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.6 0.2 25);"></span>
-      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.5 0 0); text-transform: uppercase;">Best Sellers</span>
-    </div>
-    <h2 style="font-size: 34px; font-weight: 800; margin: 0; letter-spacing: -0.015em;">Gear people actually buy twice.</h2>
-  </section>
-
-  <section>
-    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.5 0 0); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px;">Product card</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 280px)); gap: 24px;">
-      <div style="background: oklch(0.96 0.002 240); border-radius: 20px; overflow: hidden; transition: transform 0.15s ease;" style-hover="transform: translateY(-4px);">
-        <div style="position: relative; aspect-ratio: 1; background: oklch(0.94 0.002 240); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: oklch(0.55 0 0);">
-          PRODUCT PHOTO
-          <span style="position: absolute; top: 12px; left: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: white; background: oklch(0.6 0.2 25); border-radius: 999px; padding: 4px 10px;">-20%</span>
-          <button aria-label="Wishlist" style="position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: white; border: none; font-size: 14px; cursor: pointer;">♡</button>
-        </div>
-        <div style="padding: 20px;">
-          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: oklch(0.58 0.2 258); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Microphones</div>
-          <h3 style="font-size: 17px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em;">Cardio X2 Condenser Mic</h3>
-          <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px;">
-            <span style="font-size: 18px; font-weight: 800;">۴,۲۰۰,۰۰۰﷼</span>
-            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: oklch(0.65 0 0); text-decoration: line-through;">۵,۲۵۰,۰۰۰﷼</span>
+      <div class="theme pal-light">
+        <div class="themehead">Light — default</div>
+        <div class="stack">
+          <div class="ground" style="background: var(--t-surface);">
+            <span class="tok">--app-surface <span class="util">· bg-surface</span></span>
+            <span class="val">oklch(1 0 0)</span>
+            <span class="ratio">the page ground</span>
           </div>
-          <button style="width: 100%; background: oklch(0.58 0.2 258); color: white; border: none; border-radius: 999px; padding: 11px 0; font-weight: 700; font-size: 14px; cursor: pointer;" style-hover="background: oklch(0.5 0.21 258);">Add to Cart</button>
+          <div class="ground" style="background: var(--t-sunken);">
+            <span class="tok">--app-surface-sunken <span class="util">· bg-surface-sunken</span></span>
+            <span class="val">oklch(0.96 0.002 240)</span>
+            <span class="ratio">1.12 on surface — card / product tray fill</span>
+          </div>
+          <div class="ground" style="background: var(--t-muted);">
+            <span class="tok">--app-surface-muted <span class="util">· bg-surface-muted</span></span>
+            <span class="val">oklch(0.94 0.002 240)</span>
+            <span class="ratio">1.19 on surface — insets inside a card</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="theme pal-dark">
+        <div class="themehead">Dark — [data-theme="dark"]</div>
+        <div class="stack">
+          <div class="ground" style="background: var(--t-surface);">
+            <span class="tok">--app-surface <span class="util">· bg-surface</span></span>
+            <span class="val">oklch(0.26 0.004 240)</span>
+            <span class="ratio">the page ground</span>
+          </div>
+          <div class="ground" style="background: var(--t-sunken);">
+            <span class="tok">--app-surface-sunken <span class="util">· bg-surface-sunken</span></span>
+            <span class="val">oklch(0.215 0.004 240)</span>
+            <span class="ratio">1.12 on surface — same ratio as light</span>
+          </div>
+          <div class="ground" style="background: var(--t-muted);">
+            <span class="tok">--app-surface-muted <span class="util">· bg-surface-muted</span></span>
+            <span class="val">oklch(0.185 0.004 240)</span>
+            <span class="ratio">1.19 on surface — same ratio as light</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FOREGROUND ───────────────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="eyebrow" style="margin-bottom: 10px;">Ranked roles — 2 of 4</div>
+    <h2 class="h2">Foreground</h2>
+    <p class="note">
+      Four ranks, body copy down to icons, shown on all three grounds because a rank has to clear AA on
+      whichever ground it actually lands on. The ratios read <strong>surface / sunken / muted</strong> in both
+      themes — note that in the dark theme those three run the other way, because the lightest ground is the
+      tightest constraint for light text and there the lightest ground is <code class="mono">surface</code>.
+      Each dark rank is tuned to land on the light theme's ratio against its own page ground —
+      <code class="mono">fg-subtle</code> is 5.39 in both — so a component legible in light is legible here
+      without being re-checked.
+    </p>
+    <div class="themes">
+
+      <div class="theme pal-light">
+        <div class="themehead">Light — default</div>
+        <div class="stack">
+          <div class="ground" style="background: var(--t-surface);">
+            <div style="color: var(--t-fg); font-size: 15px;">--app-fg · text-fg — body copy, headings</div>
+            <span class="ratio">oklch(0.17 0 0) · 19.12 / 17.02 / 16.04</span>
+            <div class="fgline" style="color: var(--t-fg-muted);">--app-fg-muted · text-fg-muted — lede, secondary</div>
+            <span class="ratio">oklch(0.465 0 0) · 6.97 / 6.21 / 5.85</span>
+            <div class="fgline" style="color: var(--t-fg-subtle);">--app-fg-subtle · text-fg-subtle — captions, meta</div>
+            <span class="ratio">oklch(0.525 0 0) · 5.39 / 4.80 / 4.52</span>
+            <div class="fgline" style="color: var(--t-fg-faint);">--app-fg-faint · text-fg-faint — icons only</div>
+            <span class="ratio">oklch(0.668 0 0) · 3.01 / 2.68 / 2.53 — below AA, never copy</span>
+          </div>
+          <div class="ground fgrow" style="background: var(--t-sunken);">
+            <span style="color: var(--t-fg);">on sunken</span>
+            <span style="color: var(--t-fg-muted);">muted</span>
+            <span style="color: var(--t-fg-subtle);">subtle</span>
+            <span style="color: var(--t-fg-faint);">faint</span>
+          </div>
+          <div class="ground fgrow" style="background: var(--t-muted);">
+            <span style="color: var(--t-fg);">on muted</span>
+            <span style="color: var(--t-fg-muted);">muted</span>
+            <span style="color: var(--t-fg-subtle);">subtle</span>
+            <span style="color: var(--t-fg-faint);">faint</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="theme pal-dark">
+        <div class="themehead">Dark — [data-theme="dark"]</div>
+        <div class="stack">
+          <div class="ground" style="background: var(--t-surface);">
+            <div style="color: var(--t-fg); font-size: 15px;">--app-fg · text-fg — body copy, headings</div>
+            <span class="ratio">oklch(0.96 0.004 240) · 13.83 / 15.59 / 16.59</span>
+            <div class="fgline" style="color: var(--t-fg-muted);">--app-fg-muted · text-fg-muted — lede, secondary</div>
+            <span class="ratio">oklch(0.75 0.004 240) · 6.98 / 7.87 / 8.37</span>
+            <div class="fgline" style="color: var(--t-fg-subtle);">--app-fg-subtle · text-fg-subtle — captions, meta</div>
+            <span class="ratio">oklch(0.68 0.004 240) · 5.39 / 6.08 / 6.47</span>
+            <div class="fgline" style="color: var(--t-fg-faint);">--app-fg-faint · text-fg-faint — icons only</div>
+            <span class="ratio">oklch(0.54 0.004 240) · 3.07 / 3.46 / 3.68 — below AA, never copy</span>
+          </div>
+          <div class="ground fgrow" style="background: var(--t-sunken);">
+            <span style="color: var(--t-fg);">on sunken</span>
+            <span style="color: var(--t-fg-muted);">muted</span>
+            <span style="color: var(--t-fg-subtle);">subtle</span>
+            <span style="color: var(--t-fg-faint);">faint</span>
+          </div>
+          <div class="ground fgrow" style="background: var(--t-muted);">
+            <span style="color: var(--t-fg);">on muted</span>
+            <span style="color: var(--t-fg-muted);">muted</span>
+            <span style="color: var(--t-fg-subtle);">subtle</span>
+            <span style="color: var(--t-fg-faint);">faint</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <p class="note" style="margin-top: 16px;">
+      <code class="mono">--app-fg</code> is deliberately not pure white in the dark theme: 13.83 is far past AA,
+      and full-strength white on a near-black ground is the halation that makes long copy hard to read.
+    </p>
+  </section>
+
+  <!-- ── LINES ────────────────────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="eyebrow" style="margin-bottom: 10px;">Ranked roles — 3 of 4</div>
+    <h2 class="h2">Lines</h2>
+    <div class="warn">
+      <strong>Both ranks sit below the 3:1 that WCAG 1.4.11 asks of a UI component's boundary.</strong>
+      That is a deliberate carry-over of the design's hairline look, and it is only safe because a control's
+      affordance rests on its <em>fill</em> and its <em>focus ring</em> — never on its border. Don't let a
+      border become the only thing marking a control.
+    </div>
+    <div class="themes">
+
+      <div class="theme pal-light">
+        <div class="themehead">Light — darker than the ground</div>
+        <div style="border-top: 1px solid var(--t-line); padding-top: 10px; margin-bottom: 18px;">
+          <span class="tok">--app-line <span class="util">· border-line</span></span>
+          <span class="val">oklch(0.92 0 0)</span>
+          <span class="ratio">1.26 on surface · 1.12 on sunken — hairlines, dividers, field borders</span>
+        </div>
+        <div style="border-top: 1px solid var(--t-line-strong); padding-top: 10px;">
+          <span class="tok">--app-line-strong <span class="util">· border-line-strong</span></span>
+          <span class="val">oklch(0.855 0 0)</span>
+          <span class="ratio">1.55 on surface · 1.38 on sunken — hover borders</span>
+        </div>
+      </div>
+
+      <div class="theme pal-dark">
+        <div class="themehead">Dark — lighter than the ground, same ratios</div>
+        <div style="border-top: 1px solid var(--t-line); padding-top: 10px; margin-bottom: 18px;">
+          <span class="tok">--app-line <span class="util">· border-line</span></span>
+          <span class="val">oklch(0.33 0.006 240)</span>
+          <span class="ratio">1.27 on surface · 1.43 on sunken</span>
+        </div>
+        <div style="border-top: 1px solid var(--t-line-strong); padding-top: 10px;">
+          <span class="tok">--app-line-strong <span class="util">· border-line-strong</span></span>
+          <span class="val">oklch(0.38 0.006 240)</span>
+          <span class="ratio">1.55 on surface · 1.75 on sunken</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── ACCENT ───────────────────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="eyebrow" style="margin-bottom: 10px;">Ranked roles — 4 of 4</div>
+    <h2 class="h2">Accent — one signal blue, three tokens</h2>
+    <p class="note">
+      Which token a thing takes is decided by one question: <strong>is the colour a fill, or is it read?</strong>
+      Get it wrong and the dark theme fails silently — before Task 27.4, <code class="mono">text-accent</code>
+      measured 2.92:1 on the dark ground, which is every link, eyebrow and focus ring on the site.
+      Blue stays the only accent, and only on primary buttons and links.
+    </p>
+
+    <div class="cards" style="margin-bottom: 20px;">
+
+      <div class="card">
+        <div class="h3">The fill — does not flip</div>
+        <p style="margin-bottom: 14px;">
+          <code class="mono">--app-accent-solid</code> · <code class="mono">bg-accent</code>,
+          <code class="mono">bg-accent-solid</code>, <code class="mono">hover:bg-accent-hover</code>.
+          HeroUI's accent-filled components read <code class="mono">--accent</code>, so that variable stays the
+          fill. White on it is 5.10; white on the lighter blue a dark theme reads <em>text</em> in would be 2.55.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+          <button style="background: var(--fixed-accent-solid); color: var(--fixed-white); border: none; border-radius: 999px; padding: 12px 24px; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer;" style-hover="background: oklch(0.485 0.18 258);">Add to Cart</button>
+          <span class="meta">oklch(0.545 0.2 258) — white on it 5.10<br>hover oklch(0.485 0.18 258) — white on it 6.57</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="h3">The readable one — flips</div>
+        <p style="margin-bottom: 14px;">
+          <code class="mono">--app-accent</code> · <code class="mono">text-accent-readable</code>,
+          <code class="mono">border-accent-readable</code>, <code class="mono">outline-accent-readable</code>.
+          Text, borders and the focus ring take this one. It carries a name of its own because
+          <code class="mono">accent</code> could not be it — HeroUI already owns that name for the fill.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+          <span style="color: var(--fixed-accent-solid); font-weight: 700;">Light — 5.10 on surface, 4.54 on sunken</span>
+          <span style="background: oklch(0.26 0.004 240); color: var(--fixed-accent-on-dark); font-weight: 700; padding: 6px 14px; border-radius: 999px;">Dark — 6.22 / 7.02 / 7.47</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="h3">On dark — never flips</div>
+        <p style="margin-bottom: 14px;">
+          <code class="mono">--app-accent-on-dark</code> · <code class="mono">text-accent-on-dark</code>.
+          For ground that is dark <em>whatever the theme is</em> — a scrim over a photograph, a caption on a
+          category card. It has to hold while the rest of the site is still in light mode, which is why it is a
+          third token rather than just the dark theme's value.
+        </p>
+        <div style="background: oklch(0.17 0 0); border-radius: 12px; padding: 14px 16px;">
+          <span style="color: var(--fixed-accent-on-dark); font-weight: 700;">Cameras &amp; Lenses</span>
+          <span class="meta" style="display: block; color: oklch(0.668 0 0); margin-top: 4px;">oklch(0.72 0.14 258) — 7.66 on --app-fg, 5.46 on a 0.30 scrim</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="themes">
+      <div class="theme pal-light">
+        <div class="themehead">Light — accent-soft</div>
+        <div class="ground" style="background: var(--t-accent-soft); border-color: var(--t-accent-soft);">
+          <span style="color: var(--t-accent); font-weight: 700;">Soft accent panel · bg-accent-soft</span>
+          <span class="ratio">oklch(0.966 0.016 258) · 1.10 on surface; accent on it 4.62</span>
+        </div>
+      </div>
+      <div class="theme pal-dark">
+        <div class="themehead">Dark — accent-soft</div>
+        <div class="ground" style="background: var(--t-accent-soft); border-color: var(--t-accent-soft);">
+          <span style="color: var(--t-accent); font-weight: 700;">Soft accent panel · bg-accent-soft</span>
+          <span class="ratio">oklch(0.3 0.055 258) · 1.13 on surface; accent on it 5.47, fg 12.16</span>
         </div>
       </div>
     </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ── STATUS ───────────────────────────────────────────────────────────── -->
+  <section class="sec">
+    <h2 class="h2">Status — success, warning, danger, info</h2>
+    <p class="note">
+      <code class="mono">info</code> is a teal-leaning cyan rather than a blue: with a blue accent, a blue
+      "for your information" notice would read as a brand flourish rather than as a status.
+      In the <strong>light</strong> theme each value is dark enough to serve twice — as text on a ground
+      <em>and</em> as a fill under white text — which is why one token covers both
+      <code class="mono">text-success</code> and <code class="mono">bg-success</code>.
+      In the <strong>dark</strong> theme they are text colours only: the sole fill the storefront makes of them
+      is StatusBadge's dot, which carries no text. Ratios read <strong>surface / sunken</strong>.
+    </p>
+    <div class="themes">
+
+      <div class="theme pal-light">
+        <div class="themehead">Light — readable as text and as a fill</div>
+        <div class="stack">
+          <div class="ground" style="background: var(--t-success-soft); border-color: var(--t-success-soft);">
+            <span style="color: var(--t-success); font-weight: 700;">In stock</span>
+            <span class="ratio">--app-success oklch(0.52 0.15 148) · 5.15 / 4.58 · white on it 5.15</span>
+            <span class="ratio">--app-success-soft oklch(0.962 0.03 148) · 1.10 on surface; success on it 4.66, fg 17.29</span>
+          </div>
+          <div class="ground" style="background: var(--t-warning-soft); border-color: var(--t-warning-soft);">
+            <span style="color: var(--t-warning); font-weight: 700;">Low stock</span>
+            <span class="ratio">--app-warning oklch(0.545 0.12 68) · 5.09 / 4.54 · white on it 5.09</span>
+            <span class="ratio">--app-warning-soft oklch(0.963 0.026 68) · 1.11 on surface; warning on it 4.56, fg 17.12</span>
+          </div>
+          <div class="ground" style="background: var(--t-danger-soft); border-color: var(--t-danger-soft);">
+            <span style="color: var(--t-danger); font-weight: 700;">Out of stock</span>
+            <span class="ratio">--app-danger oklch(0.56 0.19 25) · 5.12 / 4.56</span>
+            <span class="ratio">--app-danger-soft oklch(0.958 0.02 25) · 1.13 on surface; danger on it 4.50, fg 16.81</span>
+          </div>
+          <div class="ground" style="background: var(--t-info-soft); border-color: var(--t-info-soft);">
+            <span style="color: var(--t-info); font-weight: 700;">Shipped</span>
+            <span class="ratio">--app-info oklch(0.53 0.096 220) · 5.11 / 4.55 · white on it 5.11</span>
+            <span class="ratio">--app-info-soft oklch(0.962 0.026 220) · 1.10 on surface; info on it 4.61, fg 17.23</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="theme pal-dark">
+        <div class="themehead">Dark — text colours, lifted</div>
+        <div class="stack">
+          <div class="ground" style="background: var(--t-success-soft); border-color: var(--t-success-soft);">
+            <span style="color: var(--t-success); font-weight: 700;">In stock</span>
+            <span class="ratio">--app-success oklch(0.76 0.15 148) · 7.65 / 8.63 · on its soft 6.58</span>
+            <span class="ratio">--app-success-soft oklch(0.3 0.055 148) · 1.16 on surface; fg on it 11.89</span>
+          </div>
+          <div class="ground" style="background: var(--t-warning-soft); border-color: var(--t-warning-soft);">
+            <span style="color: var(--t-warning); font-weight: 700;">Low stock</span>
+            <span class="ratio">--app-warning oklch(0.8 0.12 68) · 8.14 / 9.17 · on its soft 7.21</span>
+            <span class="ratio">--app-warning-soft oklch(0.3 0.05 68) · 1.12 on surface; fg on it 12.25</span>
+          </div>
+          <div class="ground" style="background: var(--t-danger-soft); border-color: var(--t-danger-soft);">
+            <span style="color: var(--t-danger); font-weight: 700;">Out of stock</span>
+            <span class="ratio">--app-danger oklch(0.72 0.16 25) · 5.83 / 6.58 · on its soft 5.25</span>
+            <span class="ratio">--app-danger-soft oklch(0.3 0.06 25) · 1.11 on surface; fg on it 12.44</span>
+          </div>
+          <div class="ground" style="background: var(--t-info-soft); border-color: var(--t-info-soft);">
+            <span style="color: var(--t-info); font-weight: 700;">Shipped</span>
+            <span class="ratio">--app-info oklch(0.76 0.09 220) · 7.42 / 8.37 · on its soft 6.43</span>
+            <span class="ratio">--app-info-soft oklch(0.3 0.045 220) · 1.15 on surface; fg on it 11.99</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="warn" style="margin-top: 24px;">
+      <strong>Danger has the same fill/text split as the accent.</strong>
+      The dark theme lightens <code class="mono">--app-danger</code> so it can be read as text — which silently
+      broke the one place it is a fill under a white label, the discount pill, at 2.66:1.
+      So <code class="mono">--app-danger-solid</code> (<code class="mono">bg-danger-solid</code>,
+      <code class="mono">oklch(0.56 0.19 25)</code>, white on it 5.12) keeps the light theme's darker red in
+      <em>both</em> themes, and only the text rank flips. Success, warning and info need no equivalent — the
+      only fills made of them are dots, which carry no text.
+      <div style="margin-top: 14px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <span style="background: var(--fixed-danger-solid); color: var(--fixed-white); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700;">-20%</span>
+        <span class="meta">light</span>
+        <span style="background: oklch(0.26 0.004 240); border-radius: 999px; padding: 7px 14px; display: inline-flex; align-items: center; gap: 10px;">
+          <span style="background: var(--fixed-danger-solid); color: var(--fixed-white); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700;">-20%</span>
+          <span class="meta" style="color: oklch(0.68 0.004 240);">dark — same fill, same label</span>
+        </span>
+      </div>
+    </div>
+
+    <p class="note">
+      One colour here is not a role at all: <code class="mono">--white</code>
+      (<code class="mono">text-accent-foreground</code>, <code class="mono">text-success-foreground</code> …).
+      It is the label on a solid accent or status fill, and because those fills do not flip, neither may the
+      text on them. Anything that <em>should</em> follow the theme takes <code class="mono">text-surface</code>
+      instead.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ── TYPE SCALE ───────────────────────────────────────────────────────── -->
+  <section class="sec">
+    <h2 class="h2">Type scale — five steps</h2>
+    <p class="note">
+      Each step carries its own size, line-height, weight and tracking, so a heading is
+      <strong>one class picked from a named set</strong> rather than four Tailwind classes reinvented at every
+      call site. The weights step down with the sizes (800, 800, 700, 700, 600) instead of every heading landing
+      on 800, which is what the blanket <code class="mono">h1/h2/h3</code> rule this replaced did. Every step is
+      a weight the storefront actually loads — adding a step means adding its weight to the font calls in
+      <code class="mono">app/[locale]/(storefront)/layout.tsx</code>, or the browser will synthesise it.
+      Body copy stays 400 at the browser default; the scale is for the things above it.
+    </p>
+    <table class="scale">
+      <tr>
+        <th style="width: 130px;">Class</th>
+        <th style="width: 190px;">Metrics</th>
+        <th>Sample &amp; use</th>
+      </tr>
+      <tr>
+        <td class="mono" style="font-weight: 600;">text-display</td>
+        <td class="meta">3rem / 48px<br>lh 1.05<br>tracking −0.03em<br>weight 800</td>
+        <td>
+          <div style="font-size: 3rem; line-height: 1.05; letter-spacing: -0.03em; font-weight: 800;">Explore the gear.</div>
+          <span class="meta">The hero headline. One per page, at most.</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="mono" style="font-weight: 600;">text-title</td>
+        <td class="meta">2rem / 32px<br>lh 1.15<br>tracking −0.02em<br>weight 800</td>
+        <td>
+          <div style="font-size: 2rem; line-height: 1.15; letter-spacing: -0.02em; font-weight: 800;">Gear people buy twice</div>
+          <span class="meta">A page &lt;h1&gt;, and the home page's section headings — which carry the weight of a page title in this design.</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="mono" style="font-weight: 600;">text-heading</td>
+        <td class="meta">1.625rem / 26px<br>lh 1.2<br>tracking −0.02em<br>weight 700</td>
+        <td>
+          <div style="font-size: 1.625rem; line-height: 1.2; letter-spacing: -0.02em; font-weight: 700;">Shipping &amp; returns</div>
+          <span class="meta">A section heading below a page title.</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="mono" style="font-weight: 600;">text-subhead</td>
+        <td class="meta">1.0625rem / 17px<br>lh 1.35<br>tracking −0.01em<br>weight 700</td>
+        <td>
+          <div style="font-size: 1.0625rem; line-height: 1.35; letter-spacing: -0.01em; font-weight: 700;">Cardio X2 Condenser Mic</div>
+          <span class="meta">The heading of a panel, card or line item.</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="mono" style="font-weight: 600;">text-label</td>
+        <td class="meta">0.8125rem / 13px<br>lh 1.4<br>tracking 0<br>weight 600</td>
+        <td>
+          <div style="font-size: 0.8125rem; line-height: 1.4; font-weight: 600;">Price range</div>
+          <span class="meta">A group label: filter sidebar, footer column.</span>
+        </td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- ── FONTS ────────────────────────────────────────────────────────────── -->
+  <section class="sec">
+    <h2 class="h2">One font per locale</h2>
+    <p class="note">
+      The Latin faces don't cover Persian glyphs, and Vazirmatn's Arabic subset is dead weight on an English
+      page — so the storefront loads <strong>one sans per locale</strong>, chosen in
+      <code class="mono">app/[locale]/(storefront)/layout.tsx</code>. Both faces declare the same CSS variable
+      (<code class="mono">--font-storefront-sans</code>) and only one is ever applied to the tree, so nothing
+      downstream needs to know which locale it is in. Preloading is off deliberately: Next emits a
+      <code class="mono">&lt;link rel="preload"&gt;</code> for every font in a route's module graph, which would
+      make <code class="mono">/fa</code> preload two Latin faces it never paints a glyph in.
+    </p>
+    <div class="cards">
+
+      <div class="card" style="padding: 24px;">
+        <div class="eyebrow" style="margin-bottom: 10px;">en — LTR</div>
+        <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15;">Explore the gear.</div>
+        <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; color: oklch(0.465 0 0); margin-top: 8px;">Cardioid pickup, 24-bit signal, zero-latency monitoring.</div>
+        <span class="meta" style="display: block; margin-top: 14px;">
+          Plus Jakarta Sans · 400 600 700 800<br>
+          + IBM Plex Mono 400/600 — <strong>order numbers only</strong>
+        </span>
+      </div>
+
+      <div class="card" style="padding: 24px;" dir="rtl">
+        <div class="eyebrow" style="margin-bottom: 10px;">fa — RTL</div>
+        <div style="font-family: 'Vazirmatn', sans-serif; font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15;">تجهیزات را کشف کنید.</div>
+        <div style="font-family: 'Vazirmatn', sans-serif; font-size: 15px; color: oklch(0.465 0 0); margin-top: 8px;">میکروفون کاردیوئید، سیگنال ۲۴ بیتی، مانیتورینگ بدون تأخیر.</div>
+        <span class="meta" style="display: block; margin-top: 14px; direction: ltr; text-align: start;">
+          Vazirmatn · 400 600 700 800<br>
+          <strong>no mono face</strong> — Vazirmatn covers the Latin digits an order number is made of, and
+          --font-mono falls through to the sans
+        </span>
+      </div>
+
+    </div>
+    <p class="note" style="margin-top: 16px;">
+      Everything that used to be mono — category eyebrows, stock badges, counts, the footer's phone number — is
+      sans now. The one fixed-width thing left is the order number, which wants its digits to line up between
+      the confirmation, tracking and account screens.
+      <em>The mono on this page is a documentation convention for token names, not a storefront treatment.</em>
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ── RULES ────────────────────────────────────────────────────────────── -->
+  <section class="sec" style="margin-bottom: 0;">
+    <h2 class="h2">The rules, in one place</h2>
+    <div class="cards">
+
+      <div class="card">
+        <div class="h3">Paint from the tokens</div>
+        <p>
+          Never from a fixed Tailwind step. A raw <code class="mono">bg-white</code>,
+          <code class="mono">text-neutral-500</code>, hex or <code class="mono">oklch()</code> literal in a
+          className will not flip, and is the one thing that breaks the dark theme.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="h3">Fill or read — pick accordingly</div>
+        <p>
+          <code class="mono">bg-accent</code> and <code class="mono">bg-danger-solid</code> for fills;
+          <code class="mono">text-accent-readable</code> / <code class="mono">border-accent-readable</code> for
+          anything read. <code class="mono">accent-on-dark</code> for ground that is dark in either theme.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="h3">A border is never the affordance</div>
+        <p>
+          Both line ranks are under 3:1. A control is marked by its fill and its focus ring — 2px
+          <code class="mono">outline-accent-readable</code> at 2px offset.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="h3">Cards are recessed, not raised</div>
+        <p>
+          Depth comes from the sunken fill alone — no border, no shadow
+          (<code class="mono">--surface-shadow</code> is transparent). Buttons are full pills; cards and trays
+          are large-radius. Same in both themes.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="h3">fg-faint and the lines are for icons</div>
+        <p>
+          The three roles that don't clear AA are marked as such in <code class="mono">globals.css</code> and
+          are for chevrons, hairlines and decorative marks. Never for copy.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="h3">Adding a token</div>
+        <p>
+          Read the block comment at the top of <code class="mono">globals.css</code> first, give the new value
+          both themes, check it sits inside the sRGB gamut, quote its ratios rounded down — then update this
+          page in the same commit.
+        </p>
+      </div>
+
+    </div>
+    <p class="note" style="margin-top: 24px;">
+      <strong>History.</strong> <code class="mono">Technotopia Design System.dc.html</code> (v1) is the original
+      Space Grotesk / heavy-mono direction, kept unchanged as a record of it. The version of this page that
+      Phase 27 replaced documented shade-named tokens (<code class="mono">ink-900</code>,
+      <code class="mono">gray-500</code>, <code class="mono">surface-100</code>) and a light-only palette.
+      The other <code class="mono">*.dc.html</code> files in this folder remain the source of truth for
+      <em>layout and copy</em> — they are not the source of truth for colour or type.
+    </p>
   </section>
 
 </div>

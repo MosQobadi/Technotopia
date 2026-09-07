@@ -154,11 +154,49 @@ Do not create unnecessary layers. If a task doesn't need a new top-level folder,
 - Tailwind CSS + HeroUI components.
 - Mobile-first, consistent spacing scale.
 - Keep layouts clean.
+- **Paint storefront surfaces from the semantic tokens in `app/globals.css`, never
+  from a fixed Tailwind step.** `bg-surface` / `-sunken` / `-muted`, `text-fg` /
+  `-muted` / `-subtle` / `-faint`, `border-line` / `-strong`, `bg-accent`,
+  `text-accent-readable`, and the `success` / `warning` / `danger` / `info` pairs are
+  roles, not shades — they are what lets one attribute on `<html>` repaint the whole
+  storefront. A raw `text-neutral-500` or `bg-white` will simply not flip, and is the
+  one thing that breaks the dark theme. Read the block comment at the top of
+  `globals.css` before adding a token; every value there is contrast-checked in both
+  themes, and `design/storefront/Technotopia Design System v2.dc.html` documents the
+  finished set.
+- **The storefront has a light/dark theme; the admin does not.** The mechanism is a
+  single `data-theme` attribute on `<html>` — one of the selectors `@heroui/styles`
+  keys on, so HeroUI's components flip with ours. An attribute rather than the `dark`
+  class because React owns `<html className>` and rewrites it on every locale switch,
+  which would wipe a class a script had added. `lib/storefront/theme.ts` owns it, an
+  inline script in `app/[locale]/layout.tsx` applies it before first paint,
+  `ThemeGuard` puts it back after a locale switch resets `<html>`, and `ThemeToggle`
+  in the header is the only thing that *changes* it. The palette itself is
+  scoped to `[data-scope="storefront"]` on `<body>`; the admin tree sets neither
+  attribute, keeps HeroUI's indigo, and stays light — its wireframes are drawn
+  light-only, so a dark admin would be invented rather than specified.
+- Fill or read, and the difference matters: `bg-accent` / `bg-accent-solid` is the
+  fill and does not flip (white on it is 5.10:1 in both themes), while
+  `text-accent-readable` / `border-accent-readable` / `outline-accent-readable`
+  resolve to a lighter blue in dark mode, because the signal blue is 1.9:1 on a dark
+  ground. A third, `accent-on-dark`, is for surfaces that are dark *whatever the theme
+  is* — a scrim over a photograph, a caption on a category card — and never flips.
+  `bg-danger-solid` is the same split, for the discount pill's white label.
+- **Type is one class from a named scale**, not four Tailwind classes reinvented at
+  each call site: `text-display` / `text-title` / `text-heading` / `text-subhead` /
+  `text-label` each carry their own size, line-height, weight and tracking. Adding a
+  step means adding its weight to the font calls in
+  `app/[locale]/(storefront)/layout.tsx`, or the browser will synthesise it.
+- **One font per locale.** English loads Plus Jakarta Sans, plus IBM Plex Mono for
+  order numbers and nothing else; Farsi loads Vazirmatn and no mono face at all. Both
+  declare `--font-storefront-sans` and only one is ever applied to the tree.
 
 Avoid:
 
-- Random one-off colors outside the theme palette.
-- Heavy shadows.
+- Random one-off colors outside the theme palette — a hex or `oklch()` literal in a
+  className or style object is the same bug as a fixed Tailwind step.
+- Heavy shadows. Storefront cards carry depth with their sunken fill alone: no
+  border, no shadow.
 - Excessive animation.
 
 ---
