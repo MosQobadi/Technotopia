@@ -1,5 +1,3 @@
-"use client";
-
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
