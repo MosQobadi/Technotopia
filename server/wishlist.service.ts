@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { toDisplayPrice } from "@/lib/storefront/pricing";
 
 const WISHLIST_ITEM_INCLUDE = {
   product: {
@@ -27,13 +28,11 @@ export interface WishlistItemView {
   category: string;
   price: number;
   originalPrice?: number;
+  /** The discount the admin set. 0 when the product is not discounted. */
+  discountPercent: number;
 }
 
 function toItemView(item: WishlistItemWithProduct): WishlistItemView {
-  const hasDiscount = item.product.discountPercent > 0;
-  const price = hasDiscount
-    ? Math.round(item.product.price * (1 - item.product.discountPercent / 100))
-    : item.product.price;
   return {
     id: item.id,
     productId: item.productId,
@@ -41,8 +40,7 @@ function toItemView(item: WishlistItemWithProduct): WishlistItemView {
     name: item.product.name,
     image: item.product.image,
     category: item.product.category.name,
-    price,
-    originalPrice: hasDiscount ? item.product.price : undefined,
+    ...toDisplayPrice(item.product.price, item.product.discountPercent),
   };
 }
 

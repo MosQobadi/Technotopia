@@ -32,29 +32,26 @@ export function StarsSection({ products }: { products: HomeProductView[] }) {
       <h2 className="text-fg text-title mb-8">{t("heading")}</h2>
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
-        {visible.map((product) => {
-          const hasDiscount =
-            product.originalPrice != null && product.originalPrice > product.price;
-          const discountPercent = hasDiscount
-            ? Math.round((1 - product.price / product.originalPrice!) * 100)
-            : null;
-
-          return (
-            <ProductCard
-              key={product.id}
-              href={`/products/${product.slug}`}
-              category={product.category}
-              name={product.name}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              imageSrc={product.image ?? undefined}
-              badge={hasDiscount ? { kind: "discount", label: `-${discountPercent}%` } : undefined}
-              isWishlisted={isWishlisted(product.id)}
-              onToggleWishlist={() => toggleWishlist(product.id)}
-              onAddToCart={() => addCartItem(product.id)}
-            />
-          );
-        })}
+        {visible.map((product) => (
+          <ProductCard
+            key={product.id}
+            href={`/products/${product.slug}`}
+            category={product.category}
+            name={product.name}
+            price={product.price}
+            originalPrice={product.originalPrice}
+            discountPercent={product.discountPercent}
+            imageSrc={product.image ?? undefined}
+            badge={
+              product.discountPercent > 0
+                ? { kind: "discount", label: `-${product.discountPercent}%` }
+                : undefined
+            }
+            isWishlisted={isWishlisted(product.id)}
+            onToggleWishlist={() => toggleWishlist(product.id)}
+            onAddToCart={() => addCartItem(product.id)}
+          />
+        ))}
       </div>
 
       {products.length > COLLAPSED_COUNT && (

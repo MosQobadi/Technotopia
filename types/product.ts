@@ -9,6 +9,8 @@ export interface StorefrontProductView {
   brand: string;
   price: number;
   originalPrice?: number;
+  /** The discount the admin set. 0 when the product is not discounted. */
+  discountPercent: number;
   createdAt: string;
   stockStatus: InventoryStatus;
 }

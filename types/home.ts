@@ -15,6 +15,8 @@ export interface HomeProductView {
   category: string;
   price: number;
   originalPrice?: number;
+  /** The discount the admin set. 0 when the product is not discounted. */
+  discountPercent: number;
 }
 
 export interface HomeBestSellerView extends HomeProductView {

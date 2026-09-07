@@ -126,6 +126,9 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
               category={`${product.category} · ${product.brand}`}
               name={product.name}
               price={product.price}
+              // No `originalPrice`: this card carries a rank badge, not a
+              // discount one, so there is nothing to strike through.
+              discountPercent={product.discountPercent}
               imageSrc={product.image ?? undefined}
               badge={{ kind: "rank", label: t("soldBadge", { rank: product.rank }) }}
               isWishlisted={isWishlisted(product.id)}

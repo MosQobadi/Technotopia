@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Status } from "@/lib/generated/prisma/enums";
+import { toDisplayPrice } from "@/lib/storefront/pricing";
 import { listBrandOptions, type BrandOption } from "./brand.service";
 import { listCategoryOptions, type CategoryOption } from "./category.service";
 import { listStorefrontProducts } from "./storefront-product.service";
@@ -31,6 +32,8 @@ export interface HomeProductView {
   category: string;
   price: number;
   originalPrice?: number;
+  /** The discount the admin set. 0 when the product is not discounted. */
+  discountPercent: number;
 }
 
 export interface HomeBannerView {
@@ -59,19 +62,13 @@ export interface HomeData {
 }
 
 function toProductView(product: ProductSummary): HomeProductView {
-  const hasDiscount = product.discountPercent > 0;
-  const price = hasDiscount
-    ? Math.round(product.price * (1 - product.discountPercent / 100))
-    : product.price;
-
   return {
     id: product.id,
     slug: product.slug,
     name: product.name,
     image: product.image,
     category: product.category.name,
-    price,
-    originalPrice: hasDiscount ? product.price : undefined,
+    ...toDisplayPrice(product.price, product.discountPercent),
   };
 }
 
@@ -96,10 +93,6 @@ async function getHomeBanners(): Promise<HomeBannerView[]> {
 // hero is a "what is cheap right now" question, so the only ordering that
 // answers it is the discount itself. `createdAt` breaks ties so two products at
 // the same percentage don't swap places between requests.
-//
-// The percentage is not returned: `toProductView` has already turned it into
-// the price/originalPrice pair every card reads, and the badge is derived from
-// those the same way it is in every other section.
 async function getDeals(): Promise<HomeProductView[]> {
   const products = await prisma.product.findMany({
     where: { status: Status.ACTIVE, discountPercent: { gt: 0 } },

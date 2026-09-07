@@ -111,34 +111,29 @@ export function DealsSection({ products }: { products: HomeProductView[] }) {
         // no animation. Same stance HeroRotator takes on auto-advance.
         className="flex snap-x snap-mandatory gap-6 overflow-x-auto py-2 motion-safe:scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {products.map((product) => {
-          // Every product here is discounted by construction, so the badge is
-          // derived from the pair the card already reads rather than carrying a
-          // percentage of its own.
-          const discountPercent = product.originalPrice
-            ? Math.round((1 - product.price / product.originalPrice) * 100)
-            : 0;
-
-          return (
-            <li
-              key={product.id}
-              className="w-[74vw] max-w-70 min-w-42 flex-none snap-start sm:w-[42vw] lg:w-[23%]"
-            >
-              <ProductCard
-                href={`/products/${product.slug}`}
-                category={product.category}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                imageSrc={product.image ?? undefined}
-                badge={{ kind: "discount", label: `-${discountPercent}%` }}
-                isWishlisted={isWishlisted(product.id)}
-                onToggleWishlist={() => toggleWishlist(product.id)}
-                onAddToCart={() => addCartItem(product.id)}
-              />
-            </li>
-          );
-        })}
+        {/* Every product here is discounted by construction, so the badge is
+            unconditional — and it reads the percentage the admin set rather than
+            one worked back out of the prices. */}
+        {products.map((product) => (
+          <li
+            key={product.id}
+            className="w-[74vw] max-w-70 min-w-42 flex-none snap-start sm:w-[42vw] lg:w-[23%]"
+          >
+            <ProductCard
+              href={`/products/${product.slug}`}
+              category={product.category}
+              name={product.name}
+              price={product.price}
+              originalPrice={product.originalPrice}
+              discountPercent={product.discountPercent}
+              imageSrc={product.image ?? undefined}
+              badge={{ kind: "discount", label: `-${product.discountPercent}%` }}
+              isWishlisted={isWishlisted(product.id)}
+              onToggleWishlist={() => toggleWishlist(product.id)}
+              onAddToCart={() => addCartItem(product.id)}
+            />
+          </li>
+        ))}
       </ul>
     </section>
   );

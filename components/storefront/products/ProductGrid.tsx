@@ -44,6 +44,7 @@ export function ProductGrid({ products }: ProductGridProps) {
           name={product.name}
           price={product.price}
           originalPrice={product.originalPrice}
+          discountPercent={product.discountPercent}
           imageSrc={product.image ?? undefined}
           badge={
             product.stockStatus === "IN_STOCK"

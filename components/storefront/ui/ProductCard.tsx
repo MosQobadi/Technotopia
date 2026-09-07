@@ -16,6 +16,8 @@ interface ProductCardProps {
   name: string;
   price: number;
   originalPrice?: number;
+  /** The discount the admin set. 0 when the product is not discounted. */
+  discountPercent: number;
   imageSrc?: string;
   badge?: ProductCardBadge;
   isWishlisted?: boolean;
@@ -36,6 +38,7 @@ export function ProductCard({
   name,
   price,
   originalPrice,
+  discountPercent,
   imageSrc,
   badge,
   isWishlisted,
@@ -100,7 +103,13 @@ export function ProductCard({
         <Link href={href} className="text-fg text-[17px] font-bold tracking-tight">
           {name}
         </Link>
-        <PriceTag price={price} originalPrice={originalPrice} size="sm" className="mb-1" />
+        <PriceTag
+          price={price}
+          originalPrice={originalPrice}
+          discountPercent={discountPercent}
+          size="sm"
+          className="mb-1"
+        />
         <Button variant="primary" fullWidth onClick={onAddToCart}>
           {t("addToCart")}
         </Button>

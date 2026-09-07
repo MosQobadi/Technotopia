@@ -166,6 +166,7 @@ describe("GET /api/storefront/home", () => {
       category: `${PREFIX} Category`,
       price: 1500,
       originalPrice: 2000,
+      discountPercent: 25,
     });
     const plainView = featured.find((p) => p.id === plain.id);
     expect(plainView).toBeDefined();
@@ -192,6 +193,7 @@ describe("GET /api/storefront/home", () => {
       category: `${PREFIX} Category`,
       price: 200,
       originalPrice: 2000,
+      discountPercent: 90,
     });
     expect(deals.some((p) => p.id === plain.id)).toBe(false);
     expect(deals.every((p) => p.originalPrice !== undefined)).toBe(true);
@@ -201,6 +203,20 @@ describe("GET /api/storefront/home", () => {
     if (positions.includes(shallow.id)) {
       expect(positions.indexOf(deepest.id)).toBeLessThan(positions.indexOf(shallow.id));
     }
+  });
+
+  it("reports the discount that was set, not the one the rounded price implies", async () => {
+    // 42.5 rounds to 43, and 1 − 43/50 reads as 14% — which is what every card
+    // used to print for a product the admin had marked 15% off.
+    const product = await createProduct({ isFeatured: true, price: 50, discountPercent: 15 });
+
+    const response = await getHome();
+    const body = await response.json();
+    const view = body.data.featuredProducts.find((p: { id: string }) => p.id === product.id);
+
+    expect(view.price).toBe(43);
+    expect(view.originalPrice).toBe(50);
+    expect(view.discountPercent).toBe(15);
   });
 
   it("returns best sellers ordered by salesCount descending", async () => {

@@ -8,6 +8,7 @@ import type {
   StorefrontProductView,
 } from "@/types/product";
 import type { StorefrontProductSort } from "@/lib/validation";
+import { toDisplayPrice } from "@/lib/storefront/pricing";
 import { deriveInventoryStatus, stockStatusWhere } from "./inventory.service";
 
 const RELATED_PRODUCT_LIMIT = 4;
@@ -30,11 +31,6 @@ type StorefrontProductRow = Awaited<
 >[number];
 
 export function toStorefrontProductView(product: StorefrontProductRow): StorefrontProductView {
-  const hasDiscount = product.discountPercent > 0;
-  const price = hasDiscount
-    ? Math.round(product.price * (1 - product.discountPercent / 100))
-    : product.price;
-
   return {
     id: product.id,
     slug: product.slug,
@@ -42,8 +38,7 @@ export function toStorefrontProductView(product: StorefrontProductRow): Storefro
     image: product.image,
     category: product.category.name,
     brand: product.brand.name,
-    price,
-    originalPrice: hasDiscount ? product.price : undefined,
+    ...toDisplayPrice(product.price, product.discountPercent),
     createdAt: product.createdAt.toISOString(),
     stockStatus: deriveInventoryStatus(product.inventory?.stock ?? 0),
   };

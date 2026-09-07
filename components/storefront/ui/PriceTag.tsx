@@ -12,15 +12,28 @@ const PRICE_SIZE_CLASSES: Record<PriceTagSize, string> = {
 interface PriceTagProps {
   price: number;
   originalPrice?: number;
+  /**
+   * The discount the admin set, straight from the product — 0 when there isn't
+   * one. Required rather than worked out here from the two prices: the sale
+   * price is rounded to a whole rial, so inverting it can report a point less
+   * than was actually set (see `toDisplayPrice`).
+   */
+  discountPercent: number;
   /** Shows the "IN STOCK" status next to the price. Hidden when a discount is shown. */
   inStock?: boolean;
   size?: PriceTagSize;
   className?: string;
 }
 
-export function PriceTag({ price, originalPrice, inStock, size = "md", className }: PriceTagProps) {
-  const hasDiscount = originalPrice != null && originalPrice > price;
-  const discountPercent = hasDiscount ? Math.round((1 - price / originalPrice) * 100) : null;
+export function PriceTag({
+  price,
+  originalPrice,
+  discountPercent,
+  inStock,
+  size = "md",
+  className,
+}: PriceTagProps) {
+  const hasDiscount = discountPercent > 0 && originalPrice != null;
 
   return (
     <div className={cn("flex flex-wrap items-baseline gap-2", className)}>

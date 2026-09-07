@@ -52,6 +52,7 @@ export function WishlistGrid({ initialItems }: WishlistGridProps) {
           name={item.name}
           price={item.price}
           originalPrice={item.originalPrice}
+          discountPercent={item.discountPercent}
           imageSrc={item.image ?? undefined}
           onRemove={() => handleRemove(item.productId)}
           onAddToCart={() => addCartItem(item.productId)}

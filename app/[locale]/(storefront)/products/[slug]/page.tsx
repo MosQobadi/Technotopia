@@ -119,6 +119,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <PriceTag
             price={product.price}
             originalPrice={product.originalPrice}
+            discountPercent={product.discountPercent}
             size="lg"
             className="mb-2.5"
           />
