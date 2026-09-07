@@ -226,6 +226,10 @@
       "nextSlide": "Next slide",
       "goToSlide": "Go to slide {number}"
     },
+    "deals": {
+      "eyebrow": "On Offer",
+      "heading": "Gear that costs less this week."
+    },
     "stars": {
       "eyebrow": "The Stars",
       "heading": "Gear that gets all the attention.",

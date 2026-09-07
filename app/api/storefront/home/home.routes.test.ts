@@ -173,6 +173,36 @@ describe("GET /api/storefront/home", () => {
     expect(featured.some((p) => p.id === notFeatured.id)).toBe(false);
   });
 
+  it("returns discounted products only, deepest discount first", async () => {
+    const plain = await createProduct({ price: 1000, discountPercent: 0 });
+    const shallow = await createProduct({ price: 1000, discountPercent: 5 });
+    const deepest = await createProduct({ price: 2000, discountPercent: 90 });
+
+    const response = await getHome();
+    const body = await response.json();
+    const deals: Array<{ id: string; price: number; originalPrice?: number }> = body.data.deals;
+
+    // 90% is the schema's ceiling, so this fixture leads the rail whatever the
+    // database already holds — the same trick the banner and best-seller cases use.
+    expect(deals[0]).toEqual({
+      id: deepest.id,
+      slug: deepest.slug,
+      name: deepest.name,
+      image: null,
+      category: `${PREFIX} Category`,
+      price: 200,
+      originalPrice: 2000,
+    });
+    expect(deals.some((p) => p.id === plain.id)).toBe(false);
+    expect(deals.every((p) => p.originalPrice !== undefined)).toBe(true);
+    // Only asserted as a pair: `shallow` is at the shallow end, so a busy
+    // database can legitimately push it past the endpoint's limit.
+    const positions = deals.map((p) => p.id);
+    if (positions.includes(shallow.id)) {
+      expect(positions.indexOf(deepest.id)).toBeLessThan(positions.indexOf(shallow.id));
+    }
+  });
+
   it("returns best sellers ordered by salesCount descending", async () => {
     const highestSales = await highestActiveSalesCount();
     const low = await createProduct({ salesCount: highestSales + 1 });

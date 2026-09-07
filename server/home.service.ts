@@ -6,6 +6,7 @@ import { listStorefrontProducts } from "./storefront-product.service";
 
 const HOME_BANNER_LIMIT = 3;
 const FEATURED_PRODUCT_LIMIT = 10;
+const DEAL_LIMIT = 12;
 const BEST_SELLER_LIMIT = 10;
 
 const PRODUCT_SUMMARY_SELECT = {
@@ -50,6 +51,7 @@ export interface HomeBestSellerView extends HomeProductView {
 
 export interface HomeData {
   banners: HomeBannerView[];
+  deals: HomeProductView[];
   featuredProducts: HomeProductView[];
   bestSellers: HomeBestSellerView[];
   categories: CategoryOption[];
@@ -90,6 +92,25 @@ async function getHomeBanners(): Promise<HomeBannerView[]> {
   }));
 }
 
+// Everything currently marked down, deepest cut first — the shelf under the
+// hero is a "what is cheap right now" question, so the only ordering that
+// answers it is the discount itself. `createdAt` breaks ties so two products at
+// the same percentage don't swap places between requests.
+//
+// The percentage is not returned: `toProductView` has already turned it into
+// the price/originalPrice pair every card reads, and the badge is derived from
+// those the same way it is in every other section.
+async function getDeals(): Promise<HomeProductView[]> {
+  const products = await prisma.product.findMany({
+    where: { status: Status.ACTIVE, discountPercent: { gt: 0 } },
+    select: PRODUCT_SUMMARY_SELECT,
+    orderBy: [{ discountPercent: "desc" }, { createdAt: "desc" }],
+    take: DEAL_LIMIT,
+  });
+
+  return products.map(toProductView);
+}
+
 async function getFeaturedProducts(): Promise<HomeProductView[]> {
   const products = await prisma.product.findMany({
     where: { status: Status.ACTIVE, isFeatured: true },
@@ -112,13 +133,14 @@ async function getBestSellers(): Promise<HomeBestSellerView[]> {
 }
 
 export async function getHomeData(): Promise<HomeData> {
-  const [banners, featuredProducts, bestSellers, categories, brands] = await Promise.all([
+  const [banners, deals, featuredProducts, bestSellers, categories, brands] = await Promise.all([
     getHomeBanners(),
+    getDeals(),
     getFeaturedProducts(),
     getBestSellers(),
     listCategoryOptions(),
     listBrandOptions(),
   ]);
 
-  return { banners, featuredProducts, bestSellers, categories, brands };
+  return { banners, deals, featuredProducts, bestSellers, categories, brands };
 }

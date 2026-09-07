@@ -31,6 +31,7 @@ export interface HomeOption {
 
 export interface HomeData {
   banners: HomeBannerView[];
+  deals: HomeProductView[];
   featuredProducts: HomeProductView[];
   bestSellers: HomeBestSellerView[];
   categories: HomeOption[];
