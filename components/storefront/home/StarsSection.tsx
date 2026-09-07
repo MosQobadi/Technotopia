@@ -7,7 +7,7 @@ import { Button } from "@/components/storefront/ui/Button";
 import { ProductCard } from "@/components/storefront/ui/ProductCard";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { useCartStore } from "@/lib/store/cart";
-import { useWishlistStore } from "@/lib/store/wishlist";
+import { useWishlistHydration, useWishlistStore } from "@/lib/store/wishlist";
 
 const COLLAPSED_COUNT = 4;
 const EXPANDED_COUNT = 10;
@@ -18,6 +18,9 @@ export function StarsSection({ products }: { products: HomeProductView[] }) {
   const addCartItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
   const isWishlisted = useWishlistStore((state) => state.isWishlisted);
+
+  // The hearts are this section's own concern, so is the list behind them.
+  useWishlistHydration();
 
   if (products.length === 0) return null;
 
