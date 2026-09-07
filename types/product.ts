@@ -27,6 +27,8 @@ export interface StorefrontProductDetailResult {
 export interface StorefrontFilterOption {
   id: string;
   name: string;
+  /** What the listing's URL carries — see `buildProductListHref`. */
+  slug: string;
 }
 
 export interface StorefrontProductListResult {

@@ -114,6 +114,12 @@
       "priceDesc": "قیمت: زیاد به کم",
       "newest": "جدیدترین"
     },
+    "pagination": {
+      "label": "صفحه‌بندی",
+      "previous": "قبلی",
+      "next": "بعدی",
+      "page": "صفحه‌ی {page}"
+    },
     "stockStatus": {
       "inStock": "موجود",
       "lowStock": "موجودی کم",

@@ -111,11 +111,13 @@ export async function updateCategory(
 export interface CategoryOption {
   id: string;
   name: string;
+  /** The storefront listing filters by slug, so a filtered URL reads (and shares) as words. */
+  slug: string;
 }
 
 export async function listCategoryOptions(): Promise<CategoryOption[]> {
   return prisma.category.findMany({
-    select: { id: true, name: true },
+    select: { id: true, name: true, slug: true },
     orderBy: { name: "asc" },
   });
 }

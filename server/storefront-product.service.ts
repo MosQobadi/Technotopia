@@ -52,9 +52,11 @@ export function toStorefrontProductView(product: StorefrontProductRow): Storefro
 export interface ListStorefrontProductsParams {
   search?: string;
   categoryId?: string;
-  brandId?: string;
+  /** Any of these brands, not all of them — the PLP's brand filter is multi-select. */
+  brandIds?: string[];
   maxPrice?: number;
-  stockStatus?: InventoryStatus;
+  /** Same "any of these" rule as `brandIds`. */
+  stockStatuses?: InventoryStatus[];
   sort: StorefrontProductSort;
   page: number;
   pageSize: number;
@@ -75,9 +77,9 @@ const ORDER_BY_SORT: Record<StorefrontProductSort, Prisma.ProductOrderByWithRela
 export async function listStorefrontProducts({
   search,
   categoryId,
-  brandId,
+  brandIds,
   maxPrice,
-  stockStatus,
+  stockStatuses,
   sort,
   page,
   pageSize,
@@ -85,10 +87,12 @@ export async function listStorefrontProducts({
   const where: Prisma.ProductWhereInput = {
     status: Status.ACTIVE,
     ...(categoryId ? { categoryId } : {}),
-    ...(brandId ? { brandId } : {}),
+    ...(brandIds?.length ? { brandId: { in: brandIds } } : {}),
     ...(maxPrice !== undefined ? { price: { lte: maxPrice } } : {}),
     ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
-    ...(stockStatus ? stockStatusWhere(stockStatus) : {}),
+    // Each status is its own stock predicate, so several of them is an OR
+    // rather than an impossible AND across the same column.
+    ...(stockStatuses?.length ? { OR: stockStatuses.map(stockStatusWhere) } : {}),
   };
 
   const [products, total] = await Promise.all([

@@ -20,9 +20,11 @@ export async function GET(request: NextRequest) {
     listStorefrontProducts({
       search,
       categoryId: category,
-      brandId: brand,
+      // This route's contract stays single-valued; the multi-select brand and
+      // status filters are the PLP page's own reading of its search params.
+      brandIds: brand ? [brand] : undefined,
       maxPrice,
-      stockStatus: status,
+      stockStatuses: status ? [status] : undefined,
       sort,
       page,
       pageSize,

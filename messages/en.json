@@ -114,6 +114,12 @@
       "priceDesc": "Price: High to Low",
       "newest": "Newest"
     },
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page}"
+    },
     "stockStatus": {
       "inStock": "In Stock",
       "lowStock": "Low Stock",

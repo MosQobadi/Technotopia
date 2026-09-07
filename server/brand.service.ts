@@ -106,11 +106,13 @@ export async function updateBrand(id: string, input: BrandUpdateInput): Promise<
 export interface BrandOption {
   id: string;
   name: string;
+  /** The storefront listing filters by slug, so a filtered URL reads (and shares) as words. */
+  slug: string;
 }
 
 export async function listBrandOptions(): Promise<BrandOption[]> {
   return prisma.brand.findMany({
-    select: { id: true, name: true },
+    select: { id: true, name: true, slug: true },
     orderBy: { name: "asc" },
   });
 }
