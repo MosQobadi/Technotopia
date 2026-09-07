@@ -221,6 +221,7 @@
   },
   "home": {
     "hero": {
+      "region": "پیشنهادهای ویژه",
       "previousSlide": "اسلاید قبلی",
       "nextSlide": "اسلاید بعدی",
       "goToSlide": "رفتن به اسلاید {number}"

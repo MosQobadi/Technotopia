@@ -221,6 +221,7 @@
   },
   "home": {
     "hero": {
+      "region": "Featured promotions",
       "previousSlide": "Previous slide",
       "nextSlide": "Next slide",
       "goToSlide": "Go to slide {number}"

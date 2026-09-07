@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getHomeData } from "@/server/home.service";
 import { localeAlternates } from "@/lib/seo";
-import { HeroCarousel } from "@/components/storefront/home/HeroCarousel";
+import { HomeHero } from "@/components/storefront/home/HomeHero";
 import { StarsSection } from "@/components/storefront/home/StarsSection";
 import { BestSellersSection } from "@/components/storefront/home/BestSellersSection";
 
@@ -38,7 +38,7 @@ export default async function HomePage() {
 
   return (
     <main>
-      <HeroCarousel banners={banners} />
+      <HomeHero banners={banners} />
       <StarsSection products={featuredProducts} />
       <section className="mx-auto max-w-320 px-6 py-16" aria-hidden="true" />
       <BestSellersSection products={bestSellers} categories={categories} brands={brands} />

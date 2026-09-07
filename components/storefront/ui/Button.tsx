@@ -2,21 +2,41 @@ import { Link } from "@/i18n/navigation";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type ButtonVariant = "primary" | "secondary" | "accent-outline" | "icon-circle" | "disabled";
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "accent-outline"
+  | "icon-circle"
+  | "disabled"
+  /** For the hero band, whose ground is the accent fill itself. */
+  | "on-accent";
 type IconSize = "sm" | "md";
 type IconTone = "sunken" | "surface";
 
 const BASE_CLASSES =
-  "inline-flex items-center justify-center gap-2 rounded-full text-[15px] font-bold whitespace-nowrap transition-colors duration-150 outline-none focus-visible:outline-2 focus-visible:outline-accent-readable focus-visible:outline-offset-2";
+  "inline-flex items-center justify-center gap-2 rounded-full text-[15px] font-bold whitespace-nowrap transition-colors duration-150 outline-none focus-visible:outline-2 focus-visible:outline-offset-2";
 
+// The focus ring colour belongs to the variant rather than to BASE_CLASSES,
+// because it is decided by the ground the button sits on. Every variant here
+// but one sits on a page surface, where `accent-readable` is the ring that
+// flips with the theme; `on-accent` sits on the accent fill itself, where that
+// same ring would be blue on blue and effectively invisible.
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-accent text-accent-foreground hover:bg-accent-hover",
+  primary:
+    "bg-accent text-accent-foreground hover:bg-accent-hover focus-visible:outline-accent-readable",
   secondary:
-    "border-[1.5px] border-fg bg-surface text-fg hover:bg-fg hover:text-surface",
+    "border-[1.5px] border-fg bg-surface text-fg hover:bg-fg hover:text-surface focus-visible:outline-accent-readable",
   "accent-outline":
-    "border-[1.5px] border-accent-readable bg-surface text-accent-readable hover:bg-accent hover:text-accent-foreground",
-  "icon-circle": "text-fg",
-  disabled: "cursor-not-allowed bg-surface-sunken text-fg-faint",
+    "border-[1.5px] border-accent-readable bg-surface text-accent-readable hover:bg-accent hover:text-accent-foreground focus-visible:outline-accent-readable",
+  "icon-circle": "text-fg focus-visible:outline-accent-readable",
+  disabled:
+    "cursor-not-allowed bg-surface-sunken text-fg-faint focus-visible:outline-accent-readable",
+  // White pill, accent label — the inverse of `primary`, and the same certified
+  // pair of luminances read the other way round (5.10:1 either direction). Both
+  // tokens are non-flipping, so this button is identical in both themes, which
+  // is what the band it sits on requires.
+  "on-accent":
+    "bg-accent-foreground text-accent-solid hover:bg-accent-foreground/90 focus-visible:outline-accent-foreground",
 };
 
 const ICON_TONE_CLASSES: Record<IconTone, string> = {
