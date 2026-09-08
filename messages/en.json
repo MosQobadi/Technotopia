@@ -252,6 +252,24 @@
       "sortBy": "Sort by",
       "noMatch": "No products match these filters.",
       "soldBadge": "#{rank} SOLD"
+    },
+    "trust": {
+      "eyebrow": "Every Order",
+      "heading": "What every order comes with.",
+      "headingNamed": "What every {storeName} order comes with.",
+      "delivery": {
+        "title": "Flat-rate delivery",
+        "body": "One price on every order, whatever is in it — and it is the figure you see at checkout.",
+        "amountLabel": "Delivery, per order"
+      },
+      "payment": {
+        "title": "Card or bank transfer",
+        "body": "Both are offered on the checkout page. Pick one when you place the order."
+      },
+      "support": {
+        "title": "Talk to a person",
+        "body": "Questions before you buy, or about an order already placed."
+      }
     }
   },
   "orders": {

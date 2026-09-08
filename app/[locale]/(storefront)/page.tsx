@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getHomeData } from "@/server/home.service";
+import { getPublicSettings } from "@/server/settings.service";
 import { localeAlternates } from "@/lib/seo";
 import { HomeHero } from "@/components/storefront/home/HomeHero";
 import { DealsSection } from "@/components/storefront/home/DealsSection";
@@ -8,6 +9,7 @@ import { CategoryBrowseSection } from "@/components/storefront/home/CategoryBrow
 import { BrandBrowseSection } from "@/components/storefront/home/BrandBrowseSection";
 import { StarsSection } from "@/components/storefront/home/StarsSection";
 import { BestSellersSection } from "@/components/storefront/home/BestSellersSection";
+import { TrustStrip } from "@/components/storefront/home/TrustStrip";
 
 // Reads from the database, so it is generated per request rather than
 // prerendered at build time — the build host isn't guaranteed to have DB access
@@ -37,16 +39,22 @@ export async function generateMetadata(): Promise<Metadata> {
 // with fetching it from the client). The route stays — it is the public
 // contract — it just isn't this page's data source.
 export default async function HomePage() {
-  const {
-    banners,
-    deals,
-    featuredProducts,
-    bestSellers,
-    browseCategories,
-    browseBrands,
-    categories,
-    brands,
-  } = await getHomeData();
+  // Two independent reads, so they go together rather than one after the
+  // other: the trust strip's contact details come from the Setting table and
+  // owe nothing to the catalogue queries above them.
+  const [
+    {
+      banners,
+      deals,
+      featuredProducts,
+      bestSellers,
+      browseCategories,
+      browseBrands,
+      categories,
+      brands,
+    },
+    settings,
+  ] = await Promise.all([getHomeData(), getPublicSettings()]);
 
   return (
     <main>
@@ -55,8 +63,8 @@ export default async function HomePage() {
       <CategoryBrowseSection categories={browseCategories} />
       <BrandBrowseSection brands={browseBrands} />
       <StarsSection products={featuredProducts} />
-      <section className="mx-auto max-w-320 px-6 py-16" aria-hidden="true" />
       <BestSellersSection products={bestSellers} categories={categories} brands={brands} />
+      <TrustStrip settings={settings} />
     </main>
   );
 }

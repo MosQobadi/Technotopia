@@ -60,7 +60,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
   if (products.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-320 px-6 pt-6 pb-24">
+    <section className="mx-auto max-w-320 px-6 pt-10 pb-10">
       <SectionEyebrow label={t("eyebrow")} />
       <h2 className="text-fg text-title mb-7">{t("heading")}</h2>
 
