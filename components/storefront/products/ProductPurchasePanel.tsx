@@ -47,7 +47,7 @@ export function ProductPurchasePanel({ productId, price }: ProductPurchasePanelP
       </div>
 
       <div className="mb-9 flex gap-3.5">
-        <Button variant="primary" fullWidth onClick={() => addCartItem(productId, quantity)}>
+        <Button variant="primary" fullWidth onClick={() => addCartItem(productId, price, quantity)}>
           {tCommon("addToCart")}
         </Button>
         <Button

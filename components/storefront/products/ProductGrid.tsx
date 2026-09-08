@@ -59,7 +59,7 @@ export function ProductGrid({ products }: ProductGridProps) {
           }
           isWishlisted={isWishlisted(product.id)}
           onToggleWishlist={() => toggleWishlist(product.id)}
-          onAddToCart={() => addCartItem(product.id)}
+          onAddToCart={() => addCartItem(product.id, product.price)}
         />
       ))}
     </div>

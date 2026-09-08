@@ -50,7 +50,6 @@ model User {
 
   orders    Order[]
   addresses Address[]
-  cart      Cart?
   wishlist  Wishlist[]
 }
 
@@ -105,7 +104,6 @@ model Product {
   brand        Brand       @relation(fields: [brandId], references: [id], onDelete: Restrict)
   inventory    Inventory?
   orderItems   OrderItem[]
-  cartItems    CartItem[]
   wishlistedBy Wishlist[]
 
   @@index([categoryId])
@@ -207,32 +205,6 @@ model Address {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-}
-
-model Cart {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items CartItem[]
-}
-
-model CartItem {
-  id        String   @id @default(cuid())
-  cartId    String
-  productId String
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([cartId, productId])
-  @@index([cartId])
-  @@index([productId])
 }
 
 model Wishlist {

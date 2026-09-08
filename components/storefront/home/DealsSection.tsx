@@ -130,7 +130,7 @@ export function DealsSection({ products }: { products: HomeProductView[] }) {
               badge={{ kind: "discount", label: `-${product.discountPercent}%` }}
               isWishlisted={isWishlisted(product.id)}
               onToggleWishlist={() => toggleWishlist(product.id)}
-              onAddToCart={() => addCartItem(product.id)}
+              onAddToCart={() => addCartItem(product.id, product.price)}
             />
           </li>
         ))}

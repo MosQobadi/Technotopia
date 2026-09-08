@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { formatPrice } from "@/lib/format";
-import { SHIPPING_FLAT_RATE } from "@/server/cart.service";
+import { SHIPPING_FLAT_RATE } from "@/lib/storefront/cart";
 import type { PublicSettings } from "@/server/settings.service";
 
 const HEADING_ID = "trust-heading";

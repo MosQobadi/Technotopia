@@ -1,23 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { GET as getCart, POST as addItem } from "./route";
-import { PATCH as updateItem, DELETE as removeItem } from "./[itemId]/route";
-import { getCookieName, signToken } from "@/lib/auth";
-import { Role, Status } from "@/lib/generated/prisma/enums";
+import { GET } from "./route";
+import { Status } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/db";
+import { reconcileCart, type CartCatalogEntry } from "@/lib/storefront/cart";
 
-const PREFIX = "task24-2-cart";
+const PREFIX = "task30-1-cart";
 
-let categoryId: string;
-let brandId: string;
-let productId: string;
-
-// Two independent customers so cross-customer (IDOR) access can be exercised: B trying to
-// read/mutate an item that lives in A's cart via A's cart-item id.
-let customerAId: string;
-let customerACookie: string;
-let customerBCookie: string;
-let cartItemId: string;
+let activeId: string;
+let inactiveId: string;
+let outOfStockId: string;
 
 beforeAll(async () => {
   const category = await prisma.category.create({
@@ -30,158 +22,108 @@ beforeAll(async () => {
       status: Status.ACTIVE,
     },
   });
-  categoryId = category.id;
-
   const brand = await prisma.brand.create({
     data: { name: `${PREFIX} Brand`, slug: `${PREFIX}-brand`, status: Status.ACTIVE },
   });
-  brandId = brand.id;
 
-  const product = await prisma.product.create({
-    data: {
-      name: `${PREFIX} Product`,
-      slug: `${PREFIX}-product`,
-      sku: `${PREFIX}-SKU`,
-      categoryId,
-      brandId,
-      price: 1000,
-      discountPercent: 0,
-      tags: [],
-      shortDescription: "x",
-      longDescription: "x",
-      status: Status.ACTIVE,
-    },
-  });
-  productId = product.id;
+  async function seed(suffix: string, status: Status, stock: number, discountPercent = 0) {
+    const product = await prisma.product.create({
+      data: {
+        name: `${PREFIX} ${suffix}`,
+        slug: `${PREFIX}-${suffix}`,
+        sku: `${PREFIX}-${suffix}`,
+        categoryId: category.id,
+        brandId: brand.id,
+        price: 1000,
+        discountPercent,
+        tags: [],
+        shortDescription: "x",
+        longDescription: "x",
+        status,
+      },
+    });
+    await prisma.inventory.create({
+      data: { productId: product.id, stock, lastUpdatedAt: new Date() },
+    });
+    return product.id;
+  }
 
-  const customerA = await prisma.user.create({
-    data: {
-      email: `${PREFIX}-a@technotopia.test`,
-      passwordHash: "x",
-      firstName: "Customer",
-      lastName: "A",
-      role: Role.CUSTOMER,
-    },
-  });
-  customerAId = customerA.id;
-  customerACookie = await signToken({ userId: customerAId, role: Role.CUSTOMER });
-
-  const customerB = await prisma.user.create({
-    data: {
-      email: `${PREFIX}-b@technotopia.test`,
-      passwordHash: "x",
-      firstName: "Customer",
-      lastName: "B",
-      role: Role.CUSTOMER,
-    },
-  });
-  customerBCookie = await signToken({ userId: customerB.id, role: Role.CUSTOMER });
-
-  const cart = await prisma.cart.create({ data: { userId: customerAId } });
-  const item = await prisma.cartItem.create({ data: { cartId: cart.id, productId, quantity: 1 } });
-  cartItemId = item.id;
+  activeId = await seed("active", Status.ACTIVE, 3, 20);
+  inactiveId = await seed("inactive", Status.INACTIVE, 5);
+  outOfStockId = await seed("empty", Status.ACTIVE, 0);
 });
 
 afterAll(async () => {
-  await prisma.cartItem.deleteMany({ where: { cart: { user: { email: { startsWith: PREFIX } } } } });
-  await prisma.cart.deleteMany({ where: { user: { email: { startsWith: PREFIX } } } });
+  await prisma.inventory.deleteMany({ where: { product: { sku: { startsWith: PREFIX } } } });
   await prisma.product.deleteMany({ where: { sku: { startsWith: PREFIX } } });
   await prisma.brand.deleteMany({ where: { slug: { startsWith: PREFIX } } });
   await prisma.category.deleteMany({ where: { slug: { startsWith: PREFIX } } });
-  await prisma.user.deleteMany({ where: { email: { startsWith: PREFIX } } });
   await prisma.$disconnect();
 });
 
-function req(url: string, method: string, body: unknown, cookie: string | null) {
-  const headers: Record<string, string> = { "content-type": "application/json" };
-  if (cookie !== null) headers.cookie = `${getCookieName()}=${cookie}`;
-  return new NextRequest(url, {
-    method,
-    headers,
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
+/** No cookie is ever sent: the whole point is that this answers for a visitor. */
+async function lookup(ids: string | null) {
+  const url = new URL("http://localhost/api/storefront/cart");
+  if (ids !== null) url.searchParams.set("ids", ids);
+  const response = await GET(new NextRequest(url));
+  return { status: response.status, body: await response.json() };
 }
 
 describe("GET /api/storefront/cart", () => {
-  it("rejects an unauthenticated request with a 401", async () => {
-    const response = await getCart(req("http://localhost/api/storefront/cart", "GET", undefined, null));
-    expect(response.status).toBe(401);
-  });
-});
-
-describe("POST /api/storefront/cart", () => {
-  it("rejects a quantity outside the allowed range with a 400", async () => {
-    const response = await addItem(
-      req("http://localhost/api/storefront/cart", "POST", { productId, quantity: 0 }, customerACookie),
-    );
-    expect(response.status).toBe(400);
+  it("answers a logged-out visitor", async () => {
+    const { status, body } = await lookup(activeId);
+    expect(status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data.entries).toHaveLength(1);
   });
 
-  it("rejects a non-existent product with a 404", async () => {
-    const response = await addItem(
-      req(
-        "http://localhost/api/storefront/cart",
-        "POST",
-        { productId: "not-a-real-product-id", quantity: 1 },
-        customerACookie,
-      ),
-    );
-    expect(response.status).toBe(404);
-  });
-});
-
-describe("PATCH /api/storefront/cart/[itemId]", () => {
-  it("rejects an invalid quantity with a 400", async () => {
-    const response = await updateItem(
-      req(`http://localhost/api/storefront/cart/${cartItemId}`, "PATCH", { quantity: 0 }, customerACookie),
-      { params: Promise.resolve({ itemId: cartItemId }) },
-    );
-    expect(response.status).toBe(400);
+  it("returns an empty list rather than an error for no ids", async () => {
+    expect((await lookup(null)).body.data.entries).toEqual([]);
+    expect((await lookup("")).body.data.entries).toEqual([]);
   });
 
-  it("can't be used by another customer to modify someone else's cart item", async () => {
-    const response = await updateItem(
-      req(`http://localhost/api/storefront/cart/${cartItemId}`, "PATCH", { quantity: 5 }, customerBCookie),
-      { params: Promise.resolve({ itemId: cartItemId }) },
-    );
-    expect(response.status).toBe(404);
-
-    const item = await prisma.cartItem.findUnique({ where: { id: cartItemId } });
-    expect(item?.quantity).toBe(1); // unchanged
+  it("prices each entry the way the storefront shows it", async () => {
+    const [entry] = (await lookup(activeId)).body.data.entries as CartCatalogEntry[];
+    expect(entry).toMatchObject({
+      productId: activeId,
+      unitPrice: 800,
+      originalPrice: 1000,
+      discountPercent: 20,
+      stock: 3,
+      isAvailable: true,
+    });
   });
 
-  it("lets the owning customer update their own cart item", async () => {
-    const response = await updateItem(
-      req(`http://localhost/api/storefront/cart/${cartItemId}`, "PATCH", { quantity: 3 }, customerACookie),
-      { params: Promise.resolve({ itemId: cartItemId }) },
-    );
-    expect(response.status).toBe(200);
-
-    const item = await prisma.cartItem.findUnique({ where: { id: cartItemId } });
-    expect(item?.quantity).toBe(3);
-  });
-});
-
-describe("DELETE /api/storefront/cart/[itemId]", () => {
-  it("can't be used by another customer to remove someone else's cart item", async () => {
-    const response = await removeItem(
-      req(`http://localhost/api/storefront/cart/${cartItemId}`, "DELETE", undefined, customerBCookie),
-      { params: Promise.resolve({ itemId: cartItemId }) },
-    );
-    expect(response.status).toBe(404);
-
-    const item = await prisma.cartItem.findUnique({ where: { id: cartItemId } });
-    expect(item).not.toBeNull();
+  it("returns a deactivated product marked unavailable rather than omitting it", async () => {
+    const [entry] = (await lookup(inactiveId)).body.data.entries as CartCatalogEntry[];
+    expect(entry?.productId).toBe(inactiveId);
+    expect(entry?.isAvailable).toBe(false);
   });
 
-  it("lets the owning customer remove their own cart item", async () => {
-    const response = await removeItem(
-      req(`http://localhost/api/storefront/cart/${cartItemId}`, "DELETE", undefined, customerACookie),
-      { params: Promise.resolve({ itemId: cartItemId }) },
-    );
-    expect(response.status).toBe(200);
+  it("says nothing about an id the catalog has no row for", async () => {
+    const { body } = await lookup(`${activeId},does-not-exist`);
+    expect(body.data.entries.map((entry: CartCatalogEntry) => entry.productId)).toEqual([activeId]);
+  });
 
-    const item = await prisma.cartItem.findUnique({ where: { id: cartItemId } });
-    expect(item).toBeNull();
+  it("feeds the same reconciliation rules the cart page uses", async () => {
+    const ids = [activeId, inactiveId, outOfStockId];
+    const { body } = await lookup(ids.join(","));
+
+    const cart = reconcileCart(
+      ids.map((productId, index) => ({
+        productId,
+        quantity: 5,
+        addedAt: `2026-09-0${index + 1}T00:00:00.000Z`,
+        capturedPrice: 800,
+      })),
+      body.data.entries,
+    );
+
+    expect(cart.lines.map((line) => line.issue)).toEqual([
+      "exceedsStock", // 5 asked for, 3 on the shelf
+      "unavailable", // deactivated since it went in
+      "outOfStock",
+    ]);
+    expect(cart.subtotal).toBe(800 * 3);
   });
 });

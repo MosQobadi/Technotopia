@@ -31,9 +31,14 @@ export async function POST(request: NextRequest) {
   const result = await createOrder(auth.payload.userId, parsed.data);
   if (!result.ok) {
     if (result.reason === "empty_cart") {
+      return NextResponse.json({ success: false, error: "Your cart is empty." }, { status: 400 });
+    }
+
+    if (result.reason === "unavailable_items") {
+      const names = result.items.map((item) => item.name ?? item.productId).join(", ");
       return NextResponse.json(
-        { success: false, error: "Your cart is empty." },
-        { status: 400 },
+        { success: false, error: `No longer available: ${names}` },
+        { status: 409 },
       );
     }
 

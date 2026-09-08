@@ -7,11 +7,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldError, Input, Label, TextField } from "@heroui/react";
 import { useRouter } from "@/i18n/navigation";
 import { useAuthStore } from "@/lib/store/auth";
-import { useCartStore } from "@/lib/store/cart";
+import { useCart, useCartStore } from "@/lib/store/cart";
+import { orderableLines } from "@/lib/storefront/cart";
 import { Button } from "@/components/storefront/ui/Button";
 import { EmptyState } from "@/components/storefront/ui/EmptyState";
 import { formatPrice } from "@/lib/format";
-import { createOrderSchema, type CreateOrderInput } from "@/lib/validation";
+import { checkoutDetailsSchema, type CheckoutDetailsInput } from "@/lib/validation";
 import { cn } from "@/lib/cn";
 
 export function CheckoutContent() {
@@ -29,30 +30,30 @@ export function CheckoutContent() {
   const authLoading = useAuthStore((state) => state.isLoading);
   const hydrateAuth = useAuthStore((state) => state.hydrate);
 
-  const items = useCartStore((state) => state.items);
-  const subtotal = useCartStore((state) => state.subtotal);
-  const shipping = useCartStore((state) => state.shipping);
-  const total = useCartStore((state) => state.total);
   const cartLoading = useCartStore((state) => state.isLoading);
+  const cartReady = useCartStore((state) => state.hasHydrated) && !cartLoading;
   const hydrateCart = useCartStore((state) => state.hydrate);
+  const clearCart = useCartStore((state) => state.clear);
+  const cart = useCart();
+  const { lines, subtotal, shipping, total } = cart;
 
   useEffect(() => {
     hydrateAuth();
   }, [hydrateAuth]);
 
   useEffect(() => {
-    if (user) hydrateCart();
-  }, [user, hydrateCart]);
+    hydrateCart();
+  }, [hydrateCart]);
 
-  const [paymentMethod, setPaymentMethod] = useState<CreateOrderInput["paymentMethod"]>("CARD");
+  const [paymentMethod, setPaymentMethod] = useState<CheckoutDetailsInput["paymentMethod"]>("CARD");
 
   const {
     register,
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<CreateOrderInput>({
-    resolver: zodResolver(createOrderSchema),
+  } = useForm<CheckoutDetailsInput>({
+    resolver: zodResolver(checkoutDetailsSchema),
     defaultValues: {
       fullName: "",
       phone: "",
@@ -74,25 +75,33 @@ export function CheckoutContent() {
     resetOptions: { keepDirtyValues: true },
   });
 
+  // Placing an order still needs an account — only filling the cart does not.
+  // Task 30.4 replaces this wall with guest checkout.
   const showLoggedOut = !authLoading && !user;
-  const showEmpty = !authLoading && !!user && !cartLoading && items.length === 0;
-  const showCheckout = !authLoading && !!user && !cartLoading && items.length > 0;
+  const showEmpty = !authLoading && !!user && cartReady && lines.length === 0;
+  const showCheckout = !authLoading && !!user && cartReady && lines.length > 0;
 
-  async function onSubmit(values: CreateOrderInput) {
+  async function onSubmit(values: CheckoutDetailsInput) {
     setFormError(null);
 
+    // The cart is a browser object, so its lines travel with the address — as
+    // ids and quantities. The server prices them from the catalog.
     const response = await fetch("/api/storefront/orders", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(values),
+      body: JSON.stringify({ ...values, items: orderableLines(cart) }),
     });
     const result = await response.json();
 
     if (!result.success) {
       setFormError(result.error ?? t("errorDefault"));
+      // Whatever went wrong, the catalog has moved on; re-read it so the cart
+      // page can explain the refusal in its own terms.
+      await useCartStore.getState().reconcile();
       return;
     }
 
+    clearCart();
     router.push(`/orders/${result.data.orderId}/confirmation`);
   }
 
@@ -210,24 +219,27 @@ export function CheckoutContent() {
           <div className="bg-surface-sunken sticky top-6 rounded-[20px] p-6">
             <h2 className="text-fg text-subhead mb-5">{tCommon("orderSummary")}</h2>
             <div className="mb-2.5 flex flex-col gap-2.5">
-              {items.map((item) => (
-                <div key={item.id} className="flex justify-between text-[13px] text-fg-subtle">
+              {lines.map((line) => (
+                <div
+                  key={line.productId}
+                  className="text-fg-subtle flex justify-between text-[13px]"
+                >
                   <span>
-                    {item.name} × {item.quantity}
+                    {line.product?.name} × {line.orderableQuantity}
                   </span>
-                  <span>{formatPrice(item.lineTotal)}</span>
+                  <span>{formatPrice(line.lineTotal)}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-2.5 flex justify-between border-t border-line pt-4 text-sm text-fg-subtle">
+            <div className="border-line text-fg-subtle mt-2.5 flex justify-between border-t pt-4 text-sm">
               <span>{tCommon("subtotal")}</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
-            <div className="mb-4 flex justify-between text-sm text-fg-subtle">
+            <div className="text-fg-subtle mb-4 flex justify-between text-sm">
               <span>{tCommon("shipping")}</span>
               <span>{shipping > 0 ? formatPrice(shipping) : tCommon("free")}</span>
             </div>
-            <div className="text-fg mb-6 flex justify-between border-t border-line pt-4 text-lg font-extrabold">
+            <div className="text-fg border-line mb-6 flex justify-between border-t pt-4 text-lg font-extrabold">
               <span>{tCommon("total")}</span>
               <span>{formatPrice(total)}</span>
             </div>

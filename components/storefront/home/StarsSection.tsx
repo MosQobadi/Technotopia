@@ -49,7 +49,7 @@ export function StarsSection({ products }: { products: HomeProductView[] }) {
             }
             isWishlisted={isWishlisted(product.id)}
             onToggleWishlist={() => toggleWishlist(product.id)}
-            onAddToCart={() => addCartItem(product.id)}
+            onAddToCart={() => addCartItem(product.id, product.price)}
           />
         ))}
       </div>

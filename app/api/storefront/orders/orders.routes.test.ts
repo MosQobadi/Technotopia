@@ -48,8 +48,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await prisma.orderItem.deleteMany({ where: { productNameSnapshot: { startsWith: PREFIX } } });
   await prisma.order.deleteMany({ where: { customer: { email: { startsWith: PREFIX } } } });
-  await prisma.cartItem.deleteMany({ where: { cart: { user: { email: { startsWith: PREFIX } } } } });
-  await prisma.cart.deleteMany({ where: { user: { email: { startsWith: PREFIX } } } });
   await prisma.inventory.deleteMany({ where: { product: { sku: { startsWith: PREFIX } } } });
   await prisma.product.deleteMany({ where: { sku: { startsWith: PREFIX } } });
   await prisma.brand.deleteMany({ where: { slug: { startsWith: PREFIX } } });
@@ -78,14 +76,9 @@ async function createProduct(overrides: Record<string, unknown> = {}) {
   });
 }
 
-async function addToCart(productId: string, quantity: number, userId: string = customerId) {
-  const cart = await prisma.cart.upsert({
-    where: { userId },
-    create: { userId },
-    update: {},
-  });
-  await prisma.cartItem.create({ data: { cartId: cart.id, productId, quantity } });
-  return cart;
+/** The cart lives in the browser, so checkout's lines arrive in the request body. */
+function lines(...items: [productId: string, quantity: number][]) {
+  return items.map(([productId, quantity]) => ({ productId, quantity }));
 }
 
 /** A second, independent customer + auth cookie — for tests that need two shoppers at once. */
@@ -124,31 +117,31 @@ function req(body: unknown, cookie: string | null = customerCookie) {
 
 describe("POST /api/storefront/orders", () => {
   it("rejects an unauthenticated request with a 401", async () => {
-    const response = await create(req(VALID_SHIPPING, null));
+    const response = await create(req({ ...VALID_SHIPPING, items: lines(["p", 1]) }, null));
     expect(response.status).toBe(401);
   });
 
   it("rejects an invalid body with a 400", async () => {
-    const response = await create(req({ ...VALID_SHIPPING, paymentMethod: "CASH" }));
+    const response = await create(
+      req({ ...VALID_SHIPPING, items: lines(["p", 1]), paymentMethod: "CASH" }),
+    );
     expect(response.status).toBe(400);
   });
 
   it("rejects checkout with an empty cart", async () => {
-    const response = await create(req(VALID_SHIPPING));
+    const response = await create(req({ ...VALID_SHIPPING, items: [] }));
     const body = await response.json();
 
     expect(response.status).toBe(400);
     expect(body.success).toBe(false);
   });
 
-  it("creates the order, decrements inventory, and clears the cart", async () => {
+  it("creates the order and decrements inventory", async () => {
     const product = await createProduct({ price: 2000, discountPercent: 25 });
     await prisma.inventory.create({
       data: { productId: product.id, stock: 10, lastUpdatedAt: new Date() },
     });
-    const cart = await addToCart(product.id, 2);
-
-    const response = await create(req(VALID_SHIPPING));
+    const response = await create(req({ ...VALID_SHIPPING, items: lines([product.id, 2]) }));
     const body = await response.json();
 
     expect(response.status).toBe(201);
@@ -173,9 +166,46 @@ describe("POST /api/storefront/orders", () => {
 
     const inventory = await prisma.inventory.findUnique({ where: { productId: product.id } });
     expect(inventory?.stock).toBe(8);
+  });
 
-    const remainingItems = await prisma.cartItem.findMany({ where: { cartId: cart.id } });
-    expect(remainingItems).toHaveLength(0);
+  it("prices from the catalog, so a price sent by the client is ignored", async () => {
+    const product = await createProduct({ price: 4000, discountPercent: 0 });
+    await prisma.inventory.create({
+      data: { productId: product.id, stock: 5, lastUpdatedAt: new Date() },
+    });
+
+    const response = await create(
+      req({
+        ...VALID_SHIPPING,
+        // A hand-edited body claiming the product costs 1 rial.
+        items: [{ productId: product.id, quantity: 1, price: 1, lineTotal: 1 }],
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    const order = await prisma.order.findUnique({
+      where: { id: body.data.orderId },
+      include: { items: true },
+    });
+    expect(order?.items[0]?.priceSnapshot).toBe(4000);
+    expect(order?.items[0]?.lineTotal).toBe(4000);
+  });
+
+  it("refuses a product that is no longer on sale, and reserves no stock for it", async () => {
+    const product = await createProduct({ price: 700, status: Status.INACTIVE });
+    await prisma.inventory.create({
+      data: { productId: product.id, stock: 4, lastUpdatedAt: new Date() },
+    });
+
+    const response = await create(req({ ...VALID_SHIPPING, items: lines([product.id, 1]) }));
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.success).toBe(false);
+
+    const inventory = await prisma.inventory.findUnique({ where: { productId: product.id } });
+    expect(inventory?.stock).toBe(4);
   });
 
   it("rejects checkout when stock is insufficient and leaves inventory unchanged", async () => {
@@ -183,9 +213,7 @@ describe("POST /api/storefront/orders", () => {
     await prisma.inventory.create({
       data: { productId: product.id, stock: 1, lastUpdatedAt: new Date() },
     });
-    await addToCart(product.id, 5);
-
-    const response = await create(req(VALID_SHIPPING));
+    const response = await create(req({ ...VALID_SHIPPING, items: lines([product.id, 5]) }));
     const body = await response.json();
 
     expect(response.status).toBe(409);
@@ -208,23 +236,19 @@ describe("POST /api/storefront/orders", () => {
 
     const racerA = await createRacingCustomer("a");
     const racerB = await createRacingCustomer("b");
-    await addToCart(product.id, 1, racerA.id);
-    await addToCart(product.id, 1, racerB.id);
-
     // Fired together (not awaited one at a time) so both requests' `prisma.$transaction`
     // calls are in flight against the real Postgres instance at the same time, racing for
     // the same inventory row rather than running strictly one-after-another.
     const [responseA, responseB] = await Promise.all([
-      create(req(VALID_SHIPPING, racerA.cookie)),
-      create(req(VALID_SHIPPING, racerB.cookie)),
+      create(req({ ...VALID_SHIPPING, items: lines([product.id, 1]) }, racerA.cookie)),
+      create(req({ ...VALID_SHIPPING, items: lines([product.id, 1]) }, racerB.cookie)),
     ]);
     const [bodyA, bodyB] = await Promise.all([responseA.json(), responseB.json()]);
 
     const statuses = [responseA.status, responseB.status].sort();
     expect(statuses).toEqual([201, 409]);
 
-    const [winnerBody, loserBody] =
-      responseA.status === 201 ? [bodyA, bodyB] : [bodyB, bodyA];
+    const [winnerBody, loserBody] = responseA.status === 201 ? [bodyA, bodyB] : [bodyB, bodyA];
     expect(winnerBody.success).toBe(true);
     expect(loserBody.success).toBe(false);
 

@@ -133,7 +133,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
               badge={{ kind: "rank", label: t("soldBadge", { rank: product.rank }) }}
               isWishlisted={isWishlisted(product.id)}
               onToggleWishlist={() => toggleWishlist(product.id)}
-              onAddToCart={() => addCartItem(product.id)}
+              onAddToCart={() => addCartItem(product.id, product.price)}
             />
           ))}
         </div>

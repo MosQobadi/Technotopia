@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAuthStore } from "@/lib/store/auth";
-import { useCartStore } from "@/lib/store/cart";
+import { useCart, useCartStore } from "@/lib/store/cart";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NavbarSearch } from "./NavbarSearch";
 import { ThemeToggle } from "./ThemeToggle";
@@ -23,17 +23,17 @@ export function Navbar() {
   const user = useAuthStore((state) => state.user);
   const hydrateAuth = useAuthStore((state) => state.hydrate);
   const hydrateCart = useCartStore((state) => state.hydrate);
-  const itemCount = useCartStore((state) =>
-    state.items.reduce((sum, item) => sum + item.quantity, 0),
-  );
+  const { itemCount } = useCart();
 
   useEffect(() => {
     hydrateAuth();
   }, [hydrateAuth]);
 
+  // The cart belongs to the browser, not the account, so it is read whether or
+  // not anyone is signed in.
   useEffect(() => {
-    if (user) hydrateCart();
-  }, [user, hydrateCart]);
+    hydrateCart();
+  }, [hydrateCart]);
 
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "";
 

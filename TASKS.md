@@ -29,6 +29,7 @@ in any commit up to `cbb97c7`. Outstanding and deferred tasks keep their full pr
 | 24    | Testing & hardening     | ✅ done                       |
 | 26    | Cleanup & correctness   | ✅ done                       |
 | 25    | Deployment              | ✅ done — waiting on a VPS    |
+| 27+   | Storefront UI/UX        | in `technotopia-storefront-ux-tasks.md` |
 
 ---
 
@@ -625,3 +626,69 @@ against the production build, confirm no dev/test secrets leak into env vars, co
 admin password isn't a seed/default value, confirm backups are configured for whichever
 Postgres setup was chosen in 25.2.
 ```
+
+---
+
+# Part 4 — Storefront UI/UX overhaul
+
+The phase-by-phase list lives in `technotopia-storefront-ux-tasks.md` (Phase 27 onward).
+Only decisions that outlive their task are recorded here.
+
+## Phase 30 — The buying flow
+
+### Task 30.1 — A cart that works logged out ✅
+
+**Decision: the server-side `Cart` and `CartItem` tables are retired. The browser holds
+the only cart, for signed-in customers as much as for visitors, and an existing
+customer's rows were dropped with the tables.**
+
+The alternative was to keep them as a signed-in customer's cross-device cart and merge
+the local snapshot into them on login. Both are defensible; this is why the tables went.
+
+- **A guest cart is not optional, so the browser path has to exist either way.** Keeping
+  the tables means shipping *both* paths plus a merge rule (sum the quantities, or take
+  the larger? cap at stock at merge time, or at checkout?) and two sync directions to
+  keep honest. Every one of those is a place for the two carts to disagree, and the
+  disagreement is invisible until a customer sees a quantity they did not choose.
+- **What the second cart buys is one feature — the cart following a customer between
+  devices — and nothing else.** That is worth real money to a store with a phone app and
+  a repeat-purchase habit. It is not worth two sources of truth here, and it can be added
+  later on top of the browser cart without being unpicked first: a `SavedCart` row keyed
+  by user, written on change and read on login, is additive.
+- **The rows were not worth preserving.** They were 32 carts and 4 items of local
+  development data. On a live store this decision would need an export first; here it
+  needed a migration comment, which `20260908000000_retire_server_side_cart` carries.
+
+**What this changed beyond the cart itself.** `createOrder` used to read the cart out of
+the database inside its own transaction, so retiring the tables moved checkout's lines
+into the request body — as ids and quantities only. The server re-reads name, price,
+discount and status from the catalog and re-checks stock, so a hand-edited body buys
+nothing at a price it invented; a route test asserts exactly that. Clearing the cart is
+now the browser's job, done after the order comes back.
+
+**The shape of it.** The cart is a persisted Zustand store holding `productId`,
+`quantity`, `addedAt` and the unit price it went in at. The captured price is the one
+field beyond the three the task named: the reconciliation route receives only ids, so
+`priceChanged` has nothing to compare against unless the snapshot carries it. Public
+`GET /api/storefront/cart?ids=a,b,c` answers with the catalog's current truth for those
+ids — including products that have been deactivated, marked unavailable rather than
+omitted, so the page can say what happened instead of quietly shrinking. The four rules
+(`unavailable`, `outOfStock`, `exceedsStock`, `priceChanged`) are pure functions in
+`lib/storefront/cart.ts` with 30 unit tests, and the store, the cart page and the route
+all read from that one module.
+
+**DoD:** a logged-out visitor can add, change and remove; the cart survives a reload and
+a browser restart; a product that went out of stock while it sat there says so; the
+decision above is written down and implemented. ✅
+
+**Verified:** `pnpm lint`, `pnpm tsc --noEmit` and `pnpm test` (291 tests) clean; the
+migration applied to the dev database. A new E2E fills a cart with no account, changes
+the quantity, reloads, reopens it in a fresh browser context carrying the same stored
+state, and removes it — and the existing sign-up-to-confirmation checkout still passes
+end to end against the browser cart. In the running app, zeroing one product's stock and
+repricing another mid-cart produced "Out of stock — remove it to check out." and "The
+price changed to ۱٬۴۹۹ ریال.", with the out-of-stock line dropping out of the total.
+
+One unrelated pre-existing break was fixed to get there: `e2e/storefront/shopping.spec.ts`
+matched `getByRole("link", { name: "Shop" })`, which stopped being unique when Task 29.3
+gave the home page category cards that read as "<Category> Shop" links.

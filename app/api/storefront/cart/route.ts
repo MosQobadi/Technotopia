@@ -1,26 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { requireUser } from "@/lib/auth";
-import { cartAddItemSchema } from "@/lib/validation";
-import { addCartItem, getCart } from "@/server/cart.service";
+import { parseCartIds } from "@/lib/storefront/cart";
+import { cartLookupQuerySchema } from "@/lib/validation";
+import { getCartCatalogEntries } from "@/server/cart.service";
 
+/**
+ * Reconciles a browser cart against the catalog. Public on purpose: the cart
+ * lives in the visitor's browser, so this has to answer for someone who has
+ * never signed in. It creates nothing and takes no body — the ids are not
+ * personal data, and reading them is a read.
+ *
+ * What comes back is the catalog's current truth for those ids. Turning that
+ * into lines with issues is `reconcileCart` in `lib/storefront/cart.ts`, which
+ * the store and the cart page call with the quantities and captured prices the
+ * server never sees.
+ */
 export async function GET(request: NextRequest) {
-  const auth = await requireUser(request);
-  if (!auth.ok) {
-    return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
-  }
-
-  const cart = await getCart(auth.payload.userId);
-  return NextResponse.json({ success: true, data: cart });
-}
-
-export async function POST(request: NextRequest) {
-  const auth = await requireUser(request);
-  if (!auth.ok) {
-    return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
-  }
-
-  const body = await request.json().catch(() => null);
-  const parsed = cartAddItemSchema.safeParse(body);
+  const parsed = cartLookupQuerySchema.safeParse({
+    ids: request.nextUrl.searchParams.get("ids") ?? undefined,
+  });
   if (!parsed.success) {
     return NextResponse.json(
       { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" },
@@ -28,10 +25,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await addCartItem(auth.payload.userId, parsed.data.productId, parsed.data.quantity);
-  if (!result.ok) {
-    return NextResponse.json({ success: false, error: "Product not found." }, { status: 404 });
-  }
-
-  return NextResponse.json({ success: true, data: result.cart }, { status: 201 });
+  const entries = await getCartCatalogEntries(parseCartIds(parsed.data.ids));
+  return NextResponse.json({ success: true, data: { entries } });
 }

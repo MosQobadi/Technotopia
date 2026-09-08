@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
-import { OrderStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
+import { OrderStatus, PaymentStatus, Status } from "@/lib/generated/prisma/enums";
 import type { CreateOrderInput } from "@/lib/validation/order.schema";
-import { SHIPPING_FLAT_RATE } from "./cart.service";
+import { SHIPPING_FLAT_RATE } from "@/lib/storefront/cart";
 
 const ORDER_LIST_INCLUDE = {
   customer: { select: { firstName: true, lastName: true } },
@@ -277,10 +277,12 @@ export async function updateOrderStatus(
 }
 
 export type UpdateOrderNoteResult =
-  | { ok: true; order: OrderDetail }
-  | { ok: false; reason: "not_found" };
+  { ok: true; order: OrderDetail } | { ok: false; reason: "not_found" };
 
-export async function updateOrderNote(id: string, adminNote: string): Promise<UpdateOrderNoteResult> {
+export async function updateOrderNote(
+  id: string,
+  adminNote: string,
+): Promise<UpdateOrderNoteResult> {
   try {
     const order = await prisma.order.update({
       where: { id },
@@ -303,21 +305,39 @@ export interface StockShortfall {
   requested: number;
 }
 
+export interface UnavailableItem {
+  productId: string;
+  /** The catalog's name for it, or null when the product is gone entirely. */
+  name: string | null;
+}
+
 class InsufficientStockError extends Error {
   constructor(public readonly items: StockShortfall[]) {
     super("Insufficient stock");
   }
 }
 
+class UnavailableItemsError extends Error {
+  constructor(public readonly items: UnavailableItem[]) {
+    super("Unavailable items");
+  }
+}
+
 export type CreateOrderResult =
   | { ok: true; orderId: string }
   | { ok: false; reason: "empty_cart" }
+  | { ok: false; reason: "unavailable_items"; items: UnavailableItem[] }
   | { ok: false; reason: "insufficient_stock"; items: StockShortfall[] };
 
 /**
- * Checkout: verifies stock, creates the Order + OrderItem snapshots, decrements Inventory,
- * and clears the cart — all atomically so a mid-checkout failure can't leave stock
- * decremented without an order, or an order created without stock actually reserved.
+ * Checkout: verifies every line is still on sale, prices it from the catalog,
+ * creates the Order + OrderItem snapshots and decrements Inventory — all
+ * atomically so a mid-checkout failure can't leave stock decremented without an
+ * order, or an order created without stock actually reserved.
+ *
+ * The lines arrive from the browser's cart, so nothing about them is trusted
+ * beyond the id and the quantity: prices, names and availability are re-read
+ * here. The cart itself is cleared by the browser once this returns.
  */
 export async function createOrder(
   customerId: string,
@@ -325,33 +345,39 @@ export async function createOrder(
 ): Promise<CreateOrderResult> {
   try {
     const orderId = await prisma.$transaction(async (tx) => {
-      const cart = await tx.cart.findUnique({
-        where: { userId: customerId },
-        include: {
-          items: {
-            include: {
-              product: { select: { id: true, name: true, price: true, discountPercent: true } },
-            },
-          },
-        },
-      });
-
-      if (!cart || cart.items.length === 0) {
+      if (input.items.length === 0) {
         throw new Error("EMPTY_CART");
       }
 
-      const shortfalls: StockShortfall[] = [];
-      const lineItems = cart.items.map((item) => {
-        const discountedPrice = item.product.price * (1 - item.product.discountPercent / 100);
-        return {
-          productId: item.productId,
-          name: item.product.name,
-          quantity: item.quantity,
-          price: item.product.price,
-          lineTotal: Math.round(discountedPrice * item.quantity),
-        };
+      const products = await tx.product.findMany({
+        where: { id: { in: input.items.map((item) => item.productId) } },
+        select: { id: true, name: true, price: true, discountPercent: true, status: true },
       });
+      const byId = new Map(products.map((product) => [product.id, product]));
 
+      const unavailable: UnavailableItem[] = [];
+      const lineItems = [];
+      for (const item of input.items) {
+        const product = byId.get(item.productId);
+        if (!product || product.status !== Status.ACTIVE) {
+          unavailable.push({ productId: item.productId, name: product?.name ?? null });
+          continue;
+        }
+        const discountedPrice = product.price * (1 - product.discountPercent / 100);
+        lineItems.push({
+          productId: product.id,
+          name: product.name,
+          quantity: item.quantity,
+          price: product.price,
+          lineTotal: Math.round(discountedPrice * item.quantity),
+        });
+      }
+
+      if (unavailable.length > 0) {
+        throw new UnavailableItemsError(unavailable);
+      }
+
+      const shortfalls: StockShortfall[] = [];
       for (const item of lineItems) {
         const decremented = await tx.inventory.updateMany({
           where: { productId: item.productId, stock: { gte: item.quantity } },
@@ -411,13 +437,14 @@ export async function createOrder(
         select: { id: true },
       });
 
-      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
-
       return order.id;
     });
 
     return { ok: true, orderId };
   } catch (err) {
+    if (err instanceof UnavailableItemsError) {
+      return { ok: false, reason: "unavailable_items", items: err.items };
+    }
     if (err instanceof InsufficientStockError) {
       return { ok: false, reason: "insufficient_stock", items: err.items };
     }

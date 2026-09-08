@@ -7,10 +7,47 @@ test.afterAll(cleanUpTestCustomers);
 // stock-shortfall path.
 const PRODUCT_NAME = "Boya BY-M1 Lavalier Mic";
 
+// The cart lives in localStorage, so no account is needed to fill one — only to order.
+test("fill a cart while logged out, and keep it across a browser restart", async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  await page.goto("/products");
+  await productCard(page, PRODUCT_NAME).getByRole("button", { name: "Add to Cart" }).click();
+
+  await page.getByRole("link", { name: "Cart" }).click();
+  await expect(page).toHaveURL(/\/cart$/);
+  await expect(page.getByText(PRODUCT_NAME, { exact: true })).toBeVisible();
+
+  // One line in the cart, so the stepper's buttons are unambiguous. The header
+  // badge is the thing that has to agree with it.
+  const cartLink = page.getByRole("link", { name: "Cart" });
+  await page.getByRole("button", { name: "Increase quantity" }).click();
+  await expect(cartLink).toContainText("2");
+
+  await page.reload();
+  await expect(page.getByText(PRODUCT_NAME, { exact: true })).toBeVisible();
+  await expect(cartLink).toContainText("2");
+
+  // A restart is a fresh browser reading the same stored state — not a fresh profile.
+  const restarted = await browser.newContext({ storageState: await context.storageState() });
+  const reopened = await restarted.newPage();
+  await reopened.goto("/cart");
+  await expect(reopened.getByText(PRODUCT_NAME, { exact: true })).toBeVisible();
+  await expect(reopened.getByRole("link", { name: "Cart" })).toContainText("2");
+
+  await reopened.getByRole("button", { name: "Remove item" }).click();
+  await expect(reopened.getByText("Your cart is empty.")).toBeVisible();
+
+  await restarted.close();
+  await context.close();
+});
+
 test("browse a product, add it to cart, and complete checkout", async ({ page }) => {
   await signUp(page, makeTestCustomer());
 
-  await page.getByRole("link", { name: "Shop" }).click();
+  // Exact: the home page's category cards read as "<Category> Shop" links too.
+  await page.getByRole("link", { name: "Shop", exact: true }).click();
   await expect(page).toHaveURL(/\/products$/);
 
   await page.getByRole("link", { name: PRODUCT_NAME, exact: true }).click();
