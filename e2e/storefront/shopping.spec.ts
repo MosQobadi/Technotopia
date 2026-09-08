@@ -15,26 +15,30 @@ test("fill a cart while logged out, and keep it across a browser restart", async
   await page.goto("/products");
   await productCard(page, PRODUCT_NAME).getByRole("button", { name: "Add to Cart" }).click();
 
-  await page.getByRole("link", { name: "Cart" }).click();
+  // Adding opens the mini-cart where the customer is already looking; its link is
+  // the way to the full page, and the header never navigated on its own.
+  await expect(page.getByRole("dialog", { name: "Your Cart" })).toBeVisible();
+  await expect(page).toHaveURL(/\/products$/);
+  await page.getByRole("link", { name: "View Cart" }).click();
   await expect(page).toHaveURL(/\/cart$/);
   await expect(page.getByText(PRODUCT_NAME, { exact: true })).toBeVisible();
 
   // One line in the cart, so the stepper's buttons are unambiguous. The header
   // badge is the thing that has to agree with it.
-  const cartLink = page.getByRole("link", { name: "Cart" });
+  const cartButton = page.getByRole("button", { name: "Cart" });
   await page.getByRole("button", { name: "Increase quantity" }).click();
-  await expect(cartLink).toContainText("2");
+  await expect(cartButton).toContainText("2");
 
   await page.reload();
   await expect(page.getByText(PRODUCT_NAME, { exact: true })).toBeVisible();
-  await expect(cartLink).toContainText("2");
+  await expect(cartButton).toContainText("2");
 
   // A restart is a fresh browser reading the same stored state — not a fresh profile.
   const restarted = await browser.newContext({ storageState: await context.storageState() });
   const reopened = await restarted.newPage();
   await reopened.goto("/cart");
   await expect(reopened.getByText(PRODUCT_NAME, { exact: true })).toBeVisible();
-  await expect(reopened.getByRole("link", { name: "Cart" })).toContainText("2");
+  await expect(reopened.getByRole("button", { name: "Cart" })).toContainText("2");
 
   await reopened.getByRole("button", { name: "Remove item" }).click();
   await expect(reopened.getByText("Your cart is empty.")).toBeVisible();
@@ -57,7 +61,7 @@ test("browse a product, add it to cart, and complete checkout", async ({ page })
   // the first in DOM order, above that section.
   await page.getByRole("button", { name: "Add to Cart" }).first().click();
 
-  await page.getByRole("link", { name: "Cart" }).click();
+  await page.getByRole("link", { name: "View Cart" }).click();
   await expect(page).toHaveURL(/\/cart$/);
   await expect(page.getByText(PRODUCT_NAME, { exact: true })).toBeVisible();
 

@@ -42,7 +42,8 @@
     "language": "Language",
     "switchToEnglish": "Switch to English",
     "switchToFarsi": "Switch to Persian",
-    "toggleTheme": "Toggle dark mode"
+    "toggleTheme": "Toggle dark mode",
+    "menu": "Menu"
   },
   "footer": {
     "tagline": "Cameras, microphones, lights and speakers for people who make things worth watching.",
@@ -137,6 +138,9 @@
     "title": "Your Cart",
     "empty": "Your cart is empty.",
     "removeItem": "Remove item",
+    "viewCart": "View Cart",
+    "itemCount": "{count, plural, =0 {No items} one {# item} other {# items}}",
+    "moreLines": "{count, plural, one {and # more product} other {and # more products}}",
     "checkout": "Checkout →",
     "issue": {
       "goneProduct": "This product is no longer listed",

@@ -24,6 +24,13 @@ interface CartState {
    * on the first client render would not match the HTML React is hydrating.
    */
   hasHydrated: boolean;
+  /**
+   * A stamp bumped by `addItem` and by nothing else — the mini-cart's cue to
+   * open. The count cannot be that cue: it also moves on a removal, and it does
+   * not move at all when the line was already at the quantity ceiling, which is
+   * exactly the add that most needs an answer on screen.
+   */
+  lastAddedAt: number | null;
 
   /** Read the stored cart, then reconcile it. Safe to call from every mounted consumer. */
   hydrate: () => Promise<void>;
@@ -62,6 +69,7 @@ export const useCartStore = create<CartState>()(
         entries: [],
         isLoading: false,
         hasHydrated: false,
+        lastAddedAt: null,
 
         hydrate: () => ensureHydrated(),
 
@@ -76,6 +84,7 @@ export const useCartStore = create<CartState>()(
         },
 
         addItem: async (productId, unitPrice, quantity = 1) => {
+          set({ lastAddedAt: Date.now() });
           await commit(
             addToStoredCart(get().items, productId, quantity, unitPrice, new Date().toISOString()),
           );
@@ -89,7 +98,7 @@ export const useCartStore = create<CartState>()(
           await commit(removeFromStoredCart(get().items, productId));
         },
 
-        clear: () => set({ items: [], entries: [] }),
+        clear: () => set({ items: [], entries: [], lastAddedAt: null }),
       };
     },
     {

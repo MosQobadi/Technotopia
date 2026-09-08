@@ -692,3 +692,46 @@ price changed to ۱٬۴۹۹ ریال.", with the out-of-stock line dropping out 
 One unrelated pre-existing break was fixed to get there: `e2e/storefront/shopping.spec.ts`
 matched `getByRole("link", { name: "Shop" })`, which stopped being unique when Task 29.3
 gave the home page category cards that read as "<Category> Shop" links.
+
+### Task 30.2 — A mini-cart in the header ✅
+
+**Decision: the header cart is a button, not a link.** Pressing it opens a summary panel;
+the panel carries the only link to `/cart`. The cart page is one predictable step away
+either way, and making the trigger a link as well would have meant a control that both
+navigates and opens — the thing that has to answer "did that work?" cannot also be the
+thing that leaves the page.
+
+That is what forced the second decision, which is the one that outlives the task: **the
+storefront header now has two shapes.** Below `md` the bar keeps three controls — menu,
+wordmark, mini-cart — and the search wraps underneath; the section links, wishlist,
+account, language switch and theme toggle move into a drawer, which also carries its own
+plain link to the full cart. From `md` up they come back onto the bar. The cart is the
+only control that is in both, because it is the only one that has to be able to answer an
+add wherever the customer is standing. Anything added to the header from here needs a home
+in both shapes, or it exists only on a desktop.
+
+**The shape of it.** The store gained one field, `lastAddedAt`, bumped by `addItem` and by
+nothing else — the count could not be the cue, because it also moves on a removal and does
+not move at all when a line was already at its ceiling. `MiniCart` subscribes to the store
+rather than rendering on that field, so the panel opens as a reaction instead of as a
+second render chasing the first. The panel prints quantity and unit price per line and the
+reconciled subtotal, and deliberately no per-line total: `lineTotal` is what can actually
+ship, which for a line whose stock has fallen is not quantity times price, and a summary
+is the wrong place to open that conversation — the cart page is where a line explains
+itself. Dismissal (pointer outside, focus outside, Escape) is one hook,
+`lib/storefront/useDismissable.ts`, shared by the panel and the drawer, which is also what
+stops both hanging off the header at once.
+
+**DoD:** adding from a product card opens the panel without leaving the page; the panel
+carries the link to `/cart`; the badge reflects the store at every width; the full cart is
+reachable from the drawer. ✅
+
+**Verified:** `pnpm lint`, `pnpm tsc --noEmit`, `pnpm test` (291) and `pnpm build` clean;
+all 13 E2E pass. In the running app: adding from a card opened the panel with the badge at
+4 and "and 1 more product" under three lines; both themes, both locales, and 375px and
+1280px checked, with the panel inset 24px from both edges on a phone and anchored to the
+trigger's start edge in RTL.
+
+`e2e/storefront/shopping.spec.ts` moved with it: it used to reach the cart page through
+`getByRole("link", { name: "Cart" })` in the header, which is now a button, and it asserts
+the panel is open and the URL has not changed before following "View Cart".
