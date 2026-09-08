@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { Status } from "@/lib/generated/prisma/enums";
 import { toDisplayPrice } from "@/lib/storefront/pricing";
+import type { HomeCategoryView } from "@/types/home";
 import { listBrandOptions, type BrandOption } from "./brand.service";
 import { listCategoryOptions, type CategoryOption } from "./category.service";
 import { listStorefrontProducts } from "./storefront-product.service";
@@ -9,6 +10,7 @@ const HOME_BANNER_LIMIT = 3;
 const FEATURED_PRODUCT_LIMIT = 10;
 const DEAL_LIMIT = 12;
 const BEST_SELLER_LIMIT = 10;
+const BROWSE_CATEGORY_LIMIT = 8;
 
 const PRODUCT_SUMMARY_SELECT = {
   id: true,
@@ -57,6 +59,7 @@ export interface HomeData {
   deals: HomeProductView[];
   featuredProducts: HomeProductView[];
   bestSellers: HomeBestSellerView[];
+  browseCategories: HomeCategoryView[];
   categories: CategoryOption[];
   brands: BrandOption[];
 }
@@ -115,6 +118,20 @@ async function getFeaturedProducts(): Promise<HomeProductView[]> {
   return products.map(toProductView);
 }
 
+// The categories the home page offers to browse, as opposed to the ones
+// `listCategoryOptions` returns: that list is the best-sellers filter's
+// vocabulary and wants every category, this one is a shelf of photographs and
+// wants the shop's front eight. Ordered by name so the shelf doesn't reshuffle
+// itself between requests.
+async function getBrowseCategories(): Promise<HomeCategoryView[]> {
+  return prisma.category.findMany({
+    where: { status: Status.ACTIVE },
+    select: { id: true, slug: true, name: true, image: true },
+    orderBy: { name: "asc" },
+    take: BROWSE_CATEGORY_LIMIT,
+  });
+}
+
 async function getBestSellers(): Promise<HomeBestSellerView[]> {
   const { products } = await listStorefrontProducts({
     sort: "sold",
@@ -126,14 +143,16 @@ async function getBestSellers(): Promise<HomeBestSellerView[]> {
 }
 
 export async function getHomeData(): Promise<HomeData> {
-  const [banners, deals, featuredProducts, bestSellers, categories, brands] = await Promise.all([
-    getHomeBanners(),
-    getDeals(),
-    getFeaturedProducts(),
-    getBestSellers(),
-    listCategoryOptions(),
-    listBrandOptions(),
-  ]);
+  const [banners, deals, featuredProducts, bestSellers, browseCategories, categories, brands] =
+    await Promise.all([
+      getHomeBanners(),
+      getDeals(),
+      getFeaturedProducts(),
+      getBestSellers(),
+      getBrowseCategories(),
+      listCategoryOptions(),
+      listBrandOptions(),
+    ]);
 
-  return { banners, deals, featuredProducts, bestSellers, categories, brands };
+  return { banners, deals, featuredProducts, bestSellers, browseCategories, categories, brands };
 }

@@ -230,6 +230,11 @@
       "eyebrow": "On Offer",
       "heading": "Gear that costs less this week."
     },
+    "categories": {
+      "eyebrow": "Browse",
+      "heading": "Find your gear by category.",
+      "cta": "Shop"
+    },
     "stars": {
       "eyebrow": "The Stars",
       "heading": "Gear that gets all the attention.",

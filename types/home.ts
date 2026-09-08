@@ -26,6 +26,15 @@ export interface HomeBestSellerView extends HomeProductView {
   createdAt: string;
 }
 
+/** A category as the home page's browse section draws it: a photograph, a name,
+ *  and the slug the catalog filters by. */
+export interface HomeCategoryView {
+  id: string;
+  slug: string;
+  name: string;
+  image: string | null;
+}
+
 export interface HomeOption {
   id: string;
   name: string;
@@ -36,6 +45,7 @@ export interface HomeData {
   deals: HomeProductView[];
   featuredProducts: HomeProductView[];
   bestSellers: HomeBestSellerView[];
+  browseCategories: HomeCategoryView[];
   categories: HomeOption[];
   brands: HomeOption[];
 }

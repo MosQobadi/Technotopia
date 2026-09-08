@@ -94,6 +94,11 @@
   --color-accent-solid-hover: var(--accent-hover);
   --color-accent-on-dark: var(--accent-on-dark);
 
+  /* The scrim laid over a photograph so text can sit on it. Like
+     accent-on-dark, it is ground that is dark whatever the theme is, so it is
+     declared once and never flipped. */
+  --color-scrim: var(--app-scrim, transparent);
+
   /* The readable accent, under a name of our own — because `accent` could not
      be it. HeroUI maps --color-accent to var(--accent), and var(--accent) has
      to stay the *fill*: its accent-filled components (login's <Button>) put
@@ -250,6 +255,21 @@ body[data-scope="storefront"] {
      on a category card. Distinct from --app-accent, which flips: this one has
      to hold while the rest of the site is still in light mode. */
   --app-accent-on-dark: oklch(0.72 0.14 258); /* 7.66 on --app-fg, 5.46 on a 0.30 scrim */
+
+  /* The scrim itself, now that something actually draws on a photograph (see
+     CategoryBrowseSection). A scrim's job is to make an *unknown* image's
+     contrast predictable, and the alpha alone does that: black at `a` over any
+     photograph is never lighter than black at `a` over white, so the worst case
+     is fixed before anyone uploads anything. At 0.80 that worst case is sRGB
+     51, where accent-on-dark measures 5.07 and white 12.63. Anything thinner
+     stops being a guarantee — 0.70 puts the same blue at 3.42, which is AA for
+     large text only. (The "0.30 scrim" in the note above is a different
+     measurement: it is not this token's alpha, and reading it as one gives
+     0.85.)
+
+     Not repeated in the dark block. A photograph does not get lighter because
+     the page around it did. */
+  --app-scrim: oklch(0 0 0 / 0.8);
 
   /* ── Status ──
      Each value is dark enough to serve twice: as text on a ground *and* as a
