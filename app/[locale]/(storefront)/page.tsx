@@ -5,6 +5,7 @@ import { localeAlternates } from "@/lib/seo";
 import { HomeHero } from "@/components/storefront/home/HomeHero";
 import { DealsSection } from "@/components/storefront/home/DealsSection";
 import { CategoryBrowseSection } from "@/components/storefront/home/CategoryBrowseSection";
+import { BrandBrowseSection } from "@/components/storefront/home/BrandBrowseSection";
 import { StarsSection } from "@/components/storefront/home/StarsSection";
 import { BestSellersSection } from "@/components/storefront/home/BestSellersSection";
 
@@ -36,14 +37,23 @@ export async function generateMetadata(): Promise<Metadata> {
 // with fetching it from the client). The route stays — it is the public
 // contract — it just isn't this page's data source.
 export default async function HomePage() {
-  const { banners, deals, featuredProducts, bestSellers, browseCategories, categories, brands } =
-    await getHomeData();
+  const {
+    banners,
+    deals,
+    featuredProducts,
+    bestSellers,
+    browseCategories,
+    browseBrands,
+    categories,
+    brands,
+  } = await getHomeData();
 
   return (
     <main>
       <HomeHero banners={banners} />
       <DealsSection products={deals} />
       <CategoryBrowseSection categories={browseCategories} />
+      <BrandBrowseSection brands={browseBrands} />
       <StarsSection products={featuredProducts} />
       <section className="mx-auto max-w-320 px-6 py-16" aria-hidden="true" />
       <BestSellersSection products={bestSellers} categories={categories} brands={brands} />

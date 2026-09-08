@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { Status } from "@/lib/generated/prisma/enums";
 import { toDisplayPrice } from "@/lib/storefront/pricing";
-import type { HomeCategoryView } from "@/types/home";
+import type { HomeBrandView, HomeCategoryView } from "@/types/home";
 import { listBrandOptions, type BrandOption } from "./brand.service";
 import { listCategoryOptions, type CategoryOption } from "./category.service";
 import { listStorefrontProducts } from "./storefront-product.service";
@@ -11,6 +11,7 @@ const FEATURED_PRODUCT_LIMIT = 10;
 const DEAL_LIMIT = 12;
 const BEST_SELLER_LIMIT = 10;
 const BROWSE_CATEGORY_LIMIT = 8;
+const BROWSE_BRAND_LIMIT = 12;
 
 const PRODUCT_SUMMARY_SELECT = {
   id: true,
@@ -60,6 +61,7 @@ export interface HomeData {
   featuredProducts: HomeProductView[];
   bestSellers: HomeBestSellerView[];
   browseCategories: HomeCategoryView[];
+  browseBrands: HomeBrandView[];
   categories: CategoryOption[];
   brands: BrandOption[];
 }
@@ -132,6 +134,31 @@ async function getBrowseCategories(): Promise<HomeCategoryView[]> {
   });
 }
 
+// The brands the home page offers to browse, as opposed to the ones
+// `listBrandOptions` returns: that list is the best-sellers filter's vocabulary
+// and wants every brand, this one is a shelf of logos.
+//
+// A brand with no logo is left out rather than drawn as a name in an empty
+// tile. The section is a row of marks — a customer recognises it before reading
+// it — and a wordmark we set ourselves is not the brand's mark. It would also
+// be the one thing here that puts *text* on the non-flipping plate the tiles
+// are painted (see --app-plate in app/globals.css), which would need an ink
+// that doesn't flip either. Ordered by name so the shelf doesn't reshuffle
+// itself between requests.
+async function getBrowseBrands(): Promise<HomeBrandView[]> {
+  const brands = await prisma.brand.findMany({
+    where: { status: Status.ACTIVE, logo: { not: null } },
+    select: { id: true, slug: true, name: true, logo: true },
+    orderBy: { name: "asc" },
+    take: BROWSE_BRAND_LIMIT,
+  });
+
+  // `logo: { not: null }` narrows the rows but not the type Prisma infers, so
+  // the non-null the view promises is asserted here, once, rather than in the
+  // component.
+  return brands.map((brand) => ({ ...brand, logo: brand.logo as string }));
+}
+
 async function getBestSellers(): Promise<HomeBestSellerView[]> {
   const { products } = await listStorefrontProducts({
     sort: "sold",
@@ -143,16 +170,34 @@ async function getBestSellers(): Promise<HomeBestSellerView[]> {
 }
 
 export async function getHomeData(): Promise<HomeData> {
-  const [banners, deals, featuredProducts, bestSellers, browseCategories, categories, brands] =
-    await Promise.all([
-      getHomeBanners(),
-      getDeals(),
-      getFeaturedProducts(),
-      getBestSellers(),
-      getBrowseCategories(),
-      listCategoryOptions(),
-      listBrandOptions(),
-    ]);
+  const [
+    banners,
+    deals,
+    featuredProducts,
+    bestSellers,
+    browseCategories,
+    browseBrands,
+    categories,
+    brands,
+  ] = await Promise.all([
+    getHomeBanners(),
+    getDeals(),
+    getFeaturedProducts(),
+    getBestSellers(),
+    getBrowseCategories(),
+    getBrowseBrands(),
+    listCategoryOptions(),
+    listBrandOptions(),
+  ]);
 
-  return { banners, deals, featuredProducts, bestSellers, browseCategories, categories, brands };
+  return {
+    banners,
+    deals,
+    featuredProducts,
+    bestSellers,
+    browseCategories,
+    browseBrands,
+    categories,
+    brands,
+  };
 }

@@ -35,6 +35,16 @@ export interface HomeCategoryView {
   image: string | null;
 }
 
+/** A brand as the home page's browse section draws it: a logo, a name, and the
+ *  slug the catalog filters by. `logo` is non-null — a brand without one is not
+ *  in the list at all (see getBrowseBrands). */
+export interface HomeBrandView {
+  id: string;
+  slug: string;
+  name: string;
+  logo: string;
+}
+
 export interface HomeOption {
   id: string;
   name: string;
@@ -46,6 +56,7 @@ export interface HomeData {
   featuredProducts: HomeProductView[];
   bestSellers: HomeBestSellerView[];
   browseCategories: HomeCategoryView[];
+  browseBrands: HomeBrandView[];
   categories: HomeOption[];
   brands: HomeOption[];
 }

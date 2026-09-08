@@ -99,6 +99,12 @@
      declared once and never flipped. */
   --color-scrim: var(--app-scrim, transparent);
 
+  /* The mirror of the scrim: ground that is *light* whatever the theme is, for
+     artwork whose own ink does not flip either. One user — the brand tile (see
+     BrandBrowseSection). Same fallback discipline as the scrim, so the admin,
+     where --app-* is undefined, is untouched. */
+  --color-plate: var(--app-plate, transparent);
+
   /* The readable accent, under a name of our own — because `accent` could not
      be it. HeroUI maps --color-accent to var(--accent), and var(--accent) has
      to stay the *fill*: its accent-filled components (login's <Button>) put
@@ -270,6 +276,20 @@ body[data-scope="storefront"] {
      Not repeated in the dark block. A photograph does not get lighter because
      the page around it did. */
   --app-scrim: oklch(0 0 0 / 0.8);
+
+  /* The plate a brand logo sits on, and the light-side counterpart to the
+     scrim. A logo arrives as ink on transparency and that ink does not flip
+     when our palette does: a black wordmark on the dark theme's
+     --app-surface-muted is invisible, and no amount of choosing tokens
+     correctly fixes an image we did not draw. So the tile keeps the light
+     theme's card fill in both themes — this is the light value of
+     --app-surface-sunken, frozen — and the mark stays legible while the page
+     around it goes dark.
+
+     Not repeated in the dark block, for the same reason the scrim isn't.
+     Nothing draws text on it: the brand name sits below the tile on the page's
+     own ground, and a brand with no logo is not rendered at all. */
+  --app-plate: oklch(0.96 0.002 240);
 
   /* ── Status ──
      Each value is dark enough to serve twice: as text on a ground *and* as a

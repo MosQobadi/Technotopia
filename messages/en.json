@@ -235,6 +235,10 @@
       "heading": "Find your gear by category.",
       "cta": "Shop"
     },
+    "brands": {
+      "eyebrow": "Brands",
+      "heading": "Shop the names you came for."
+    },
     "stars": {
       "eyebrow": "The Stars",
       "heading": "Gear that gets all the attention.",
