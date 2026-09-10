@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { InventoryStatus } from "@/types/inventory";
 import { getStorefrontProductBySlug } from "@/server/storefront-product.service";
-import { breadcrumbJsonLd, localeAlternates } from "@/lib/seo";
+import { breadcrumbJsonLd, localeAlternates, productJsonLd } from "@/lib/seo";
+import { categoryListHref } from "@/lib/storefront/plp";
 import { navTrail } from "@/components/storefront/navLinks";
 import { Breadcrumb } from "@/components/storefront/ui/Breadcrumb";
 import { PriceTag } from "@/components/storefront/ui/PriceTag";
@@ -76,34 +77,15 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const breadcrumbItems = navTrail(
     "shop",
     tNav,
-    { label: product.category, href: `/products?category=${encodeURIComponent(product.category)}` },
+    { label: product.category, href: categoryListHref(product.categorySlug) },
     { label: product.name },
   );
-
-  const productJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.shortDescription,
-    image: product.image ?? undefined,
-    sku: product.id,
-    brand: { "@type": "Brand", name: product.brand },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "IRR",
-      price: product.price,
-      availability:
-        product.stockStatus === "OUT_OF_STOCK"
-          ? "https://schema.org/OutOfStock"
-          : "https://schema.org/InStock",
-    },
-  };
 
   return (
     <main className="mx-auto max-w-320 px-6 pt-10 pb-24">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(product)) }}
       />
       <script
         type="application/ld+json"

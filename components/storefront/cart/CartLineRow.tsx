@@ -7,7 +7,7 @@ import { CloseIcon } from "@/components/storefront/icons";
 import { QuantityStepper } from "@/components/storefront/ui/QuantityStepper";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/cn";
-import { MAX_CART_QUANTITY, type CartIssue, type CartLine } from "@/lib/storefront/cart";
+import { lineCeiling, lineUnitPrice, type CartIssue, type CartLine } from "@/lib/storefront/cart";
 
 // One line of the cart, rendering the state it is actually in.
 //
@@ -47,11 +47,11 @@ export function CartLineRow({ line, onDecrease, onIncrease, onRemove }: CartLine
   // A line that ships nothing has no quantity worth choosing; removing it is the
   // only thing left to do, so it is the only control offered.
   const shipsNothing = orderableQuantity === 0;
-  const unitPrice = product?.unitPrice ?? line.capturedPrice;
+  const unitPrice = lineUnitPrice(line);
   // The ceiling the stepper offers is the shelf, so raising a line past what is
   // left is simply not on offer. `exceedsStock` can then only come from stock
   // falling under a quantity already stored — which is what the note explains.
-  const maxQuantity = Math.min(product?.stock ?? MAX_CART_QUANTITY, MAX_CART_QUANTITY);
+  const maxQuantity = lineCeiling(product?.stock);
 
   return (
     <li

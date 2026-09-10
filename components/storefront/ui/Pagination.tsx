@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-import { paginationRange } from "@/lib/storefront/plp";
+import { clampPage, paginationRange } from "@/lib/storefront/plp";
 
 // Real links, not buttons: a paged catalog is only reachable — by a crawler, by
 // a bookmark, by the back button — if page 2 has a URL of its own. The caller
@@ -36,7 +36,7 @@ export function Pagination({ page, pageCount, hrefForPage, className }: Paginati
   // already showing an empty state.
   if (pageCount <= 1) return null;
 
-  const current = Math.min(Math.max(page, 1), pageCount);
+  const current = clampPage(page, pageCount);
 
   return (
     <nav aria-label={t("label")} className={cn("mt-10", className)}>

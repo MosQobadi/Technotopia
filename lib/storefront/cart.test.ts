@@ -4,13 +4,18 @@ import {
   cartBlocker,
   cartIdsKey,
   cartLineIssue,
+  cartScreenState,
   cartTotals,
+  EMPTY_CART,
+  lineCeiling,
+  lineUnitPrice,
   MAX_CART_ITEMS,
   MAX_CART_QUANTITY,
   orderableLines,
   orderableQuantity,
   parseCartIds,
   pdpAddLimit,
+  pdpSelection,
   pendingCart,
   reconcileCart,
   reconcileCartLine,
@@ -422,5 +427,96 @@ describe("pdpAddLimit", () => {
 
     const fullWithThis = [...full.slice(1), stored({ productId: "p1", quantity: 1 })];
     expect(pdpAddLimit(5, fullWithThis, "p1")).toEqual({ inCart: 1, max: 4, blocker: null });
+  });
+});
+
+describe("lineCeiling", () => {
+  it("is the shelf when the shelf is under the line cap", () => {
+    expect(lineCeiling(5)).toBe(5);
+  });
+
+  it("is the line cap on a deep shelf, or while stock is not known", () => {
+    expect(lineCeiling(500)).toBe(MAX_CART_QUANTITY);
+    expect(lineCeiling(undefined)).toBe(MAX_CART_QUANTITY);
+  });
+
+  it("never goes below zero", () => {
+    expect(lineCeiling(-2)).toBe(0);
+  });
+});
+
+describe("pdpSelection", () => {
+  it("prices the chosen quantity", () => {
+    expect(pdpSelection(3, 5, 1000)).toEqual({ quantity: 3, subtotal: 3000 });
+  });
+
+  it("holds a choice the limit has fallen under to the limit, and prices that", () => {
+    expect(pdpSelection(4, 2, 1000)).toEqual({ quantity: 2, subtotal: 2000 });
+  });
+
+  it("never shows fewer than one", () => {
+    expect(pdpSelection(0, 5, 1000).quantity).toBe(1);
+    expect(pdpSelection(3, 0, 1000).quantity).toBe(1);
+  });
+});
+
+describe("lineUnitPrice", () => {
+  it("is the catalog's price once it has answered", () => {
+    const line = reconcileCartLine(stored({ capturedPrice: 1000 }), entry({ unitPrice: 1200 }));
+    expect(lineUnitPrice(line)).toBe(1200);
+  });
+
+  it("is the price the line went in at while the catalog has nothing to say", () => {
+    const line = reconcileCartLine(stored({ capturedPrice: 1000 }), null);
+    expect(lineUnitPrice(line)).toBe(1000);
+  });
+});
+
+describe("cartScreenState", () => {
+  const read = { hasHydrated: true, isVerified: false, lookupFailed: false };
+
+  it("is loading until the browser's cart has been read — and not empty meanwhile", () => {
+    expect(cartScreenState(EMPTY_CART, { ...read, hasHydrated: false })).toMatchObject({
+      status: "loading",
+      isEmpty: false,
+      canCheckout: false,
+    });
+  });
+
+  it("is checking while the catalog has not answered, and cannot be ordered", () => {
+    expect(cartScreenState(pendingCart([stored()]), read)).toMatchObject({
+      status: "checking",
+      blocker: null,
+      canCheckout: false,
+    });
+  });
+
+  it("is failed when the lookup did not answer", () => {
+    const state = cartScreenState(pendingCart([stored()]), { ...read, lookupFailed: true });
+    expect(state.status).toBe("failed");
+  });
+
+  it("is ready once verified, even with a failure left over from an earlier lookup", () => {
+    const cart = reconcileCart([stored()], [entry()]);
+    expect(
+      cartScreenState(cart, { ...read, isVerified: true, lookupFailed: true }),
+    ).toMatchObject({ status: "ready", canCheckout: true });
+  });
+
+  it("is empty once read and holding nothing, and an empty cart cannot be ordered", () => {
+    expect(cartScreenState(EMPTY_CART, { ...read, isVerified: true })).toMatchObject({
+      status: "ready",
+      isEmpty: true,
+      canCheckout: false,
+    });
+  });
+
+  it("names a blocker only once ready, and a blocked cart cannot be ordered", () => {
+    const blocked = reconcileCart([stored()], [entry({ stock: 0 })]);
+    expect(cartScreenState(blocked, { ...read, isVerified: true })).toMatchObject({
+      blocker: "outOfStock",
+      canCheckout: false,
+    });
+    expect(cartScreenState(blocked, read).blocker).toBeNull();
   });
 });

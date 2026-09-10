@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { deriveInventoryStatus, LOW_STOCK_THRESHOLD } from "@/lib/inventory";
 import type { InventoryStatus } from "@/types/inventory";
 
 const PRODUCT_RELATIONS_INCLUDE = {
@@ -25,13 +26,6 @@ export interface InventoryListItem {
   lastUpdatedAt: Date | null;
 }
 
-/** 0 = Out of Stock, 1-9 = Low Stock, 10+ = In Stock — see Prisma's `Inventory` model comment. */
-export function deriveInventoryStatus(stock: number): InventoryStatus {
-  if (stock === 0) return "OUT_OF_STOCK";
-  if (stock < 10) return "LOW_STOCK";
-  return "IN_STOCK";
-}
-
 function toListItem(product: ProductWithInventory): InventoryListItem {
   const stock = product.inventory?.stock ?? 0;
   return {
@@ -47,8 +41,8 @@ function toListItem(product: ProductWithInventory): InventoryListItem {
 }
 
 const STOCK_FILTER_BY_STATUS: Record<Exclude<InventoryStatus, "OUT_OF_STOCK">, Prisma.IntFilter> = {
-  LOW_STOCK: { gt: 0, lt: 10 },
-  IN_STOCK: { gte: 10 },
+  LOW_STOCK: { gt: 0, lt: LOW_STOCK_THRESHOLD },
+  IN_STOCK: { gte: LOW_STOCK_THRESHOLD },
 };
 
 /** Prisma where-clause for a derived stock status — shared with the storefront listing. */

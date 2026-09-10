@@ -18,6 +18,7 @@ import {
   ToggleField,
 } from "@/components/admin/form";
 import { formatPrice } from "@/lib/format";
+import { toDisplayPrice } from "@/lib/storefront/pricing";
 
 const productFormSchema = z.object({
   name: z.string().min(1, "Product name is required").max(200),
@@ -139,7 +140,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const finalPrice = useMemo(() => {
     if (priceWatch === undefined || Number.isNaN(priceWatch) || priceWatch < 0) return null;
     const discount = discountWatch && !Number.isNaN(Number(discountWatch)) ? Number(discountWatch) : 0;
-    return Math.round(priceWatch * (1 - discount / 100));
+    return toDisplayPrice(priceWatch, discount).price;
   }, [priceWatch, discountWatch]);
 
   async function onSubmit(values: ProductFormValues) {

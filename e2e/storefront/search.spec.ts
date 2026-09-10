@@ -28,7 +28,7 @@ test("navbar search suggests matching products and brands, and its results are n
 
   // A brand result deep-links into the listing with that brand's filter already applied.
   await brandResult.click();
-  await expect(page).toHaveURL(/\/products\?brand=Boya$/);
+  await expect(page).toHaveURL(/\/products\?brand=boya$/);
   await expect(panel).toBeHidden();
   await expect(page.getByRole("checkbox", { name: QUERY })).toBeChecked();
 });

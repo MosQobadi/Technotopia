@@ -3,6 +3,7 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import type { Product } from "@/lib/generated/prisma/client";
 import { Status } from "@/lib/generated/prisma/enums";
 import { slugify } from "@/lib/slugify";
+import { toDisplayPrice } from "@/lib/storefront/pricing";
 import type { ProductCreateInput, ProductUpdateInput } from "@/lib/validation";
 
 const PRODUCT_INCLUDE = {
@@ -26,7 +27,7 @@ export interface ProductListItem extends Product {
 
 function toListItem(product: ProductWithRelations): ProductListItem {
   const { inventory, ...rest } = product;
-  const finalPrice = Math.round(rest.price * (1 - rest.discountPercent / 100));
+  const finalPrice = toDisplayPrice(rest.price, rest.discountPercent).price;
 
   return {
     ...rest,

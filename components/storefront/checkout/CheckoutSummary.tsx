@@ -3,10 +3,9 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { CartStatus } from "@/components/storefront/cart/useCartLines";
 import { Button } from "@/components/storefront/ui/Button";
 import { formatPrice } from "@/lib/format";
-import type { CartBlocker, ReconciledCart } from "@/lib/storefront/cart";
+import type { CartBlocker, CartStatus, ReconciledCart } from "@/lib/storefront/cart";
 import { checkoutSummaryLines, type CheckoutFailure } from "@/lib/storefront/checkout";
 
 // The order summary and the button that places the order.

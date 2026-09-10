@@ -57,6 +57,27 @@ export function buildProductListHref(params: ProductListParams): string {
   return queryString === "" ? PRODUCTS_PATH : `${PRODUCTS_PATH}?${queryString}`;
 }
 
+const UNFILTERED: ProductListParams = {
+  brands: [],
+  statuses: [],
+  sort: DEFAULT_PRODUCT_SORT,
+  page: 1,
+};
+
+/**
+ * The listing narrowed to one category, by slug. Every link into a category —
+ * the home shelf, the footer, search, the PDP's breadcrumb, the sitemap and the
+ * canonical — is this URL, so one view has one address.
+ */
+export function categoryListHref(categorySlug: string): string {
+  return buildProductListHref({ ...UNFILTERED, category: categorySlug });
+}
+
+/** The listing narrowed to one brand, by slug — the brand side of `categoryListHref`. */
+export function brandListHref(brandSlug: string): string {
+  return buildProductListHref({ ...UNFILTERED, brands: [brandSlug] });
+}
+
 /**
  * Any filter change starts the results over: page 4 of the old filters is rarely
  * a page of the new ones, and page 3 of "cheapest" is a different set of
@@ -72,11 +93,10 @@ export function withProductListParams(
 // --- Resolving what the URL says to a real option ----------------------------
 
 /**
- * Links into this listing were written in three vocabularies and all of them are
- * out in the wild: `app/sitemap.ts` emits `?category=<slug>`, the footer and the
- * navbar search emit `?category=<name>` / `?brand=<name>`, and an old client-side
- * link could carry an id. So a param matches on any of the three, and the
- * sidebar writes the slug — the one that reads well and matches the sitemap.
+ * Every link this app writes carries a slug, but links written before that are
+ * out in the wild in two other vocabularies: `?category=<name>` / `?brand=<name>`
+ * from the old footer and navbar search, and an id from an old client-side link.
+ * So a param still matches on any of the three; only the slug is ever written.
  */
 export function resolveOptions(
   values: string[],
@@ -104,6 +124,11 @@ export function productPageCount(total: number, pageSize: number): number {
   return total === 0 ? 0 : Math.ceil(total / pageSize);
 }
 
+/** A page number held to the pages there are — the URL's `page` is whatever someone typed. */
+export function clampPage(page: number, pageCount: number): number {
+  return Math.min(Math.max(page, 1), pageCount);
+}
+
 /**
  * The page numbers to render, with `"gap"` where a run was elided:
  * `[1, "gap", 6, 7, 8, "gap", 20]`. First and last are always present so a
@@ -112,7 +137,7 @@ export function productPageCount(total: number, pageSize: number): number {
 export function paginationRange(page: number, pageCount: number): (number | "gap")[] {
   if (pageCount <= 0) return [];
 
-  const current = Math.min(Math.max(page, 1), pageCount);
+  const current = clampPage(page, pageCount);
   const shown = new Set<number>([1, pageCount]);
   for (let candidate = current - 1; candidate <= current + 1; candidate++) {
     if (candidate >= 1 && candidate <= pageCount) shown.add(candidate);

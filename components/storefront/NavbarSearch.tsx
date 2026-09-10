@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/format";
+import { brandListHref, categoryListHref } from "@/lib/storefront/plp";
 import type { StorefrontSearchResult } from "@/types/search";
 import { ArrowIcon } from "./icons";
 
@@ -193,9 +194,7 @@ export function NavbarSearch() {
               {results.categories.map((category) => (
                 <SearchRow
                   key={category.id}
-                  // The listing resolves ?category= by name as well as by id — the
-                  // footer's Shop links already rely on that.
-                  href={`/products?category=${encodeURIComponent(category.name)}`}
+                  href={categoryListHref(category.slug)}
                   label={category.name}
                   onSelect={closePanel}
                 />
@@ -208,7 +207,7 @@ export function NavbarSearch() {
               {results.brands.map((brand) => (
                 <SearchRow
                   key={brand.id}
-                  href={`/products?brand=${encodeURIComponent(brand.name)}`}
+                  href={brandListHref(brand.slug)}
                   label={brand.name}
                   onSelect={closePanel}
                 />

@@ -106,10 +106,11 @@ export function CheckoutContent() {
     const result = (await response?.json().catch(() => null)) as OrderResponse | null | undefined;
 
     if (!response || !result?.success) {
-      setFailure(checkoutFailure(response?.status ?? 0));
+      const reason = checkoutFailure(response?.status ?? 0);
+      setFailure(reason);
       // Refused for what is in the cart: the catalog has moved since the page
       // read it, so read it again and let the summary say which line.
-      if (response?.status === 409) await useCartStore.getState().reconcile();
+      if (reason === "cartChanged") await useCartStore.getState().reconcile();
       return;
     }
 

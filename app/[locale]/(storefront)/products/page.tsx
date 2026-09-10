@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { breadcrumbJsonLd, localeAlternates } from "@/lib/seo";
 import {
   buildProductListHref,
+  categoryListHref,
   PLP_PAGE_SIZE,
   PRODUCTS_PATH,
   productPageCount,
@@ -46,7 +47,7 @@ export async function generateMetadata({ searchParams }: ProductsPageProps): Pro
         // Only the category survives into the canonical: app/sitemap.ts lists one
         // URL per category, but a brand, a sort or a page 3 of the same catalog
         // is the same listing narrowed, not a page of its own to index.
-        alternates: localeAlternates(`${PRODUCTS_PATH}?category=${resolved.slug}`),
+        alternates: localeAlternates(categoryListHref(resolved.slug)),
       };
     }
   }

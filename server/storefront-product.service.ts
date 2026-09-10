@@ -8,8 +8,9 @@ import type {
   StorefrontProductView,
 } from "@/types/product";
 import type { StorefrontProductSort } from "@/lib/validation";
+import { deriveInventoryStatus } from "@/lib/inventory";
 import { toDisplayPrice } from "@/lib/storefront/pricing";
-import { deriveInventoryStatus, stockStatusWhere } from "./inventory.service";
+import { stockStatusWhere } from "./inventory.service";
 
 const RELATED_PRODUCT_LIMIT = 4;
 
@@ -106,6 +107,8 @@ export async function listStorefrontProducts({
 
 const STOREFRONT_PRODUCT_DETAIL_SELECT = {
   ...STOREFRONT_PRODUCT_SELECT,
+  // The slug as well as the name: the breadcrumb links to the category's listing.
+  category: { select: { name: true, slug: true } },
   categoryId: true,
   tags: true,
   shortDescription: true,
@@ -121,6 +124,7 @@ type StorefrontProductDetailRow = NonNullable<
 function toStorefrontProductDetail(product: StorefrontProductDetailRow): StorefrontProductDetail {
   return {
     ...toStorefrontProductView(product),
+    categorySlug: product.category.slug,
     stock: product.inventory?.stock ?? 0,
     tags: product.tags,
     shortDescription: product.shortDescription,

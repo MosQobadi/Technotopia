@@ -1,3 +1,5 @@
+import type { StorefrontProductDetail } from "@/types/product";
+
 export const SITE_NAME = "Technotopia";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -33,6 +35,37 @@ export function breadcrumbJsonLd(items: BreadcrumbTrailItem[]) {
       name: item.label,
       ...(item.href ? { item: new URL(item.href, SITE_URL).toString() } : {}),
     })),
+  };
+}
+
+/**
+ * The PDP's Product schema, built from the row the page renders so a crawler
+ * reads the product a visitor does. Low stock is still InStock: `availability`
+ * answers "can this be bought", and a product with three left can.
+ */
+export function productJsonLd(
+  product: Pick<
+    StorefrontProductDetail,
+    "id" | "name" | "shortDescription" | "image" | "brand" | "price" | "stockStatus"
+  >,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.shortDescription,
+    image: product.image ?? undefined,
+    sku: product.id,
+    brand: { "@type": "Brand", name: product.brand },
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "IRR",
+      price: product.price,
+      availability:
+        product.stockStatus === "OUT_OF_STOCK"
+          ? "https://schema.org/OutOfStock"
+          : "https://schema.org/InStock",
+    },
   };
 }
 

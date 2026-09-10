@@ -89,6 +89,8 @@ describe("GET /api/storefront/products/[slug]", () => {
     expect(body.data.product.tags).toEqual(["tag-a", "tag-b"]);
     expect(body.data.product.shortDescription).toBe("short");
     expect(body.data.product.longDescription).toBe("long");
+    // What the PDP's breadcrumb links to the category's listing with.
+    expect(body.data.product.categorySlug).toBe(`${PREFIX}-category`);
   });
 
   it("returns 404 on an unknown slug", async () => {

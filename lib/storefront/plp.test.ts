@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { StorefrontFilterOption } from "@/types/product";
 import {
+  brandListHref,
   buildProductListHref,
+  categoryListHref,
+  clampPage,
   paginationRange,
   productPageCount,
   PRICE_RANGE_MAX,
@@ -16,6 +19,32 @@ const BASE: ProductListParams = {
   sort: "sold",
   page: 1,
 };
+
+describe("categoryListHref and brandListHref", () => {
+  it("give a single category or brand its one URL, by slug", () => {
+    expect(categoryListHref("cameras")).toBe("/products?category=cameras");
+    expect(brandListHref("boya")).toBe("/products?brand=boya");
+  });
+
+  it("write exactly what the sidebar writes for the same filter", () => {
+    expect(categoryListHref("cameras")).toBe(
+      buildProductListHref({ ...BASE, category: "cameras" }),
+    );
+    expect(brandListHref("boya")).toBe(buildProductListHref({ ...BASE, brands: ["boya"] }));
+  });
+});
+
+describe("clampPage", () => {
+  it("leaves a page that exists alone", () => {
+    expect(clampPage(3, 5)).toBe(3);
+  });
+
+  it("holds a hand-edited page to the pages there are", () => {
+    expect(clampPage(0, 5)).toBe(1);
+    expect(clampPage(-3, 5)).toBe(1);
+    expect(clampPage(9, 5)).toBe(5);
+  });
+});
 
 describe("buildProductListHref", () => {
   it("leaves every default out, so the unfiltered listing is one bare URL", () => {

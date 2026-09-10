@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/format";
+import { lineUnitPrice } from "@/lib/storefront/cart";
 import { useDismissable } from "@/lib/storefront/useDismissable";
 import { useCart, useCartStore } from "@/lib/store/cart";
 import { Button } from "@/components/storefront/ui/Button";
@@ -130,7 +131,7 @@ export function MiniCart() {
                       </span>
                       <span className="text-fg-subtle text-xs">
                         {line.quantity} ×{" "}
-                        {formatPrice(line.product?.unitPrice ?? line.capturedPrice)}
+                        {formatPrice(lineUnitPrice(line))}
                       </span>
                     </div>
                   </li>

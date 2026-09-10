@@ -9,6 +9,7 @@ import { Button, Card, Chip, Table } from "@heroui/react";
 import { StatusPill } from "@/components/admin/DataTable";
 import { TextareaField } from "@/components/admin/form";
 import { formatPrice } from "@/lib/format";
+import { nextOrderStep, ORDER_STEPS, orderStepIndex } from "@/lib/orders";
 
 export interface OrderDetailItemData {
   id: string;
@@ -54,13 +55,6 @@ const ITEM_COLUMNS: ItemColumn[] = [
   { key: "lineTotal", label: "Total", render: (item) => formatPrice(item.lineTotal) },
 ];
 
-const ORDER_STATUS_STEPS = [
-  { value: "PENDING", label: "Pending" },
-  { value: "SENDING", label: "Sending" },
-  { value: "SENT", label: "Sent" },
-  { value: "DELIVERED", label: "Delivered" },
-] as const;
-
 function titleCase(value: string) {
   return value.charAt(0) + value.slice(1).toLowerCase();
 }
@@ -81,11 +75,8 @@ export function OrderDetails({ order, onOrderChange }: OrderDetailsProps) {
     defaultValues: { adminNote: order.adminNote ?? "" },
   });
 
-  const currentStepIndex = ORDER_STATUS_STEPS.findIndex((step) => step.value === order.status);
-  const nextStep =
-    currentStepIndex !== -1 && currentStepIndex < ORDER_STATUS_STEPS.length - 1
-      ? ORDER_STATUS_STEPS[currentStepIndex + 1]
-      : null;
+  const currentStepIndex = orderStepIndex(order.status);
+  const nextStep = nextOrderStep(order.status);
 
   async function handleNextStep() {
     if (!nextStep) return;
@@ -96,7 +87,7 @@ export function OrderDetails({ order, onOrderChange }: OrderDetailsProps) {
       const response = await fetch(`/api/admin/orders/${order.id}/status`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ status: nextStep.value }),
+        body: JSON.stringify({ status: nextStep }),
       });
       const result = await response.json();
       if (!result.success) {
@@ -202,8 +193,8 @@ export function OrderDetails({ order, onOrderChange }: OrderDetailsProps) {
             </Card.Header>
             <Card.Content className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                {ORDER_STATUS_STEPS.map((step, index) => (
-                  <div key={step.value} className="flex items-center gap-2">
+                {ORDER_STEPS.map((step, index) => (
+                  <div key={step} className="flex items-center gap-2">
                     <span
                       className={
                         index <= currentStepIndex
@@ -211,9 +202,9 @@ export function OrderDetails({ order, onOrderChange }: OrderDetailsProps) {
                           : "text-muted"
                       }
                     >
-                      {step.label}
+                      {titleCase(step)}
                     </span>
-                    {index < ORDER_STATUS_STEPS.length - 1 && (
+                    {index < ORDER_STEPS.length - 1 && (
                       <span className="text-muted">→</span>
                     )}
                   </div>

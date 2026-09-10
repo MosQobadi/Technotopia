@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
+import { categoryListHref } from "@/lib/storefront/plp";
 import { listActiveCategorySlugs } from "@/server/category.service";
 import { listActiveProductSlugs } from "@/server/storefront-product.service";
 
@@ -47,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   const categoryRoutes: MetadataRoute.Sitemap = categories.map((category) =>
-    localizedEntry(`/products?category=${category.slug}`, {
+    localizedEntry(categoryListHref(category.slug), {
       lastModified: category.updatedAt,
       changeFrequency: "weekly",
       priority: 0.6,

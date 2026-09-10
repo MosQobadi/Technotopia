@@ -1,7 +1,11 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { categoryListHref } from "@/lib/storefront/plp";
 
-const SHOP_LINK_KEYS = ["cameras", "microphones", "lights", "speakers", "accessories"] as const;
+// Category slugs, doubling as the keys of their translated labels. The link
+// carries the slug and never the label: the Farsi label is not a name any
+// category has, so a link built from it would resolve to no filter at all.
+const SHOP_LINK_SLUGS = ["cameras", "microphones", "lights", "speakers", "accessories"] as const;
 
 export function Footer() {
   const t = useTranslations("footer");
@@ -20,13 +24,9 @@ export function Footer() {
         <div>
           <h3 className="text-label mb-4 text-fg-muted">{t("shopHeading")}</h3>
           <div className="flex flex-col gap-2.5">
-            {SHOP_LINK_KEYS.map((key) => (
-              <Link
-                key={key}
-                href={`/products?category=${encodeURIComponent(t(`categories.${key}`))}`}
-                className="text-sm text-fg-subtle"
-              >
-                {t(`categories.${key}`)}
+            {SHOP_LINK_SLUGS.map((slug) => (
+              <Link key={slug} href={categoryListHref(slug)} className="text-sm text-fg-subtle">
+                {t(`categories.${slug}`)}
               </Link>
             ))}
           </div>

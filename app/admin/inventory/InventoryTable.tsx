@@ -4,6 +4,7 @@ import { Button } from "@heroui/react";
 import { format } from "date-fns";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { DataTable, StatusPill, type DataTableColumn } from "@/components/admin/DataTable";
+import { INVENTORY_STATUS_LABELS } from "@/lib/inventory";
 import type { InventoryStatus } from "@/types/inventory";
 import { StockEditModal } from "./StockEditModal";
 
@@ -41,16 +42,9 @@ interface OptionsApiResponse {
 
 const PAGE_SIZE = 10;
 
-const STATUS_LABELS: Record<InventoryStatus, string> = {
-  OUT_OF_STOCK: "Out of Stock",
-  LOW_STOCK: "Low Stock",
-  IN_STOCK: "In Stock",
-};
-
-const STATUS_OPTIONS = (Object.keys(STATUS_LABELS) as InventoryStatus[]).map((value) => ({
-  label: STATUS_LABELS[value],
-  value,
-}));
+const STATUS_OPTIONS = (Object.keys(INVENTORY_STATUS_LABELS) as InventoryStatus[]).map(
+  (value) => ({ label: INVENTORY_STATUS_LABELS[value], value }),
+);
 
 export function InventoryTable() {
   const [items, setItems] = useState<InventoryRow[]>([]);
@@ -115,7 +109,7 @@ export function InventoryTable() {
     {
       key: "status",
       label: "Status",
-      render: (row) => <StatusPill value={STATUS_LABELS[row.status]} />,
+      render: (row) => <StatusPill value={INVENTORY_STATUS_LABELS[row.status]} />,
     },
     {
       key: "lastUpdatedAt",

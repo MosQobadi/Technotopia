@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { HomeBrandView } from "@/types/home";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { Link } from "@/i18n/navigation";
-import { DEFAULT_PRODUCT_SORT, buildProductListHref } from "@/lib/storefront/plp";
+import { brandListHref } from "@/lib/storefront/plp";
 
 const HEADING_ID = "brands-heading";
 
@@ -36,7 +36,7 @@ const HEADING_ID = "brands-heading";
 // Since Task 28.2 the listing's filters are the query string, so "browse this
 // brand" is an <a href> to `/products?brand=<slug>` and nothing more: no store,
 // no click handler, no client component. The URL is written by
-// `buildProductListHref` rather than by hand, so this section spells the param
+// `brandListHref` rather than by hand, so this section spells the param
 // the same way the sidebar, the sort control and the pagination do — and the
 // destination survives a reload, the back button and a paste into someone
 // else's browser.
@@ -68,12 +68,7 @@ export async function BrandBrowseSection({ brands }: { brands: HomeBrandView[] }
 function BrandTile({ brand }: { brand: HomeBrandView }) {
   return (
     <Link
-      href={buildProductListHref({
-        brands: [brand.slug],
-        statuses: [],
-        sort: DEFAULT_PRODUCT_SORT,
-        page: 1,
-      })}
+      href={brandListHref(brand.slug)}
       className="group focus-visible:outline-accent-readable block rounded-[20px] outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       {/* The padding is what contains the mark: `fill` resolves against this

@@ -5,9 +5,10 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/format";
 import {
+  lineCeiling,
   MAX_CART_ITEMS,
-  MAX_CART_QUANTITY,
   pdpAddLimit,
+  pdpSelection,
   type AddBlocker,
 } from "@/lib/storefront/cart";
 import { useCartStore } from "@/lib/store/cart";
@@ -60,7 +61,7 @@ export function ProductPurchasePanel({ productId, slug, price, stock }: ProductP
   const { inCart, max, blocker } = pdpAddLimit(stock, items, productId);
   // The ceiling can fall under the chosen quantity — an add from this page, or
   // from another tab — so the stepper shows what can still be added, never more.
-  const value = Math.min(quantity, Math.max(max, 1));
+  const { quantity: value, subtotal } = pdpSelection(quantity, max, price);
 
   const handleAdd = () => {
     addCartItem(productId, price, value);
@@ -69,7 +70,7 @@ export function ProductPurchasePanel({ productId, slug, price, stock }: ProductP
 
   const reasons: Record<AddBlocker, string> = {
     outOfStock: t("blocked.outOfStock"),
-    allInCart: t("blocked.allInCart", { count: Math.min(stock, MAX_CART_QUANTITY) }),
+    allInCart: t("blocked.allInCart", { count: lineCeiling(stock) }),
     cartFull: t("blocked.cartFull", { count: MAX_CART_ITEMS }),
   };
 
@@ -79,12 +80,12 @@ export function ProductPurchasePanel({ productId, slug, price, stock }: ProductP
         <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2">
           <QuantityStepper
             value={value}
-            onDecrease={() => setQuantity(Math.max(1, value - 1))}
-            onIncrease={() => setQuantity(Math.min(max, value + 1))}
+            onDecrease={() => setQuantity(value - 1)}
+            onIncrease={() => setQuantity(value + 1)}
             max={max}
           />
           <span className="text-xs text-fg-subtle">
-            {t("subtotal", { price: formatPrice(price * value) })}
+            {t("subtotal", { price: formatPrice(subtotal) })}
           </span>
           {/* Why the stepper may stop short of the badge's number. */}
           {inCart > 0 && (

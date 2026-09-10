@@ -266,6 +266,16 @@ function clampQuantity(quantity: number): number {
   return Math.min(Math.max(Math.trunc(quantity), 0), MAX_CART_QUANTITY);
 }
 
+/**
+ * The most one line may hold of a product with `stock` on the shelf: the shelf,
+ * or the line cap where that is lower. Stock the catalog has not answered for
+ * is held to the cap alone. The cart row's stepper stops here, and the PDP's
+ * stops here less what the cart already holds.
+ */
+export function lineCeiling(stock?: number): number {
+  return Math.min(Math.max(stock ?? MAX_CART_QUANTITY, 0), MAX_CART_QUANTITY);
+}
+
 // --- What the product page may add ------------------------------------------
 
 /** Why the PDP's buy box cannot add a product. */
@@ -292,8 +302,95 @@ export function pdpAddLimit(stock: number, items: StoredCartItem[], productId: s
     return { inCart, max: 0, blocker: "cartFull" };
   }
 
-  const max = Math.min(stock, MAX_CART_QUANTITY) - inCart;
+  const max = lineCeiling(stock) - inCart;
   return max > 0 ? { inCart, max, blocker: null } : { inCart, max: 0, blocker: "allInCart" };
+}
+
+export interface PdpSelection {
+  /** What the stepper shows and Add to Cart adds. */
+  quantity: number;
+  /** That quantity at the unit price — the figure printed beside the stepper. */
+  subtotal: number;
+}
+
+/**
+ * The PDP stepper's choice, read against the limit in hand. The limit can fall
+ * under a choice already made — an add from this page, or from another tab — so
+ * the choice is held between 1 and the limit on every read rather than trusted,
+ * and the subtotal is priced on what would actually be added.
+ */
+export function pdpSelection(chosen: number, max: number, unitPrice: number): PdpSelection {
+  const quantity = Math.min(Math.max(chosen, 1), Math.max(max, 1));
+  return { quantity, subtotal: unitPrice * quantity };
+}
+
+// --- What the cart screens may claim ----------------------------------------
+
+/**
+ * What one unit of a line costs, as a line prints it: the catalog's price once
+ * it has answered, the price the line went in at until then.
+ */
+export function lineUnitPrice(line: CartLine): number {
+  return line.product?.unitPrice ?? line.capturedPrice;
+}
+
+/**
+ * A cart has four honest things to be — unread, unchecked, uncheckable,
+ * checked — and only the last of them may show a line's stock or price.
+ * Collapsing them, which is what reading the lines straight from the store
+ * does, turns a lookup that never answered into a page full of products that
+ * no longer exist.
+ */
+export type CartStatus =
+  /** localStorage has not been read yet; nothing is known, not even how many lines. */
+  | "loading"
+  /** The lines are known, the catalog's answer is not yet. */
+  | "checking"
+  /** The lookup did not answer. Every line's state is unknown until it is retried. */
+  | "failed"
+  /** The lines have been checked against the catalog and may say so. */
+  | "ready";
+
+/** How far the cart has got from the browser to the catalog's answer — the store's flags. */
+export interface CartLookupState {
+  hasHydrated: boolean;
+  /** The catalog's answer covers exactly the ids in the cart. */
+  isVerified: boolean;
+  lookupFailed: boolean;
+}
+
+export interface CartScreenState {
+  status: CartStatus;
+  /** A cart that has been read and holds nothing — not one that is still loading. */
+  isEmpty: boolean;
+  /** The first thing stopping the order, or null. Only ever set once ready. */
+  blocker: CartBlocker | null;
+  canCheckout: boolean;
+}
+
+/**
+ * What the cart and checkout screens may say about the cart right now. A
+ * verified answer outranks a failure flag: removing the line an earlier lookup
+ * failed on can leave the held answer covering the cart again, and then it is
+ * the truth. An unchecked cart cannot be ordered — checkout would be placing an
+ * order on quantities and prices nothing has confirmed since they were stored.
+ */
+export function cartScreenState(cart: ReconciledCart, lookup: CartLookupState): CartScreenState {
+  const status: CartStatus = !lookup.hasHydrated
+    ? "loading"
+    : lookup.isVerified
+      ? "ready"
+      : lookup.lookupFailed
+        ? "failed"
+        : "checking";
+  const blocker = status === "ready" ? cartBlocker(cart) : null;
+
+  return {
+    status,
+    isEmpty: status !== "loading" && cart.lines.length === 0,
+    blocker,
+    canCheckout: status === "ready" && cart.lines.length > 0 && blocker === null,
+  };
 }
 
 // --- The lookup query -------------------------------------------------------

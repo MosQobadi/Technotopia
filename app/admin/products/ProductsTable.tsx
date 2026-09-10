@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { DataTable, StatusPill, type DataTableColumn } from "@/components/admin/DataTable";
 import { formatPrice } from "@/lib/format";
+import { deriveInventoryStatus, INVENTORY_STATUS_LABELS } from "@/lib/inventory";
 import { DeleteProductAction } from "./DeleteProductAction";
 
 interface ProductRow {
@@ -41,12 +42,6 @@ const STATUS_OPTIONS = [
   { label: "Active", value: "ACTIVE" },
   { label: "Inactive", value: "INACTIVE" },
 ];
-
-function stockStatusLabel(stock: number) {
-  if (stock === 0) return "Out of Stock";
-  if (stock < 10) return "Low Stock";
-  return "In Stock";
-}
 
 export function ProductsTable() {
   const [products, setProducts] = useState<ProductRow[]>([]);
@@ -128,7 +123,9 @@ export function ProductsTable() {
     {
       key: "stock",
       label: "Stock",
-      render: (row) => <StatusPill value={stockStatusLabel(row.stock)} />,
+      render: (row) => (
+        <StatusPill value={INVENTORY_STATUS_LABELS[deriveInventoryStatus(row.stock)]} />
+      ),
     },
     {
       key: "discountPercent",

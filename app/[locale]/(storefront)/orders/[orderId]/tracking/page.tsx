@@ -6,17 +6,11 @@ import { getOrderForCustomer } from "@/server/order.service";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/cn";
 import { formatOrderNumber } from "@/lib/format";
+import { ORDER_STEPS, orderStepIndex } from "@/lib/orders";
 
 interface OrderTrackingPageProps {
   params: Promise<{ orderId: string }>;
 }
-
-const STEP_ORDER: OrderStatus[] = [
-  OrderStatus.PENDING,
-  OrderStatus.SENDING,
-  OrderStatus.SENT,
-  OrderStatus.DELIVERED,
-];
 
 function formatTimestamp(date: Date): string {
   return format(date, "MMM d, yyyy · HH:mm");
@@ -36,7 +30,7 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
 
   const orderNumber = formatOrderNumber(order.id);
   const isCancelled = order.status === OrderStatus.CANCELLED;
-  const currentStepIndex = isCancelled ? -1 : STEP_ORDER.indexOf(order.status);
+  const currentStepIndex = orderStepIndex(order.status);
 
   const history = [
     { label: t("orderPlaced"), timestamp: order.createdAt },
@@ -63,7 +57,7 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
           <p className="text-fg text-center text-sm font-semibold">{t("cancelled")}</p>
         ) : (
           <div className="flex items-start">
-            {STEP_ORDER.map((step, index) => {
+            {ORDER_STEPS.map((step, index) => {
               const done = index <= currentStepIndex;
               return (
                 <div key={step} className="relative flex flex-1 flex-col items-center">

@@ -4,6 +4,7 @@ import type { HomeCategoryView } from "@/types/home";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
+import { categoryListHref } from "@/lib/storefront/plp";
 
 const HEADING_ID = "categories-heading";
 
@@ -59,7 +60,7 @@ export async function CategoryBrowseSection({ categories }: { categories: HomeCa
 function CategoryCard({ category, cta }: { category: HomeCategoryView; cta: string }) {
   return (
     <Link
-      href={`/products?category=${encodeURIComponent(category.slug)}`}
+      href={categoryListHref(category.slug)}
       // The focus ring is offset outward, onto the page's own ground rather
       // than onto the photograph — which is why this is the one token here that
       // flips with the theme.
