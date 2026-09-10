@@ -182,6 +182,14 @@ Do not create unnecessary layers. If a task doesn't need a new top-level folder,
   ground. A third, `accent-on-dark`, is for surfaces that are dark *whatever the theme
   is* — a scrim over a photograph, a caption on a category card — and never flips.
   `bg-danger-solid` is the same split, for the discount pill's white label.
+- **Product images are shot on a white background** — one standard, no exceptions.
+  It is what lets a grid of cards read as one shelf instead of a patchwork, and the
+  storefront is built on it: `ProductCard` gives an image a `bg-photo` panel (white in
+  both themes) and contains it rather than cropping. Category images are the opposite
+  case and stay that way — full-bleed photographs under `bg-scrim`, with the name
+  drawn on top (`CategoryBrowseSection`). That treatment is not available to product
+  cards: a product photographed on anything but white gets reshot, not moved under a
+  scrim. The admin's product image field states the standard at the point of upload.
 - **Type is one class from a named scale**, not four Tailwind classes reinvented at
   each call site: `text-display` / `text-title` / `text-heading` / `text-subhead` /
   `text-label` each carry their own size, line-height, weight and tracking. Adding a

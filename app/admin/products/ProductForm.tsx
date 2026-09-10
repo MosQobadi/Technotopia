@@ -251,7 +251,7 @@ export function ProductForm({ product }: ProductFormProps) {
                 control={control}
                 name="image"
                 label="Product Image"
-                description="Click or drag to upload"
+                description="Shoot on a plain white background. The storefront shows the whole product, uncropped, on a white panel — any other background shows as a box around it."
               />
             </div>
           </div>
