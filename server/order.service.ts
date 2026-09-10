@@ -14,6 +14,8 @@ type OrderWithListRelations = Prisma.OrderGetPayload<{ include: typeof ORDER_LIS
 export interface OrderListItem {
   id: string;
   customerName: string;
+  /** No account behind it, so `customerName` is the name typed at checkout. */
+  isGuest: boolean;
   itemCount: number;
   total: number;
   status: OrderStatus;
@@ -24,7 +26,10 @@ export interface OrderListItem {
 function toListItem(order: OrderWithListRelations): OrderListItem {
   return {
     id: order.id,
-    customerName: `${order.customer.firstName} ${order.customer.lastName}`,
+    customerName: order.customer
+      ? `${order.customer.firstName} ${order.customer.lastName}`
+      : order.fullName,
+    isGuest: order.customer === null,
     itemCount: order.items.length,
     total: order.total,
     status: order.status,
@@ -70,14 +75,13 @@ export async function listOrders({
     });
   }
   if (search) {
+    const matches = { contains: search, mode: "insensitive" } as const;
     conditions.push({
-      customer: {
-        OR: [
-          { firstName: { contains: search, mode: "insensitive" } },
-          { lastName: { contains: search, mode: "insensitive" } },
-          { email: { contains: search, mode: "insensitive" } },
-        ],
-      },
+      OR: [
+        { customer: { OR: [{ firstName: matches }, { lastName: matches }, { email: matches }] } },
+        // A guest has no account to search, so match what they typed at checkout.
+        { customerId: null, OR: [{ fullName: matches }, { guestEmail: matches }] },
+      ],
     });
   }
 
@@ -174,7 +178,8 @@ export interface OrderDetailItem {
 
 export interface OrderDetail {
   id: string;
-  customer: { id: string; name: string; email: string; phone: string | null };
+  /** `id` is null for a guest order, whose contact is what was typed at checkout. */
+  customer: { id: string | null; name: string; email: string | null; phone: string | null };
   shippingAddress: string;
   postalCode: string;
   items: OrderDetailItem[];
@@ -193,12 +198,14 @@ export interface OrderDetail {
 function toDetail(order: OrderWithDetailRelations): OrderDetail {
   return {
     id: order.id,
-    customer: {
-      id: order.customer.id,
-      name: `${order.customer.firstName} ${order.customer.lastName}`,
-      email: order.customer.email,
-      phone: order.customer.phone,
-    },
+    customer: order.customer
+      ? {
+          id: order.customer.id,
+          name: `${order.customer.firstName} ${order.customer.lastName}`,
+          email: order.customer.email,
+          phone: order.customer.phone,
+        }
+      : { id: null, name: order.fullName, email: order.guestEmail, phone: order.phone },
     shippingAddress: order.shippingAddress,
     postalCode: order.postalCode,
     items: order.items.map((item) => ({

@@ -10,6 +10,7 @@ import { prisma } from "@/lib/db";
 
 const PREFIX = "task91";
 const adminId = "task91-admin-id";
+const guestEmail = `${PREFIX}-guest@example.com`;
 
 let adminCookie: string;
 let customerCookie: string;
@@ -70,7 +71,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await prisma.orderItem.deleteMany({ where: { productId } });
-  await prisma.order.deleteMany({ where: { customerId } });
+  await prisma.order.deleteMany({ where: { OR: [{ customerId }, { guestEmail }] } });
   await prisma.product.deleteMany({ where: { sku: { startsWith: PREFIX } } });
   await prisma.brand.deleteMany({ where: { slug: { startsWith: PREFIX } } });
   await prisma.category.deleteMany({ where: { slug: { startsWith: PREFIX } } });
@@ -144,8 +145,49 @@ describe("GET /api/admin/orders", () => {
 
     expect(response.status).toBe(200);
     expect(match.customerName).toBe("Jane Doe");
+    expect(match.isGuest).toBe(false);
     expect(match.itemCount).toBe(1);
     expect(match.total).toBe(32);
+  });
+});
+
+describe("guest orders", () => {
+  it("lists a guest order under the name typed at checkout, findable by its email", async () => {
+    const order = await createOrder({ customerId: null, guestEmail, fullName: "Guest Shopper" });
+    const response = await list(req(`/api/admin/orders?search=${encodeURIComponent(guestEmail)}`));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.orders).toHaveLength(1);
+    expect(body.data.orders[0]).toMatchObject({
+      id: order.id,
+      customerName: "Guest Shopper",
+      isGuest: true,
+    });
+  });
+
+  it("finds a guest order by the name typed at checkout", async () => {
+    const order = await createOrder({ customerId: null, guestEmail, fullName: "Guest Shopper" });
+    const response = await list(req("/api/admin/orders?search=guest%20shopper"));
+    const body = await response.json();
+
+    expect(body.data.orders.map((o: { id: string }) => o.id)).toContain(order.id);
+  });
+
+  it("returns a guest order's detail with no customer id and the order's own contact", async () => {
+    const order = await createOrder({ customerId: null, guestEmail, fullName: "Guest Shopper" });
+    const response = await detail(req(`/api/admin/orders/${order.id}`), {
+      params: Promise.resolve({ id: order.id }),
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.customer).toEqual({
+      id: null,
+      name: "Guest Shopper",
+      email: guestEmail,
+      phone: "+1 555 0100",
+    });
   });
 });
 

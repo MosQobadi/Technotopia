@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/format";
 interface OrderRow {
   id: string;
   customerName: string;
+  isGuest: boolean;
   itemCount: number;
   total: number;
   status: string;
@@ -85,7 +86,20 @@ export function OrdersTable() {
 
   const columns: DataTableColumn<OrderRow>[] = [
     { key: "id", label: "Order ID", render: (row) => `#${row.id}` },
-    { key: "customerName", label: "Customer" },
+    {
+      key: "customerName",
+      label: "Customer",
+      render: (row) => (
+        <span className="inline-flex items-center gap-2">
+          {row.customerName}
+          {row.isGuest && (
+            <Chip variant="soft" size="sm">
+              Guest
+            </Chip>
+          )}
+        </span>
+      ),
+    },
     { key: "itemCount", label: "Items" },
     { key: "total", label: "Total", render: (row) => formatPrice(row.total) },
     {

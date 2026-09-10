@@ -21,7 +21,8 @@ export interface OrderDetailItemData {
 
 export interface OrderDetailData {
   id: string;
-  customer: { id: string; name: string; email: string; phone: string | null };
+  /** `id` is null for a guest order. */
+  customer: { id: string | null; name: string; email: string | null; phone: string | null };
   shippingAddress: string;
   postalCode: string;
   items: OrderDetailItemData[];
@@ -241,9 +242,16 @@ export function OrderDetails({ order, onOrderChange }: OrderDetailsProps) {
               <Card.Title>Customer</Card.Title>
             </Card.Header>
             <Card.Content className="flex flex-col gap-1 text-sm">
-              <p className="text-foreground font-medium">{order.customer.name}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-foreground font-medium">{order.customer.name}</p>
+                {order.customer.id === null && (
+                  <Chip variant="soft" size="sm">
+                    Guest
+                  </Chip>
+                )}
+              </div>
               {order.customer.phone && <p className="text-muted">{order.customer.phone}</p>}
-              <p className="text-muted">{order.customer.email}</p>
+              {order.customer.email && <p className="text-muted">{order.customer.email}</p>}
             </Card.Content>
           </Card>
 

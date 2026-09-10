@@ -788,3 +788,45 @@ of ۸٬۲۱۵ — 2249 + 1598 + 4368, the three lines that can ship — and chec
 and 375px checked. Forcing the lookup to 400 produced the failure panel and its retry, and
 the retry put the page back into "Checking availability…" rather than into a cart of
 products that no longer exist.
+
+### Task 30.4 — Guest checkout (schema change) ✅
+
+**Decision: `Order.customerId` is nullable and the order carries its own guest contact; there
+is no stub user per guest.** A stub `User` needs a `passwordHash` that can never log in, and
+every one of them lands in the admin Customers list as a row nobody can reach — the same reason
+topoil rejected it.
+
+**Decision: one new column, not topoil's three.** Topoil added `guestName`, `guestPhone` and
+`guestEmail` because its `Order` held no contact of its own. Ours already stores `fullName` and
+`phone` from the checkout form on every order, so for a guest those _are_ the name and phone;
+copying them into `guest*` columns would give each guest order two names that can disagree.
+`guestEmail` is the one detail an account supplied that the row did not hold. It is nullable:
+whether checkout requires it is Task 30.5's call, and the admin already copes without it.
+
+`onDelete: Restrict` stays spelled out, because Prisma's default for an optional relation is
+SET NULL — which would quietly turn a deleted customer's order into a guest order with no email.
+The migration drops NOT NULL and leaves the foreign key alone.
+
+**What the admin reads.** `OrderListItem` gained `isGuest`; a guest row's `customerName` is the
+`fullName` typed at checkout, marked with a "Guest" chip in the Orders list and the dashboard's
+recent orders. On the detail, `customer.id` is null for a guest and name, phone and email come
+off the order; the card carries the same chip and omits a missing email. Search used to go only
+through the customer relation, so a guest order could never be found — it now also matches
+`fullName` and `guestEmail` on orders with no customer, while registered orders still match on
+the account as before. Counts needed nothing: the dashboard's total and revenue count every
+order, and a customer's order count only ever counted their own. The detail page has no customer
+link — the wireframe's Customer card is name, phone and email — so there was none to guard.
+
+**Not in this task.** `createOrder` still takes a customer id and the order POST still requires
+a session; opening it to guests is 30.5.
+
+**DoD:** `customerId` is optional, `Order` carries its guest contact, the migration applies; the
+admin Orders list, order detail and dashboard render a guest order; the existing order tests
+pass. ✅
+
+**Verified:** `pnpm lint` and `pnpm tsc --noEmit` clean; `pnpm test` 308 (3 new: a guest order
+listed under its checkout name and found by its email, found by that name, and its detail with a
+null customer id). `20260910122020_guest_orders` applied to the dev database, `prisma generate`
+run, `prisma migrate status` up to date, dev server restarted. In the running app a guest order
+cloned from a seed order rendered in the Orders list, its detail page and the dashboard, with
+every admin data request answering 200, and was deleted afterwards.

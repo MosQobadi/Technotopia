@@ -122,9 +122,19 @@ model Inventory {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
+// A guest checkout has no account behind it, so `customerId` is null. Every
+// order already carries its own `fullName` and `phone` from the checkout form,
+// which for a guest are the contact; `guestEmail` is the one contact detail an
+// account would have supplied that the row did not hold. A stub User per guest
+// was rejected: it needs a passwordHash that can never log in, and it fills the
+// admin Customers list with rows nobody can reach.
+// `onDelete: Restrict` stays spelled out because Prisma's default for an
+// optional relation is SET NULL, which would quietly turn a deleted customer's
+// order into a guest order with no email.
 model Order {
   id              String        @id @default(cuid())
-  customerId      String
+  customerId      String?
+  guestEmail      String?
   status          OrderStatus
   paymentStatus   PaymentStatus
   paymentMethod   PaymentMethod
@@ -142,7 +152,7 @@ model Order {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  customer User        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customer User?       @relation(fields: [customerId], references: [id], onDelete: Restrict)
   items    OrderItem[]
 
   @@index([customerId])
