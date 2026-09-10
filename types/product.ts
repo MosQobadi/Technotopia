@@ -16,6 +16,11 @@ export interface StorefrontProductView {
 }
 
 export interface StorefrontProductDetail extends StorefrontProductView {
+  /**
+   * Units on the shelf. The PDP's stepper stops here and its badge names it when
+   * low. Not a secret: the cart lookup already answers it for any product id.
+   */
+  stock: number;
   tags: string[];
   shortDescription: string;
   longDescription: string;

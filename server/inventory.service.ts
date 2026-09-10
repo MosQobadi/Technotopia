@@ -114,7 +114,8 @@ export async function listInventory({
 }
 
 export type AddStockResult =
-  | { ok: true; item: InventoryListItem }
+  /** `slug` is for the route, which refreshes the cached product page. */
+  | { ok: true; item: InventoryListItem; slug: string }
   | { ok: false; reason: "not_found" };
 
 export async function addStock(productId: string, amount: number): Promise<AddStockResult> {
@@ -125,7 +126,11 @@ export async function addStock(productId: string, amount: number): Promise<AddSt
       include: { product: { include: PRODUCT_RELATIONS_INCLUDE } },
     });
 
-    return { ok: true, item: toListItem({ ...inventory.product, inventory }) };
+    return {
+      ok: true,
+      item: toListItem({ ...inventory.product, inventory }),
+      slug: inventory.product.slug,
+    };
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return { ok: false, reason: "not_found" };

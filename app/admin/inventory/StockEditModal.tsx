@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { TextField } from "@/components/admin/form";
+import { RestockRequests } from "./RestockRequests";
 
 const stockEditFormSchema = z.object({
   addStock: z
@@ -114,6 +115,8 @@ function StockEditForm({ item, onClose, onSaved }: StockEditFormProps) {
 
           <p className="text-foreground text-sm">New Total: {newTotal}</p>
         </form>
+
+        <RestockRequests productId={item.productId} />
       </Modal.Body>
       <Modal.Footer>
         <Button

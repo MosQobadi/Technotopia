@@ -124,7 +124,8 @@
     "stockStatus": {
       "inStock": "In Stock",
       "lowStock": "Low Stock",
-      "outOfStock": "Out of Stock"
+      "outOfStock": "Out of Stock",
+      "onlyLeft": "Only {count} left"
     },
     "orderStatus": {
       "PENDING": "Order Placed",
@@ -243,6 +244,24 @@
   },
   "productDetail": {
     "subtotal": "Subtotal: {price}",
+    "inCart": "{count} already in your cart",
+    "viewCart": "View cart",
+    "blocked": {
+      "outOfStock": "Out of stock right now. Leave an email or phone number and we'll let you know when it's back.",
+      "allInCart": "Your cart already has all {count} you can order.",
+      "cartFull": "Your cart holds {count} products, the most it can. Remove one to add this."
+    },
+    "notify": {
+      "label": "Email or phone number",
+      "placeholder": "Email or phone number",
+      "submit": "Notify me",
+      "sending": "Sending…",
+      "invalid": "Enter a valid email address or phone number.",
+      "failed": "Something went wrong. Try again.",
+      "rateLimited": "Too many requests. Try again later.",
+      "waiting": "Done. We'll let you know as soon as it's back.",
+      "alreadyInStock": "Good news: it's back in stock. Reload the page to order it."
+    },
     "description": "Description",
     "relatedEyebrow": "Related",
     "relatedHeading": "Pairs well with this."

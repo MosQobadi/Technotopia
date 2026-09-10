@@ -121,6 +121,7 @@ type StorefrontProductDetailRow = NonNullable<
 function toStorefrontProductDetail(product: StorefrontProductDetailRow): StorefrontProductDetail {
   return {
     ...toStorefrontProductView(product),
+    stock: product.inventory?.stock ?? 0,
     tags: product.tags,
     shortDescription: product.shortDescription,
     longDescription: product.longDescription,

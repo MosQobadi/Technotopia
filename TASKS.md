@@ -890,3 +890,49 @@ checkout to a receipt that survives a reload, offers no Track link and leaves th
 signing in from checkout coming back to it with the name filled in. Neither suite leaves orders
 behind. In the running app, the Farsi guest checkout at 375px in the dark theme, and the
 no-receipt state of `/fa/checkout/confirmation`.
+
+### Task 30.6 — The add-to-cart control on the PDP ✅
+
+**Decision: notify-me lands in a `StockNotification` table, read in the Inventory stock modal.**
+Asked before building: nothing on the admin side could receive the capture, and there is no email
+or SMS sender. The smallest model that works is one row per request — `productId`, `contact` (an
+email or a phone number, one field), `notifiedAt` (null while pending). The admin sees who is
+waiting inside the stock-edit modal they already open to restock (`RestockRequests`), reaches each
+contact by hand through a mailto:/tel: link, and presses "Mark N as notified", which stamps exactly
+the ids on screen, so a request that arrived while the modal was open stays pending. This is the one
+addition beyond the wireframe, approved for this task. Rows cascade with their product.
+
+**The capture.** `POST /api/storefront/products/[slug]/notify-me`, public, ten an hour per address
+before the database is asked anything. It records only while the product is out of stock: asking
+about something already back gets `alreadyInStock` and no row, so nobody lands on the admin's list
+to be told twice. The same contact asking again while pending is one request. Contacts are stored
+in one spelling (emails lowercased, phone separators stripped, Persian and Arabic-Indic digits read
+as ASCII), because a phone number typed on the Farsi storefront would otherwise never validate.
+
+**Every inventory state has a defined control** (`pdpAddLimit` in `lib/storefront/cart.ts`, pure and
+unit-tested): buyable gets a stepper bounded by stock less what the cart already holds (and the
+99-per-line cap), with "N already in your cart" when that is why it stops short. Out of stock gets
+a disabled "Out of Stock" button, the reason, and the notify-me form. All of it in the cart, or a
+cart at its 50-product limit, gets a disabled button, the sentence saying which, and a link to the
+cart. The last two were real dead buttons: `addToStoredCart` silently refuses both. Each disabled
+button points at its reason with `aria-describedby`.
+
+**The badge states the real state.** The PDP now carries `stock` (the cart lookup already exposes it
+for any id, so it is no new disclosure); low stock reads "Only N left" instead of "Low stock".
+
+**A restock refreshes the PDP.** The page is ISR-cached for five minutes, which would have told the
+people just contacted that the product was still out of stock. The inventory PATCH now revalidates
+`/en` and `/fa` for that product's slug.
+
+**DoD:** the stepper is bounded by stock; the badge states the real state; unbuyable states show a
+disabled control with a stated reason; out of stock offers notify-me with a confirmed destination;
+no state leaves a button that does nothing. ✅
+
+**Verified:** `pnpm lint` and `pnpm tsc --noEmit` clean; `pnpm test` 348 (22 new: the contact schema,
+`pdpAddLimit`, the notify-me route — recorded, deduped, in stock, inactive, invalid, rate limit — and
+the admin notifications route, including that marking stamps only the ids given and that a restock
+revalidates both locales). `pnpm build` succeeds. The migration applied to the dev database. In the
+running app: the English low-stock PDP reads "Only 6 left", the stepper stops at 6, and after adding
+them the button is disabled with its reason and a cart link; the Farsi out-of-stock PDP shows the
+disabled control, the reason, and takes a phone number typed in Persian digits (201). The admin modal
+was not exercised in a browser (it needs an admin sign-in); its route is covered by the tests above.

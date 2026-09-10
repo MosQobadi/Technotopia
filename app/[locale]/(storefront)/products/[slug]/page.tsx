@@ -14,7 +14,9 @@ import { ProductPurchasePanel } from "@/components/storefront/products/ProductPu
 
 // ISR: product detail is server-rendered from the database and is identical for
 // every visitor, so each slug is generated on first request and re-used for up
-// to 5 minutes. Price/stock edits in the admin surface within that window.
+// to 5 minutes. Price edits in the admin surface within that window; a restock
+// refreshes the page at once (the inventory PATCH revalidates it), because the
+// people on its back-in-stock list are about to be told to come and look.
 export const revalidate = 300;
 
 // Empty on purpose: nothing is prerendered at build time (the build host has no
@@ -123,7 +125,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             size="lg"
             className="mb-2.5"
           />
-          <StockStatusBadge status={STOCK_STATUS[product.stockStatus]} className="mb-6" />
+          <StockStatusBadge
+            status={STOCK_STATUS[product.stockStatus]}
+            remaining={product.stock}
+            className="mb-6"
+          />
 
           {product.tags.length > 0 && (
             <div className="mb-7 flex flex-wrap gap-2">
@@ -138,7 +144,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </div>
           )}
 
-          <ProductPurchasePanel productId={product.id} price={product.price} />
+          <ProductPurchasePanel
+            productId={product.id}
+            slug={product.slug}
+            price={product.price}
+            stock={product.stock}
+          />
 
           <div className="border-t border-line pt-6">
             <h2 className="text-fg text-subhead mb-3">{t("description")}</h2>

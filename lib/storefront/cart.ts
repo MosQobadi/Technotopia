@@ -266,6 +266,36 @@ function clampQuantity(quantity: number): number {
   return Math.min(Math.max(Math.trunc(quantity), 0), MAX_CART_QUANTITY);
 }
 
+// --- What the product page may add ------------------------------------------
+
+/** Why the PDP's buy box cannot add a product. */
+export type AddBlocker = "outOfStock" | "allInCart" | "cartFull";
+
+export interface AddLimit {
+  /** How many of this product the cart already holds. */
+  inCart: number;
+  /** The stepper's ceiling: what the shelf and the line cap leave after the cart. 0 when blocked. */
+  max: number;
+  blocker: AddBlocker | null;
+}
+
+/**
+ * How much of a product the PDP may add, given the shelf and the cart in hand.
+ * Every state has an answer because `addToStoredCart` refuses a new line to a
+ * full cart and clamps a line at its ceiling *silently* — a button left enabled
+ * for either would be a button that does nothing.
+ */
+export function pdpAddLimit(stock: number, items: StoredCartItem[], productId: string): AddLimit {
+  const inCart = items.find((item) => item.productId === productId)?.quantity ?? 0;
+  if (stock <= 0) return { inCart, max: 0, blocker: "outOfStock" };
+  if (inCart === 0 && items.length >= MAX_CART_ITEMS) {
+    return { inCart, max: 0, blocker: "cartFull" };
+  }
+
+  const max = Math.min(stock, MAX_CART_QUANTITY) - inCart;
+  return max > 0 ? { inCart, max, blocker: null } : { inCart, max: 0, blocker: "allInCart" };
+}
+
 // --- The lookup query -------------------------------------------------------
 
 /**

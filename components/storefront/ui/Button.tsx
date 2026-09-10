@@ -64,6 +64,8 @@ interface ButtonProps {
   disabled?: boolean;
   type?: "button" | "submit";
   "aria-label"?: string;
+  /** Points a disabled button at the sentence that says why it is disabled. */
+  "aria-describedby"?: string;
 }
 
 export function Button({

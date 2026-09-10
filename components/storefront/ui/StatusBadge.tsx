@@ -21,13 +21,27 @@ interface StockStatusBadgeProps {
   status: StockStatus;
   /** "inline" = colored dot + label (product detail). "pill" = white pill, no dot (product card badge). */
   variant?: "inline" | "pill";
+  /**
+   * Units left, where the caller has them (the PDP). Turns "Low stock" into
+   * "Only 3 left", which is the fact a customer choosing a quantity needs.
+   */
+  remaining?: number;
   className?: string;
 }
 
-export function StockStatusBadge({ status, variant = "inline", className }: StockStatusBadgeProps) {
+export function StockStatusBadge({
+  status,
+  variant = "inline",
+  remaining,
+  className,
+}: StockStatusBadgeProps) {
   const t = useTranslations("common.stockStatus");
   const { key, text, bg } = STOCK_STATUS_CONFIG[status];
-  const label = t(key).toUpperCase();
+  const label = (
+    status === "low-stock" && remaining !== undefined
+      ? t("onlyLeft", { count: remaining })
+      : t(key)
+  ).toUpperCase();
 
   if (variant === "pill") {
     return (

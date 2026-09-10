@@ -102,12 +102,32 @@ model Product {
 
   category     Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   brand        Brand       @relation(fields: [brandId], references: [id], onDelete: Restrict)
-  inventory    Inventory?
-  orderItems   OrderItem[]
-  wishlistedBy Wishlist[]
+  inventory          Inventory?
+  orderItems         OrderItem[]
+  wishlistedBy       Wishlist[]
+  stockNotifications StockNotification[]
 
   @@index([categoryId])
   @@index([brandId])
+}
+
+// A back-in-stock request left on an out-of-stock product page. `contact` is the
+// one field the storefront asks for, an email or a phone number. There is no
+// sender, so nothing is sent: the admin reads the waiting list in the Inventory
+// stock modal, reaches people by hand, and marks them notified there. Pending
+// means `notifiedAt` is null. Cascade because a product is only hard-deleted when
+// no order references it, and a request for a product that is gone is useless.
+model StockNotification {
+  id         String    @id @default(cuid())
+  productId  String
+  contact    String
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, notifiedAt])
 }
 
 // stock thresholds (derived, not stored): 0 = Out of Stock, 1-9 = Low Stock, 10+ = In Stock

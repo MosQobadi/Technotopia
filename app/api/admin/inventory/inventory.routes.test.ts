@@ -1,7 +1,16 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { PATCH } from "./[productId]/route";
+import {
+  GET as listNotifications,
+  PATCH as markNotifications,
+} from "./[productId]/notifications/route";
 import { GET as list } from "./route";
+
+// revalidatePath needs the store Next sets up around a real request; outside
+// one it throws. What matters here is which paths the restock asks to refresh.
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 import { getCookieName, signToken } from "@/lib/auth";
 import { Role, Status } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/db";
@@ -145,6 +154,118 @@ describe("PATCH /api/admin/inventory/:productId", () => {
     expect(new Date(body.data.lastUpdatedAt).getTime()).toBeGreaterThan(
       before!.lastUpdatedAt.getTime(),
     );
+  });
+
+  it("refreshes the product's cached page in both locales", async () => {
+    const product = await createProductWithStock(0);
+    vi.mocked(revalidatePath).mockClear();
+
+    await PATCH(
+      req(`/api/admin/inventory/${product.id}`, { method: "PATCH", body: { addStock: 3 } }),
+      { params: Promise.resolve({ productId: product.id }) },
+    );
+
+    expect(revalidatePath).toHaveBeenCalledWith(`/en/products/${product.slug}`);
+    expect(revalidatePath).toHaveBeenCalledWith(`/fa/products/${product.slug}`);
+  });
+});
+
+describe("/api/admin/inventory/:productId/notifications", () => {
+  function ctx(productId: string) {
+    return { params: Promise.resolve({ productId }) };
+  }
+
+  it("requires an admin", async () => {
+    const product = await createProductWithStock(0);
+    const url = `/api/admin/inventory/${product.id}/notifications`;
+
+    expect((await listNotifications(req(url, { cookie: null }), ctx(product.id))).status).toBe(
+      401,
+    );
+    expect(
+      (await listNotifications(req(url, { cookie: customerCookie }), ctx(product.id))).status,
+    ).toBe(403);
+    expect(
+      (
+        await markNotifications(
+          req(url, { method: "PATCH", body: { ids: ["x"] }, cookie: customerCookie }),
+          ctx(product.id),
+        )
+      ).status,
+    ).toBe(403);
+  });
+
+  it("lists only this product's pending requests, oldest first", async () => {
+    const product = await createProductWithStock(0);
+    const other = await createProductWithStock(0);
+    await prisma.stockNotification.createMany({
+      data: [
+        { productId: product.id, contact: "second@example.com", createdAt: new Date("2026-09-02") },
+        { productId: product.id, contact: "first@example.com", createdAt: new Date("2026-09-01") },
+        { productId: product.id, contact: "done@example.com", notifiedAt: new Date() },
+        { productId: other.id, contact: "other@example.com" },
+      ],
+    });
+
+    const response = await listNotifications(
+      req(`/api/admin/inventory/${product.id}/notifications`),
+      ctx(product.id),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.map((row: { contact: string }) => row.contact)).toEqual([
+      "first@example.com",
+      "second@example.com",
+    ]);
+  });
+
+  it("stamps only the ids given, and only this product's", async () => {
+    const product = await createProductWithStock(0);
+    const other = await createProductWithStock(0);
+    const shown = await prisma.stockNotification.create({
+      data: { productId: product.id, contact: "shown@example.com" },
+    });
+    const arrivedLater = await prisma.stockNotification.create({
+      data: { productId: product.id, contact: "later@example.com" },
+    });
+    const otherProducts = await prisma.stockNotification.create({
+      data: { productId: other.id, contact: "other@example.com" },
+    });
+
+    const response = await markNotifications(
+      req(`/api/admin/inventory/${product.id}/notifications`, {
+        method: "PATCH",
+        body: { ids: [shown.id, otherProducts.id] },
+      }),
+      ctx(product.id),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.count).toBe(1);
+
+    const rows = await prisma.stockNotification.findMany({
+      where: { id: { in: [shown.id, arrivedLater.id, otherProducts.id] } },
+    });
+    const stamped = Object.fromEntries(rows.map((row) => [row.id, row.notifiedAt !== null]));
+    expect(stamped).toEqual({
+      [shown.id]: true,
+      [arrivedLater.id]: false,
+      [otherProducts.id]: false,
+    });
+  });
+
+  it("rejects an empty list of ids", async () => {
+    const product = await createProductWithStock(0);
+    const response = await markNotifications(
+      req(`/api/admin/inventory/${product.id}/notifications`, {
+        method: "PATCH",
+        body: { ids: [] },
+      }),
+      ctx(product.id),
+    );
+    expect(response.status).toBe(400);
   });
 });
 

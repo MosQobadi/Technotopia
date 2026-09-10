@@ -12,3 +12,4 @@ export * from "./cart.schema";
 export * from "./wishlist.schema";
 export * from "./account.schema";
 export * from "./search.schema";
+export * from "./stock-notification.schema";

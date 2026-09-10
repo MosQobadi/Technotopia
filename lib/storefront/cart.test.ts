@@ -10,6 +10,7 @@ import {
   orderableLines,
   orderableQuantity,
   parseCartIds,
+  pdpAddLimit,
   pendingCart,
   reconcileCart,
   reconcileCartLine,
@@ -373,5 +374,53 @@ describe("cartIdsKey", () => {
 
   it("is empty for an empty cart, which is what an answer to nothing covers", () => {
     expect(cartIdsKey([])).toBe("");
+  });
+});
+
+describe("pdpAddLimit", () => {
+  it("offers the whole shelf when none of it is in the cart", () => {
+    expect(pdpAddLimit(5, [], "p1")).toEqual({ inCart: 0, max: 5, blocker: null });
+  });
+
+  it("offers only what the cart has not already taken", () => {
+    expect(pdpAddLimit(5, [stored({ quantity: 3 })], "p1")).toEqual({
+      inCart: 3,
+      max: 2,
+      blocker: null,
+    });
+  });
+
+  it("is out of stock at zero, whatever the cart holds", () => {
+    expect(pdpAddLimit(0, [], "p1").blocker).toBe("outOfStock");
+    expect(pdpAddLimit(0, [stored({ quantity: 2 })], "p1")).toEqual({
+      inCart: 2,
+      max: 0,
+      blocker: "outOfStock",
+    });
+  });
+
+  it("is blocked once the cart holds all of the shelf", () => {
+    expect(pdpAddLimit(3, [stored({ quantity: 3 })], "p1")).toEqual({
+      inCart: 3,
+      max: 0,
+      blocker: "allInCart",
+    });
+  });
+
+  it("stops at the line ceiling on a deep shelf", () => {
+    expect(pdpAddLimit(500, [], "p1").max).toBe(MAX_CART_QUANTITY);
+    expect(pdpAddLimit(500, [stored({ quantity: MAX_CART_QUANTITY })], "p1").blocker).toBe(
+      "allInCart",
+    );
+  });
+
+  it("is blocked by a full cart only for a product not already in it", () => {
+    const full = Array.from({ length: MAX_CART_ITEMS }, (_, i) =>
+      stored({ productId: `other-${i}`, quantity: 1 }),
+    );
+    expect(pdpAddLimit(5, full, "p1").blocker).toBe("cartFull");
+
+    const fullWithThis = [...full.slice(1), stored({ productId: "p1", quantity: 1 })];
+    expect(pdpAddLimit(5, fullWithThis, "p1")).toEqual({ inCart: 1, max: 4, blocker: null });
   });
 });
