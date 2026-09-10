@@ -6,6 +6,8 @@ import { useCartLines } from "@/components/storefront/cart/useCartLines";
 import { CartLineRow } from "@/components/storefront/cart/CartLineRow";
 import { Button } from "@/components/storefront/ui/Button";
 import { EmptyState } from "@/components/storefront/ui/EmptyState";
+import { Breadcrumb } from "@/components/storefront/ui/Breadcrumb";
+import { navTrail } from "@/components/storefront/navLinks";
 import { formatPrice } from "@/lib/format";
 
 // The cart screen. Everything it renders comes from `useCartLines`: the store
@@ -151,8 +153,11 @@ export function CartContent() {
 }
 
 function CartShell({ title, children }: { title: string; children: ReactNode }) {
+  const tNav = useTranslations("nav");
+
   return (
     <main className="mx-auto max-w-250 px-6 py-10 pb-24">
+      <Breadcrumb items={navTrail("cart", tNav)} className="mb-5" />
       <h1 className="text-fg text-title mb-8">{title}</h1>
       {children}
     </main>

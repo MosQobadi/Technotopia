@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { getSessionPayload } from "@/lib/auth/session";
 import { getAddresses, getProfile } from "@/server/account.service";
 import { getOrderHistoryForCustomer } from "@/server/order.service";
+import { navTrail } from "@/components/storefront/navLinks";
+import { Breadcrumb } from "@/components/storefront/ui/Breadcrumb";
 import { EmptyState } from "@/components/storefront/ui/EmptyState";
 import { AccountTabs } from "./AccountTabs";
 
@@ -19,6 +21,7 @@ export const dynamic = "force-dynamic";
 export default async function AccountPage() {
   const t = await getTranslations("account");
   const tCommon = await getTranslations("common");
+  const tNav = await getTranslations("nav");
 
   const payload = await getSessionPayload();
 
@@ -35,6 +38,7 @@ export default async function AccountPage() {
 
   return (
     <main className="mx-auto max-w-225 px-6 py-10 pb-24">
+      <Breadcrumb items={navTrail("account", tNav)} className="mb-5" />
       <h1 className="text-fg text-title mb-7">{t("title")}</h1>
 
       {user ? (

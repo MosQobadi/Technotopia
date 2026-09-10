@@ -9,7 +9,9 @@ import { useCartLines } from "@/components/storefront/cart/useCartLines";
 import { CheckoutSummary } from "@/components/storefront/checkout/CheckoutSummary";
 import { PaymentMethodField } from "@/components/storefront/checkout/PaymentMethodField";
 import { ShippingAddressFields } from "@/components/storefront/checkout/ShippingAddressFields";
+import { Breadcrumb } from "@/components/storefront/ui/Breadcrumb";
 import { EmptyState } from "@/components/storefront/ui/EmptyState";
+import { navTrail } from "@/components/storefront/navLinks";
 import { useAuthStore } from "@/lib/store/auth";
 import { useCartStore } from "@/lib/store/cart";
 import { useReceiptStore } from "@/lib/store/receipt";
@@ -195,8 +197,11 @@ function SignInOffer() {
 }
 
 function CheckoutShell({ title, children }: { title: string; children: ReactNode }) {
+  const tNav = useTranslations("nav");
+
   return (
     <main className="mx-auto max-w-250 px-6 py-10 pb-24">
+      <Breadcrumb items={navTrail("checkout", tNav)} className="mb-5" />
       <h1 className="text-fg text-title mb-8">{title}</h1>
       {children}
     </main>

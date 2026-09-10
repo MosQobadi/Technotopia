@@ -9,7 +9,7 @@ import { HeaderIconButton } from "@/components/storefront/ui/HeaderIconButton";
 import { CartIcon, HeartIcon, MenuIcon, PersonIcon } from "@/components/storefront/icons";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
-import type { NavLink } from "./navLinks";
+import { NAV_PAGES, type NavLink } from "./navLinks";
 
 // Everything the header cannot fit on a phone, in one panel.
 //
@@ -65,20 +65,20 @@ export function NavDrawer({ links, initials }: NavDrawerProps) {
             <span className="border-line my-2 border-t" />
 
             <DrawerRow
-              href="/cart"
+              href={NAV_PAGES.cart.href}
               label={t("cart")}
               icon={<CartIcon />}
               meta={tCart("itemCount", { count: itemCount })}
               onNavigate={close}
             />
             <DrawerRow
-              href="/wishlist"
+              href={NAV_PAGES.wishlist.href}
               label={t("wishlist")}
               icon={<HeartIcon />}
               onNavigate={close}
             />
             <DrawerRow
-              href={initials ? "/account" : "/login"}
+              href={initials ? NAV_PAGES.account.href : "/login"}
               label={t("account")}
               icon={<PersonIcon />}
               meta={initials || undefined}

@@ -9,7 +9,7 @@ import { HeaderIconButton } from "@/components/storefront/ui/HeaderIconButton";
 import { HeartIcon, PersonIcon } from "@/components/storefront/icons";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NavDrawer } from "./NavDrawer";
-import { NAV_LINKS } from "./navLinks";
+import { NAV_LINKS, NAV_PAGES } from "./navLinks";
 import { NavbarSearch } from "./NavbarSearch";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -63,7 +63,7 @@ export function Navbar() {
             <LanguageSwitcher />
             <ThemeToggle />
 
-            <HeaderIconButton href="/wishlist" label={t("wishlist")}>
+            <HeaderIconButton href={NAV_PAGES.wishlist.href} label={t("wishlist")}>
               <HeartIcon />
             </HeaderIconButton>
           </div>
@@ -71,7 +71,7 @@ export function Navbar() {
           <MiniCart />
 
           <HeaderIconButton
-            href={user ? "/account" : "/login"}
+            href={user ? NAV_PAGES.account.href : "/login"}
             label={t("account")}
             tone={user ? "solid" : "sunken"}
             className="hidden md:flex"

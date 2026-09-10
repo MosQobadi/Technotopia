@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { InventoryStatus } from "@/types/inventory";
 import { getStorefrontProductBySlug } from "@/server/storefront-product.service";
-import { breadcrumbJsonLd, localeAlternates, type BreadcrumbTrailItem } from "@/lib/seo";
+import { breadcrumbJsonLd, localeAlternates } from "@/lib/seo";
+import { navTrail } from "@/components/storefront/navLinks";
 import { Breadcrumb } from "@/components/storefront/ui/Breadcrumb";
 import { PriceTag } from "@/components/storefront/ui/PriceTag";
 import { ProductGallery } from "@/components/storefront/ui/ProductGallery";
@@ -70,13 +71,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const { product, related } = result;
 
   const t = await getTranslations("productDetail");
-  const tCommon = await getTranslations("common");
+  const tNav = await getTranslations("nav");
 
-  const breadcrumbItems: BreadcrumbTrailItem[] = [
-    { label: tCommon("home"), href: "/" },
+  const breadcrumbItems = navTrail(
+    "shop",
+    tNav,
     { label: product.category, href: `/products?category=${encodeURIComponent(product.category)}` },
     { label: product.name },
-  ];
+  );
 
   const productJsonLd = {
     "@context": "https://schema.org",

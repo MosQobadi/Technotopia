@@ -13,6 +13,7 @@ import { storefrontProductListPageQuerySchema } from "@/lib/validation";
 import { listBrandOptions } from "@/server/brand.service";
 import { listCategoryOptions } from "@/server/category.service";
 import { listStorefrontProducts } from "@/server/storefront-product.service";
+import { navTrail } from "@/components/storefront/navLinks";
 import { Breadcrumb } from "@/components/storefront/ui/Breadcrumb";
 import { Pagination } from "@/components/storefront/ui/Pagination";
 import { FilterSidebar } from "@/components/storefront/products/FilterSidebar";
@@ -64,7 +65,7 @@ export async function generateMetadata({ searchParams }: ProductsPageProps): Pro
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const query = storefrontProductListPageQuerySchema.parse(await searchParams);
   const t = await getTranslations("products");
-  const tCommon = await getTranslations("common");
+  const tNav = await getTranslations("nav");
 
   const [categories, brands] = await Promise.all([listCategoryOptions(), listBrandOptions()]);
 
@@ -94,7 +95,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const pageCount = productPageCount(total, PLP_PAGE_SIZE);
   const heading = activeCategory?.name ?? t("all");
-  const breadcrumbItems = [{ label: tCommon("home"), href: "/" }, { label: heading }];
+  const breadcrumbItems = activeCategory
+    ? navTrail("shop", tNav, { label: activeCategory.name })
+    : navTrail("shop", tNav);
 
   return (
     <main className="mx-auto max-w-320 px-6 pt-10 pb-24">

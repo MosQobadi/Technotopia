@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { getSessionPayload } from "@/lib/auth/session";
 import { getWishlist } from "@/server/wishlist.service";
+import { navTrail } from "@/components/storefront/navLinks";
+import { Breadcrumb } from "@/components/storefront/ui/Breadcrumb";
 import { EmptyState } from "@/components/storefront/ui/EmptyState";
 import { WishlistGrid } from "./WishlistGrid";
 
@@ -17,12 +19,14 @@ export const dynamic = "force-dynamic";
 export default async function WishlistPage() {
   const t = await getTranslations("wishlist");
   const tCommon = await getTranslations("common");
+  const tNav = await getTranslations("nav");
 
   const payload = await getSessionPayload();
   const items = payload ? await getWishlist(payload.userId) : null;
 
   return (
     <main className="mx-auto max-w-320 px-6 py-10 pb-24">
+      <Breadcrumb items={navTrail("wishlist", tNav)} className="mb-5" />
       <h1 className="text-fg text-title mb-8">{t("title")}</h1>
 
       {items ? (
