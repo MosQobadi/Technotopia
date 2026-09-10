@@ -2,7 +2,9 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { OrderStatus, PaymentStatus, Status } from "@/lib/generated/prisma/enums";
 import type { CreateOrderInput } from "@/lib/validation/order.schema";
-import { SHIPPING_FLAT_RATE } from "@/lib/storefront/cart";
+import type { PlacedOrder } from "@/lib/storefront/checkout";
+import { deliveryCost } from "@/lib/storefront/delivery";
+import { toDisplayPrice } from "@/lib/storefront/pricing";
 
 const ORDER_LIST_INCLUDE = {
   customer: { select: { firstName: true, lastName: true } },
@@ -331,7 +333,7 @@ class UnavailableItemsError extends Error {
 }
 
 export type CreateOrderResult =
-  | { ok: true; orderId: string }
+  | { ok: true; order: PlacedOrder }
   | { ok: false; reason: "empty_cart" }
   | { ok: false; reason: "unavailable_items"; items: UnavailableItem[] }
   | { ok: false; reason: "insufficient_stock"; items: StockShortfall[] };
@@ -342,16 +344,20 @@ export type CreateOrderResult =
  * atomically so a mid-checkout failure can't leave stock decremented without an
  * order, or an order created without stock actually reserved.
  *
+ * `customerId` is null for a guest. It is the caller's to establish from the
+ * verified session, never from the request body; a guest's contact is the name
+ * and phone typed at checkout, which every order stores anyway.
+ *
  * The lines arrive from the browser's cart, so nothing about them is trusted
  * beyond the id and the quantity: prices, names and availability are re-read
  * here. The cart itself is cleared by the browser once this returns.
  */
 export async function createOrder(
-  customerId: string,
+  customerId: string | null,
   input: CreateOrderInput,
 ): Promise<CreateOrderResult> {
   try {
-    const orderId = await prisma.$transaction(async (tx) => {
+    const order = await prisma.$transaction(async (tx) => {
       if (input.items.length === 0) {
         throw new Error("EMPTY_CART");
       }
@@ -370,13 +376,17 @@ export async function createOrder(
           unavailable.push({ productId: item.productId, name: product?.name ?? null });
           continue;
         }
-        const discountedPrice = product.price * (1 - product.discountPercent / 100);
+        // The unit price every storefront screen shows, times the quantity — the
+        // arithmetic `reconcileCartLine` runs for the checkout summary, so the
+        // total the customer was shown is the total stored. Rounding the whole
+        // line instead drifts from it by a rial on some discounts.
+        const { price: unitPrice } = toDisplayPrice(product.price, product.discountPercent);
         lineItems.push({
           productId: product.id,
           name: product.name,
           quantity: item.quantity,
           price: product.price,
-          lineTotal: Math.round(discountedPrice * item.quantity),
+          lineTotal: unitPrice * item.quantity,
         });
       }
 
@@ -411,11 +421,11 @@ export async function createOrder(
       const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const discountedSubtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
       const discount = subtotal - discountedSubtotal;
-      const shippingCost = SHIPPING_FLAT_RATE;
+      const shippingCost = deliveryCost(discountedSubtotal);
       const tax = 0;
       const total = discountedSubtotal + shippingCost + tax;
 
-      const order = await tx.order.create({
+      return tx.order.create({
         data: {
           customerId,
           status: OrderStatus.PENDING,
@@ -441,13 +451,11 @@ export async function createOrder(
             })),
           },
         },
-        select: { id: true },
+        select: { id: true, total: true },
       });
-
-      return order.id;
     });
 
-    return { ok: true, orderId };
+    return { ok: true, order: { id: order.id, total: order.total, isGuest: customerId === null } };
   } catch (err) {
     if (err instanceof UnavailableItemsError) {
       return { ok: false, reason: "unavailable_items", items: err.items };

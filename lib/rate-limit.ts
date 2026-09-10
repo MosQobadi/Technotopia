@@ -48,11 +48,18 @@ export function checkRateLimit(
   return { allowed: true, retryAfterSeconds: 0 };
 }
 
-/** Client IP as seen by Nginx (see DEPLOYMENT.md) — falls back for local/dev requests. */
+/**
+ * The client's address as Nginx saw it (nginx/conf.d/https.conf.disabled).
+ *
+ * X-Real-IP first: Nginx sets it to $remote_addr, overwriting whatever the client
+ * sent. X-Forwarded-For only as a fallback, and its *last* entry — Nginx appends
+ * the address it saw, and every entry before that is whatever the client chose to
+ * send, which is how a limiter keyed on the first one gets walked around.
+ */
 export function getClientIp(request: NextRequest): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return (forwardedFor.split(",")[0] ?? "unknown").trim();
-  }
-  return request.headers.get("x-real-ip") ?? "unknown";
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
+
+  const lastHop = request.headers.get("x-forwarded-for")?.split(",").pop()?.trim();
+  return lastHop || "unknown";
 }

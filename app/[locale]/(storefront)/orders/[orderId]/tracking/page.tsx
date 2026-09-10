@@ -5,6 +5,7 @@ import { getSessionPayload } from "@/lib/auth/session";
 import { getOrderForCustomer } from "@/server/order.service";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/cn";
+import { formatOrderNumber } from "@/lib/format";
 
 interface OrderTrackingPageProps {
   params: Promise<{ orderId: string }>;
@@ -33,7 +34,7 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
   const t = await getTranslations("orders.tracking");
   const tStatus = await getTranslations("common.orderStatus");
 
-  const orderNumber = `#${order.id.slice(-8).toUpperCase()}`;
+  const orderNumber = formatOrderNumber(order.id);
   const isCancelled = order.status === OrderStatus.CANCELLED;
   const currentStepIndex = isCancelled ? -1 : STEP_ORDER.indexOf(order.status);
 

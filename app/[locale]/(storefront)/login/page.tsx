@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Tabs } from "@/components/storefront/ui/Tabs";
+import { safeReturnPath } from "@/lib/storefront/return-path";
 import {
   storefrontLoginSchema,
   signupSchema,
@@ -71,7 +72,7 @@ function LoginForm() {
       return;
     }
 
-    router.push("/");
+    router.push(returnPath());
   }
 
   return (
@@ -139,7 +140,7 @@ function SignupForm() {
       return;
     }
 
-    router.push("/");
+    router.push(returnPath());
   }
 
   return (
@@ -191,4 +192,11 @@ function SignupForm() {
       </form>
     </div>
   );
+}
+
+// Where to go once signed in: back to the page that offered the sign-in (checkout
+// does), or home. Read from the address bar at submit time rather than during
+// render, which keeps this page free of a search-params dependency.
+function returnPath(): string {
+  return safeReturnPath(new URLSearchParams(window.location.search).get("next")) ?? "/";
 }

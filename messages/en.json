@@ -164,8 +164,8 @@
   },
   "checkout": {
     "title": "Checkout",
-    "loggedOut": "Log in to checkout.",
     "empty": "Your cart is empty.",
+    "signInOffer": "Have an account? <login>Log in</login> and we'll fill in your name and phone — or carry on as a guest. No account needed.",
     "shippingAddress": "Shipping address",
     "fullName": "Full name",
     "fullNamePlaceholder": "Full name",
@@ -180,7 +180,13 @@
     "paymentMethodBankTransfer": "Bank transfer",
     "placeOrder": "Place Order",
     "placingOrder": "Placing order...",
-    "errorDefault": "Could not place your order."
+    "placed": "Order placed — taking you to your receipt…",
+    "backToCart": "Back to cart",
+    "failure": {
+      "cartChanged": "Something in your cart changed while you were here, so the order wasn't placed. Check the summary and try again.",
+      "rateLimited": "Too many orders from this connection. Wait a while and try again.",
+      "failed": "We couldn't place your order. Try again."
+    }
   },
   "account": {
     "title": "My Account",
@@ -303,7 +309,9 @@
       "estimatedDeliveryValue": "3–5 business days",
       "totalPaid": "Total paid",
       "trackOrder": "Track order",
-      "continueShopping": "Continue shopping"
+      "continueShopping": "Continue shopping",
+      "guestMessage": "Thanks — we've received your order and will start preparing it right away. It isn't linked to an account, so keep the order number below: it's how we find your order if you get in touch.",
+      "missing": "There's no receipt to show here. A guest's receipt is shown in the tab the order was placed in — if you've just ordered, your order is safe."
     },
     "tracking": {
       "heading": "Track your order",

@@ -21,10 +21,13 @@ async function main() {
   // Specs create rows through the UI, so they only know the prefix they typed, not the ids.
   const byName = { OR: prefixes.map((prefix) => ({ name: { contains: prefix } })) };
   const byEmail = { OR: prefixes.map((prefix) => ({ email: { contains: prefix } })) };
+  const byFullName = { OR: prefixes.map((prefix) => ({ fullName: { contains: prefix } })) };
 
   // Order matters: Order -> User and OrderItem -> Product are both onDelete: Restrict, so
   // orders go before their customers and products. Everything else (OrderItem, Inventory,
   // Cart, CartItem, Wishlist, Address) cascades from the row it hangs off.
+  // A guest order has no customer to match, so it is found by the name typed at checkout.
+  await prisma.order.deleteMany({ where: { customerId: null, ...byFullName } });
   await prisma.order.deleteMany({ where: { customer: byEmail } });
   await prisma.user.deleteMany({ where: byEmail });
   await prisma.product.deleteMany({ where: byName });

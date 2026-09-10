@@ -16,10 +16,10 @@ import {
   removeFromStoredCart,
   serializeCartIds,
   setStoredQuantity,
-  SHIPPING_FLAT_RATE,
   type CartCatalogEntry,
   type StoredCartItem,
 } from "./cart";
+import { STANDARD_DELIVERY_COST } from "./delivery";
 
 function stored(overrides: Partial<StoredCartItem> = {}): StoredCartItem {
   return {
@@ -133,8 +133,8 @@ describe("cartTotals", () => {
     expect(cartTotals(lines)).toEqual({
       itemCount: 5,
       subtotal: 2000,
-      shipping: SHIPPING_FLAT_RATE,
-      total: 2000 + SHIPPING_FLAT_RATE,
+      shipping: STANDARD_DELIVERY_COST,
+      total: 2000 + STANDARD_DELIVERY_COST,
     });
   });
 
@@ -290,8 +290,8 @@ describe("pendingCart", () => {
     expect(pendingCart(items)).toMatchObject({
       itemCount: 3,
       subtotal: 3000,
-      shipping: SHIPPING_FLAT_RATE,
-      total: 3000 + SHIPPING_FLAT_RATE,
+      shipping: STANDARD_DELIVERY_COST,
+      total: 3000 + STANDARD_DELIVERY_COST,
     });
   });
 

@@ -38,6 +38,11 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "retain-on-failure",
+    // Each run is its own client to the per-address rate limits. They live in the
+    // server process, which `reuseExistingServer` keeps between runs, so without
+    // this a few runs inside an hour would find checkout's allowance (ten orders an
+    // hour) already spent by the runs before them.
+    extraHTTPHeaders: { "x-real-ip": `e2e-run-${Date.now()}` },
   },
   webServer: {
     command: againstProdBuild ? PROD_SERVER_COMMAND : `pnpm dev --port ${PORT}`,

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { formatPrice } from "@/lib/format";
-import { SHIPPING_FLAT_RATE } from "@/lib/storefront/cart";
+import { STANDARD_DELIVERY_COST } from "@/lib/storefront/delivery";
 import type { PublicSettings } from "@/server/settings.service";
 
 const HEADING_ID = "trust-heading";
@@ -11,9 +11,9 @@ const HEADING_ID = "trust-heading";
 // promise rather than showing a product. Which is exactly why every line on it
 // is read from something the shop actually runs on:
 //
-//   • the delivery price is `SHIPPING_FLAT_RATE`, the same constant
-//     `buildCartSummary` adds to a basket and `createOrder` writes onto the
-//     row — so the figure here is the figure charged;
+//   • the delivery price is `STANDARD_DELIVERY_COST`, the one constant the
+//     checkout summary adds and `createOrder` writes onto the row — so the
+//     figure here is the figure charged;
 //   • the payment line names the two methods CheckoutContent actually offers
 //     (the `PaymentMethod` enum: CARD, BANK_TRANSFER);
 //   • the contact details come from Settings, and a blank field drops its line
@@ -51,7 +51,7 @@ export async function TrustStrip({ settings }: { settings: PublicSettings }) {
               way Persian currency should. It reads better as a figure, too:
               this is the one claim on the strip that carries a number. */}
           <p className="text-fg-subtle text-xs">{t("delivery.amountLabel")}</p>
-          <p className="text-fg text-subhead">{formatPrice(SHIPPING_FLAT_RATE)}</p>
+          <p className="text-fg text-subhead">{formatPrice(STANDARD_DELIVERY_COST)}</p>
         </TrustClaim>
 
         <TrustClaim title={t("payment.title")} body={t("payment.body")} />

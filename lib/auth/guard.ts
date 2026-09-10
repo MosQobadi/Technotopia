@@ -43,3 +43,15 @@ export async function requireUser(request: NextRequest): Promise<RequireUserResu
   }
   return { ok: true, payload };
 }
+
+/**
+ * The signed-in customer's id, or null for anyone else — no session, an invalid
+ * one, or a staff login. For the storefront routes a guest may also call
+ * (checkout): who the caller is decides what gets written, but is never
+ * required, and is never taken from anything the request says about itself.
+ */
+export async function getCustomerId(request: NextRequest): Promise<string | null> {
+  const token = request.cookies.get(getCookieName())?.value;
+  const payload = token ? await verifyToken(token) : null;
+  return payload?.role === Role.CUSTOMER ? payload.userId : null;
+}

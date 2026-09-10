@@ -78,6 +78,62 @@ test("browse a product, add it to cart, and complete checkout", async ({ page })
   await expect(page.getByText("Total paid")).toBeVisible();
 });
 
+test("check out as a guest, and keep the receipt that is handed over", async ({ page }) => {
+  // No account is made. The test customer only lends its suffix-tagged name, which
+  // is how cleanup finds a guest order.
+  const guest = makeTestCustomer();
+
+  await page.goto("/products");
+  await productCard(page, PRODUCT_NAME).getByRole("button", { name: "Add to Cart" }).click();
+  await page.getByRole("link", { name: "View Cart" }).click();
+  await page.getByRole("link", { name: /Checkout/ }).click();
+  await expect(page).toHaveURL(/\/checkout$/);
+
+  // Offered, not required.
+  await expect(page.getByRole("link", { name: "Log in", exact: true })).toBeVisible();
+
+  await page.getByLabel("Full name").fill(guest.fullName);
+  await page.getByLabel("Phone number").fill(guest.phone);
+  await page.getByLabel("Street address").fill("221B Baker Street");
+  await page.getByLabel("City").fill("London");
+  await page.getByLabel("Postal code").fill("NW1 6XE");
+  await page.getByRole("button", { name: /Place Order/ }).click();
+
+  await expect(page).toHaveURL(/\/checkout\/confirmation$/);
+  await expect(page.getByRole("heading", { name: "Order confirmed" })).toBeVisible();
+  await expect(page.getByText("Total paid")).toBeVisible();
+  // Nothing to track the order with, so no link to a page that would 404.
+  await expect(page.getByRole("link", { name: "Track order" })).toHaveCount(0);
+
+  // The receipt survives a reload of its own tab, and the cart it came from is gone.
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Order confirmed" })).toBeVisible();
+  await page.goto("/cart");
+  await expect(page.getByText("Your cart is empty.")).toBeVisible();
+});
+
+test("signing in from checkout comes back to checkout, details filled in", async ({ page }) => {
+  const customer = makeTestCustomer();
+
+  await page.goto("/products");
+  await productCard(page, PRODUCT_NAME).getByRole("button", { name: "Add to Cart" }).click();
+  await page.goto("/checkout");
+
+  await page.getByRole("link", { name: "Log in", exact: true }).click();
+  await expect(page).toHaveURL(/\/login\?next=%2Fcheckout$/);
+  await page.getByRole("tab", { name: "Sign Up" }).click();
+  await page.getByLabel("Full Name").fill(customer.fullName);
+  await page.getByLabel("Email").fill(customer.email);
+  await page.getByLabel("Phone Number").fill(customer.phone);
+  await page.getByLabel("Password").fill(customer.password);
+  await page.getByRole("button", { name: "Create Account" }).click();
+
+  // The cart lives in the browser, so it was waiting on this side of the login.
+  await expect(page).toHaveURL(/\/checkout$/);
+  await expect(page.getByLabel("Full name")).toHaveValue(customer.fullName);
+  await expect(page.getByRole("link", { name: "Log in", exact: true })).toHaveCount(0);
+});
+
 test("add and remove a wishlist item", async ({ page }) => {
   await signUp(page, makeTestCustomer());
 

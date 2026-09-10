@@ -830,3 +830,63 @@ null customer id). `20260910122020_guest_orders` applied to the dev database, `p
 run, `prisma migrate status` up to date, dev server restarted. In the running app a guest order
 cloned from a seed order rendered in the Orders list, its detail page and the dashboard, with
 every admin data request answering 200, and was deleted afterwards.
+
+### Task 30.5 — The checkout screen ✅
+
+**Decision: a signed-in customer keeps their order page; a guest's receipt is handed over.** The
+order POST now answers with the receipt itself (`PlacedOrder`: id, total, `isGuest`). A signed-in
+customer goes to `/orders/[id]/confirmation`, which reads the database and links to tracking, as
+before. A guest has no page they could open — that lookup is scoped to an owner, and a guest order
+has none — so the response is kept in sessionStorage (`lib/store/receipt.ts`) and shown at
+`/checkout/confirmation`, without the Track link. sessionStorage rather than localStorage: a reload
+keeps it, the next person at the browser does not find it. Both screens render one `OrderReceipt`.
+
+**Decision: one delivery method, named in `lib/storefront/delivery.ts`.** The design shows a single
+flat-rate row, and a choice would need a field on the checkout schema, which this task keeps
+unchanged. `STANDARD_DELIVERY_COST` and `deliveryCost()` are read by `cartTotals` (so the summary),
+by `createOrder` and by the home page's trust strip; `SHIPPING_FLAT_RATE` is gone.
+
+**Decision: no email from a guest.** `guestEmail` stays null. 30.4 left it optional, this task keeps
+the schemas as they are, and the receipt is handed over rather than mailed; the courier calls the
+phone number every order already stores.
+
+**What "the totals match" actually needed.** The server rounded each *line*
+(`round(price × (1 − d) × qty)`) while every screen rounds the *unit* and multiplies, so 25% off
+1999 at quantity 2 read 2998 on the summary and was stored as 2999. `createOrder` now takes its unit
+price from `toDisplayPrice`, the function the cart lookup uses, and a route test builds the summary
+from the real lookup and asserts the stored total equals it.
+
+**Who is ordering.** `getCustomerId` (`lib/auth/guard.ts`) reads the verified cookie: a CUSTOMER
+session orders as that customer; no session, an invalid one or a staff login orders as a guest.
+Nothing is read from the body — the schema has no such field, and a test posts another customer's
+id to show it lands nowhere.
+
+**The rate limit, and the address it keys on.** The POST spends from a ten-an-hour per-address
+allowance before the body is parsed or the database asked anything. Getting there exposed that
+`getClientIp` keyed on the *first* X-Forwarded-For entry, which behind nginx's
+`$proxy_add_x_forwarded_for` is whatever the client sent — so this limit, and login's, could be
+walked around by varying it. It now prefers X-Real-IP (nginx sets it to `$remote_addr`) and falls
+back to X-Forwarded-For's last hop. Playwright sends a per-run X-Real-IP, because the reused dev
+server keeps its limiter between runs.
+
+**Fixed on the way.** The payment radios were never registered with the form, so a guest choosing
+bank transfer still submitted CARD; they are registered now and the chosen card is painted from
+`:checked`. A refused order printed the server's English message on the Farsi screen in raw
+`red-50`; it is now a translated reason keyed on the status, in the danger tokens, and a 409
+re-reads the catalog so the summary can say which line moved. The summary prints no figure until
+the catalog has answered. Signing in is offered through `/login?next=/checkout`, and login follows
+a same-site `next` only (`safeReturnPath`).
+
+**DoD:** a visitor with no account completes a purchase and signing in is offered; the order POST
+is rate-limited per IP before any database work; who is ordering comes from the session or is a
+guest; a guest's receipt is handed over; delivery is named once and shared; the stored totals equal
+the summary's; payment methods and Zod schemas are unchanged. ✅
+
+**Verified:** `pnpm lint` and `pnpm tsc --noEmit` clean; `pnpm test` 326 (18 new: the checkout
+module, `safeReturnPath`, `getClientIp`, and route tests for a guest order, a body naming another
+customer, a staff session, the limit tripping before the database, and totals parity). All 15 E2E
+pass against the production build, which is also the `pnpm build` check — 2 of them new: a guest
+checkout to a receipt that survives a reload, offers no Track link and leaves the cart empty, and
+signing in from checkout coming back to it with the name filled in. Neither suite leaves orders
+behind. In the running app, the Farsi guest checkout at 375px in the dark theme, and the
+no-receipt state of `/fa/checkout/confirmation`.

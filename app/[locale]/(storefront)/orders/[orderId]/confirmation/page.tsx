@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 import { getSessionPayload } from "@/lib/auth/session";
 import { getOrderForCustomer } from "@/server/order.service";
-import { Button } from "@/components/storefront/ui/Button";
-import { formatPrice } from "@/lib/format";
+import { OrderReceipt } from "@/components/storefront/checkout/OrderReceipt";
+
+// A signed-in customer's receipt, read back from the database and scoped to
+// them. A guest's is /checkout/confirmation, which renders the POST's response.
 
 interface OrderConfirmationPageProps {
   params: Promise<{ orderId: string }>;
@@ -18,41 +19,5 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
   const order = await getOrderForCustomer(orderId, payload.userId);
   if (!order) notFound();
 
-  const t = await getTranslations("orders.confirmation");
-  const orderNumber = `#${order.id.slice(-8).toUpperCase()}`;
-
-  return (
-    <main className="mx-auto max-w-160 px-6 py-24 text-center">
-      <div className="bg-success/12 mx-auto mb-6 flex size-16 items-center justify-center rounded-full">
-        <span className="bg-success size-3.5 rounded-full" aria-hidden />
-      </div>
-
-      <h1 className="text-fg text-title mb-3">{t("heading")}</h1>
-      <p className="mb-8 text-[15px] leading-relaxed text-fg-subtle">{t("message")}</p>
-
-      <div className="bg-surface-sunken mb-8 rounded-[20px] p-7 text-start">
-        <div className="mb-3 flex justify-between text-sm">
-          <span className="text-fg-subtle">{t("orderNumber")}</span>
-          <span className="text-fg font-mono font-semibold">{orderNumber}</span>
-        </div>
-        <div className="mb-3 flex justify-between text-sm">
-          <span className="text-fg-subtle">{t("estimatedDelivery")}</span>
-          <span className="text-fg font-semibold">{t("estimatedDeliveryValue")}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-fg-subtle">{t("totalPaid")}</span>
-          <span className="text-fg font-extrabold">{formatPrice(order.total)}</span>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-3.5">
-        <Button variant="primary" href={`/orders/${order.id}/tracking`}>
-          {t("trackOrder")}
-        </Button>
-        <Button variant="secondary" href="/">
-          {t("continueShopping")}
-        </Button>
-      </div>
-    </main>
-  );
+  return <OrderReceipt orderId={order.id} total={order.total} isGuest={false} />;
 }

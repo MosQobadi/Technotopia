@@ -3,7 +3,7 @@
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 import { OrderStatusBadge } from "@/components/storefront/ui/StatusBadge";
-import { formatPrice } from "@/lib/format";
+import { formatOrderNumber, formatPrice } from "@/lib/format";
 import type { OrderHistoryItem } from "@/server/order.service";
 
 interface OrdersTabProps {
@@ -26,7 +26,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
         >
           <div>
             <div className="mb-1 text-xs text-fg-subtle">
-              <span className="font-mono">#{order.id.slice(-8).toUpperCase()}</span> ·{" "}
+              <span className="font-mono">{formatOrderNumber(order.id)}</span> ·{" "}
               {format(order.createdAt, "MMM d, yyyy")}
             </div>
             <div className="text-fg text-sm font-semibold">{order.itemsSummary}</div>

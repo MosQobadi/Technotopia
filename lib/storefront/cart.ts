@@ -1,3 +1,5 @@
+import { deliveryCost } from "./delivery";
+
 // The cart as the browser keeps it, and the rules for reading it back.
 //
 // The cart is a browser object, not a database row: a visitor can fill one
@@ -18,9 +20,6 @@
 // is nothing to compare the current price against and `priceChanged` cannot be
 // answered at all — the route receives only ids, so that comparison has to
 // happen where the snapshot lives.
-
-/** Flat-rate shipping, in rials. Charged once, on any non-empty cart. */
-export const SHIPPING_FLAT_RATE = 800_000;
 
 /** Per-line ceiling, matching the quantity the checkout schema accepts. */
 export const MAX_CART_QUANTITY = 99;
@@ -143,7 +142,7 @@ export function cartTotals(
 ): Pick<ReconciledCart, "itemCount" | "subtotal" | "shipping" | "total"> {
   const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
   const subtotal = lines.reduce((sum, line) => sum + line.lineTotal, 0);
-  const shipping = subtotal > 0 ? SHIPPING_FLAT_RATE : 0;
+  const shipping = deliveryCost(subtotal);
   return { itemCount, subtotal, shipping, total: subtotal + shipping };
 }
 
