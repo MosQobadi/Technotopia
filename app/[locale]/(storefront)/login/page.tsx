@@ -7,13 +7,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Tabs } from "@/components/storefront/ui/Tabs";
+import { requestFailure } from "@/lib/storefront/form-errors";
 import { safeReturnPath } from "@/lib/storefront/return-path";
+import { useFieldError } from "@/lib/storefront/useFieldError";
 import {
   storefrontLoginSchema,
   signupSchema,
   type StorefrontLoginInput,
   type SignupInput,
 } from "@/lib/validation";
+
+// Both forms name a failure by its status and say it in the reader's language
+// (lib/storefront/form-errors). The route's own `error` is English and belongs
+// to the API, so it never reaches the screen — and a request that didn't arrive
+// at all gets a sentence too, rather than a form that silently stops.
 
 type AuthTab = "login" | "signup";
 
@@ -45,6 +52,7 @@ export default function StorefrontLoginPage() {
 
 function LoginForm() {
   const t = useTranslations("auth.login");
+  const fieldError = useFieldError();
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -64,11 +72,12 @@ function LoginForm() {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(values),
-    });
-    const result = await response.json();
+    }).catch(() => null);
+    const result = await response?.json().catch(() => null);
 
-    if (!result.success) {
-      setFormError(result.error ?? t("errorDefault"));
+    if (!result?.success) {
+      const reason = requestFailure(response?.status, ["unauthorized", "rateLimited"]);
+      setFormError(t(`failure.${reason}`));
       return;
     }
 
@@ -82,7 +91,7 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-5">
         {formError && (
-          <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+          <p role="alert" className="bg-danger-soft text-danger rounded-md px-3 py-2 text-sm">
             {formError}
           </p>
         )}
@@ -90,13 +99,13 @@ function LoginForm() {
         <TextField isRequired isInvalid={!!errors.identifier} fullWidth>
           <Label>{t("emailOrPhone")}</Label>
           <Input placeholder={t("emailPlaceholder")} {...register("identifier")} />
-          <FieldError>{errors.identifier?.message}</FieldError>
+          <FieldError>{fieldError(errors.identifier)}</FieldError>
         </TextField>
 
         <TextField isRequired isInvalid={!!errors.password} fullWidth>
           <Label>{t("password")}</Label>
           <Input type="password" placeholder="********" {...register("password")} />
-          <FieldError>{errors.password?.message}</FieldError>
+          <FieldError>{fieldError(errors.password)}</FieldError>
         </TextField>
 
         <Link href="/forgot-password" className="text-sm">
@@ -113,6 +122,8 @@ function LoginForm() {
 
 function SignupForm() {
   const t = useTranslations("auth.signup");
+  const tFieldError = useTranslations("common.fieldError");
+  const fieldError = useFieldError();
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -132,11 +143,12 @@ function SignupForm() {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(values),
-    });
-    const result = await response.json();
+    }).catch(() => null);
+    const result = await response?.json().catch(() => null);
 
-    if (!result.success) {
-      setFormError(result.error ?? t("errorDefault"));
+    if (!result?.success) {
+      const reason = requestFailure(response?.status, ["conflict"]);
+      setFormError(t(`failure.${reason}`));
       return;
     }
 
@@ -150,7 +162,7 @@ function SignupForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-5">
         {formError && (
-          <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+          <p role="alert" className="bg-danger-soft text-danger rounded-md px-3 py-2 text-sm">
             {formError}
           </p>
         )}
@@ -158,25 +170,27 @@ function SignupForm() {
         <TextField isRequired isInvalid={!!errors.fullName} fullWidth>
           <Label>{t("fullName")}</Label>
           <Input placeholder={t("fullNamePlaceholder")} {...register("fullName")} />
-          <FieldError>{errors.fullName?.message}</FieldError>
+          <FieldError>{fieldError(errors.fullName)}</FieldError>
         </TextField>
 
         <TextField isRequired isInvalid={!!errors.email} fullWidth>
           <Label>{t("email")}</Label>
           <Input type="email" placeholder="you@example.com" {...register("email")} />
-          <FieldError>{errors.email?.message}</FieldError>
+          <FieldError>{fieldError(errors.email)}</FieldError>
         </TextField>
 
         <TextField isRequired isInvalid={!!errors.phone} fullWidth>
           <Label>{t("phone")}</Label>
           <Input type="tel" placeholder={t("phonePlaceholder")} {...register("phone")} />
-          <FieldError>{errors.phone?.message}</FieldError>
+          <FieldError>{fieldError(errors.phone)}</FieldError>
         </TextField>
 
         <TextField isRequired isInvalid={!!errors.password} fullWidth>
           <Label>{t("password")}</Label>
           <Input type="password" placeholder="********" {...register("password")} />
-          <FieldError>{errors.password?.message}</FieldError>
+          {/* The one field with a rule of its own, so it states the rule
+              whether the box is empty or just short. */}
+          <FieldError>{errors.password ? tFieldError("passwordLength") : undefined}</FieldError>
         </TextField>
 
         <Button type="submit" variant="primary" fullWidth isDisabled={isSubmitting}>

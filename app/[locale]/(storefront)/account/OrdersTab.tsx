@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
+import { EmptyState } from "@/components/storefront/ui/EmptyState";
 import { OrderStatusBadge } from "@/components/storefront/ui/StatusBadge";
 import { formatOrderNumber, formatPrice } from "@/lib/format";
 import type { OrderHistoryItem } from "@/server/order.service";
@@ -12,9 +13,16 @@ interface OrdersTabProps {
 
 export function OrdersTab({ orders }: OrdersTabProps) {
   const t = useTranslations("account.orders");
+  const tCommon = useTranslations("common");
 
   if (orders.length === 0) {
-    return <p className="text-sm text-fg-subtle">{t("empty")}</p>;
+    return (
+      <EmptyState
+        message={t("empty")}
+        actionLabel={tCommon("browseProducts")}
+        actionHref="/products"
+      />
+    );
   }
 
   return (

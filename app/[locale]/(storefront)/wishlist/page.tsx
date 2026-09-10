@@ -32,7 +32,11 @@ export default async function WishlistPage() {
       {items ? (
         <WishlistGrid initialItems={items} />
       ) : (
-        <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />
+        <EmptyState
+          message={t("loggedOut")}
+          actionLabel={tCommon("logIn")}
+          actionHref="/login?next=/wishlist"
+        />
       )}
     </main>
   );

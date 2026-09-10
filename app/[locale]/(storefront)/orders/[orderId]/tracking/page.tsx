@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
 import { getSessionPayload } from "@/lib/auth/session";
 import { getOrderForCustomer } from "@/server/order.service";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
@@ -20,7 +21,15 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
   const { orderId } = await params;
 
   const payload = await getSessionPayload();
-  if (!payload) notFound();
+  // Signed out is not "not yours": the order may well be theirs, so the way
+  // forward is to log in and come straight back here. Signed in as someone
+  // else is a 404 (orders/[orderId]/not-found.tsx) — see below.
+  if (!payload) {
+    return redirect({
+      href: { pathname: "/login", query: { next: `/orders/${encodeURIComponent(orderId)}/tracking` } },
+      locale: await getLocale(),
+    });
+  }
 
   const order = await getOrderForCustomer(orderId, payload.userId);
   if (!order) notFound();

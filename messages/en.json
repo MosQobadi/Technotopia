@@ -36,6 +36,8 @@
     "searchLoading": "Searching…",
     "searchNoResults": "No results for “{query}”",
     "searchResultCount": "{count, plural, =0 {No results} one {# result} other {# results}}",
+    "searchFailed": "Search isn't responding right now.",
+    "searchRetry": "Try again",
     "wishlist": "Wishlist",
     "cart": "Cart",
     "account": "Account",
@@ -80,7 +82,11 @@
       "forgotPassword": "Forgot password?",
       "submit": "Login",
       "submitting": "Logging in...",
-      "errorDefault": "Invalid email/phone or password."
+      "failure": {
+        "unauthorized": "Invalid email/phone or password.",
+        "rateLimited": "Too many login attempts. Wait a few minutes and try again.",
+        "failed": "We couldn't log you in just now. Try again."
+      }
     },
     "signup": {
       "heading": "Create your account",
@@ -93,7 +99,10 @@
       "password": "Password",
       "submit": "Create Account",
       "submitting": "Creating account...",
-      "errorDefault": "Could not create your account.",
+      "failure": {
+        "conflict": "An account with this email or phone number already exists. Try logging in instead.",
+        "failed": "We couldn't create your account just now. Try again."
+      },
       "agreement": "By signing up, you agree to Technotopia's <terms>Terms</terms> and <privacy>Privacy Policy</privacy>."
     }
   },
@@ -112,6 +121,14 @@
     "free": "Free",
     "total": "Total",
     "orderSummary": "Order Summary",
+    "goHome": "Go to the home page",
+    "loading": "Loading…",
+    "fieldError": {
+      "required": "Fill in this field.",
+      "tooLong": "This is too long — shorten it a little.",
+      "email": "Enter a valid email address.",
+      "passwordLength": "Use at least 8 characters."
+    },
     "sort": {
       "mostSold": "Most Sold",
       "priceAsc": "Price: Low to High",
@@ -207,7 +224,11 @@
       "saved": "Changes saved.",
       "save": "Save changes",
       "saving": "Saving...",
-      "errorDefault": "Could not save your changes."
+      "failure": {
+        "unauthorized": "Your session has ended. Log in again to save your changes.",
+        "conflict": "That email or phone number is already used by another account.",
+        "failed": "We couldn't save your changes. Try again."
+      }
     },
     "orders": {
       "empty": "You haven't placed any orders yet."
@@ -223,19 +244,27 @@
       "saving": "Saving...",
       "cancel": "Cancel",
       "add": "+ Add address",
-      "errorDefault": "Could not add this address."
+      "failure": {
+        "unauthorized": "Your session has ended. Log in again to add an address.",
+        "failed": "We couldn't add this address. Try again."
+      }
     }
   },
   "wishlist": {
     "title": "Your Wishlist",
     "loggedOut": "Log in to view your wishlist.",
-    "empty": "You haven't saved anything yet."
+    "empty": "You haven't saved anything yet.",
+    "removeFailed": "We couldn't remove that just now. Try again."
   },
   "products": {
     "all": "All",
     "productsCount": "{count, plural, one {# product} other {# products}}",
     "sortBy": "Sort by",
     "noMatch": "No products match these filters.",
+    "showAll": "Show all products",
+    "pastEnd": "There's nothing on page {page} — these results end on page {pageCount}.",
+    "firstPage": "Back to page 1",
+    "catalogEmpty": "There's nothing in the catalog yet. Check back soon.",
     "filters": {
       "category": "Category",
       "brand": "Brand",
@@ -301,6 +330,7 @@
       "brand": "Brand",
       "sortBy": "Sort by",
       "noMatch": "No products match these filters.",
+      "clearFilters": "Show all best sellers",
       "soldBadge": "#{rank} SOLD"
     },
     "trust": {
@@ -320,6 +350,26 @@
         "title": "Talk to a person",
         "body": "Questions before you buy, or about an order already placed."
       }
+    }
+  },
+  "states": {
+    "notFound": {
+      "title": "We couldn't find that page",
+      "message": "The link may be old, or the address mistyped. The rest of the shop is right where you left it."
+    },
+    "productNotFound": {
+      "title": "This product isn't available",
+      "message": "It may have come off the shelf, or the link is out of date. There's plenty more gear in the catalog."
+    },
+    "orderNotFound": {
+      "title": "We couldn't find that order",
+      "message": "There's no order with this number in your account. Every order you've placed is listed under Order History.",
+      "account": "Go to my account"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "message": "This page didn't load. It's most likely a hiccup on our side — try again in a moment.",
+      "retry": "Try again"
     }
   },
   "orders": {

@@ -55,19 +55,23 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
     return inFlight;
   },
 
+  // A request that never arrives resolves like one the server refused — the
+  // list is left as it was, and the caller hears null rather than a rejection.
   addItem: async (productId) => {
     const response = await fetch("/api/storefront/wishlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId }),
-    });
-    const items = await parseWishlistResponse(response);
+    }).catch(() => null);
+    const items = response ? await parseWishlistResponse(response) : null;
     if (items) set({ items });
   },
 
   removeItem: async (productId) => {
-    const response = await fetch(`/api/storefront/wishlist/${productId}`, { method: "DELETE" });
-    const items = await parseWishlistResponse(response);
+    const response = await fetch(`/api/storefront/wishlist/${productId}`, {
+      method: "DELETE",
+    }).catch(() => null);
+    const items = response ? await parseWishlistResponse(response) : null;
     if (items) set({ items });
     // Returned as well as stored: the wishlist page renders the server's copy
     // of this list rather than subscribing to the store (see WishlistGrid), and

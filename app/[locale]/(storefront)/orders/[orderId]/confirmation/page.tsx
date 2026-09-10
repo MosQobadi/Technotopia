@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { getLocale } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
 import { getSessionPayload } from "@/lib/auth/session";
 import { getOrderForCustomer } from "@/server/order.service";
 import { OrderReceipt } from "@/components/storefront/checkout/OrderReceipt";
@@ -14,7 +16,17 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
   const { orderId } = await params;
 
   const payload = await getSessionPayload();
-  if (!payload) notFound();
+  // Signed out: log in and come back. Someone else's order: the 404 in
+  // orders/[orderId]/not-found.tsx, same as tracking.
+  if (!payload) {
+    return redirect({
+      href: {
+        pathname: "/login",
+        query: { next: `/orders/${encodeURIComponent(orderId)}/confirmation` },
+      },
+      locale: await getLocale(),
+    });
+  }
 
   const order = await getOrderForCustomer(orderId, payload.userId);
   if (!order) notFound();

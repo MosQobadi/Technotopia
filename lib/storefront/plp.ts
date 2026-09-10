@@ -155,3 +155,27 @@ export function paginationRange(page: number, pageCount: number): (number | "gap
   }
   return range;
 }
+
+// --- When the grid is empty ------------------------------------------------
+
+/**
+ * Why a listing has nothing to show, which decides what it offers instead:
+ * - "pastEnd": there are results, just not on this page — a stale or
+ *   hand-edited `page`. Back to page 1.
+ * - "noMatch": the filters exclude everything. Show all products.
+ * - "catalogEmpty": nothing is filtered and there is still nothing. "Show all
+ *   products" here would be a link from the page to itself.
+ */
+export type ListingEmptyState = "pastEnd" | "noMatch" | "catalogEmpty";
+
+export function listingEmptyState(
+  params: ProductListParams,
+  total: number,
+  shown: number,
+): ListingEmptyState | null {
+  if (shown > 0) return null;
+  if (total > 0) return "pastEnd";
+  // Sort and page reorder or slice a result; they never empty it.
+  const unsorted = buildProductListHref({ ...params, sort: DEFAULT_PRODUCT_SORT, page: 1 });
+  return unsorted === PRODUCTS_PATH ? "catalogEmpty" : "noMatch";
+}

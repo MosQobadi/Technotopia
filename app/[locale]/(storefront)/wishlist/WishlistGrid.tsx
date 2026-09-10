@@ -24,12 +24,17 @@ export function WishlistGrid({ initialItems }: WishlistGridProps) {
   const tCommon = useTranslations("common");
 
   const [items, setItems] = useState(initialItems);
+  // A remove that didn't go through leaves the card where it was, so without a
+  // sentence the button would simply look broken.
+  const [removeFailed, setRemoveFailed] = useState(false);
   const removeItem = useWishlistStore((state) => state.removeItem);
   const addCartItem = useCartStore((state) => state.addItem);
 
   async function handleRemove(productId: string) {
+    setRemoveFailed(false);
     const remaining = await removeItem(productId);
     if (remaining) setItems(remaining);
+    else setRemoveFailed(true);
   }
 
   if (items.length === 0) {
@@ -43,21 +48,29 @@ export function WishlistGrid({ initialItems }: WishlistGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
-      {items.map((item) => (
-        <ProductCard
-          key={item.id}
-          href={`/products/${item.slug}`}
-          category={item.category}
-          name={item.name}
-          price={item.price}
-          originalPrice={item.originalPrice}
-          discountPercent={item.discountPercent}
-          imageSrc={item.image ?? undefined}
-          onRemove={() => handleRemove(item.productId)}
-          onAddToCart={() => addCartItem(item.productId, item.price)}
-        />
-      ))}
-    </div>
+    <>
+      {removeFailed && (
+        <p role="alert" className="bg-danger-soft text-danger mb-6 rounded-[20px] px-5 py-3 text-sm">
+          {t("removeFailed")}
+        </p>
+      )}
+
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
+        {items.map((item) => (
+          <ProductCard
+            key={item.id}
+            href={`/products/${item.slug}`}
+            category={item.category}
+            name={item.name}
+            price={item.price}
+            originalPrice={item.originalPrice}
+            discountPercent={item.discountPercent}
+            imageSrc={item.image ?? undefined}
+            onRemove={() => handleRemove(item.productId)}
+            onAddToCart={() => addCartItem(item.productId, item.price)}
+          />
+        ))}
+      </div>
+    </>
   );
 }

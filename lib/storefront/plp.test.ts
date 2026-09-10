@@ -5,6 +5,7 @@ import {
   buildProductListHref,
   categoryListHref,
   clampPage,
+  listingEmptyState,
   paginationRange,
   productPageCount,
   PRICE_RANGE_MAX,
@@ -116,5 +117,28 @@ describe("paginationRange", () => {
 
   it("renders a run of one rather than a gap the same width as the page it hides", () => {
     expect(paginationRange(4, 6)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+});
+
+describe("listingEmptyState", () => {
+  it("has nothing to say about a page with products on it", () => {
+    expect(listingEmptyState(BASE, 30, 24)).toBeNull();
+  });
+
+  it("calls a page beyond the last one past the end, not a filter miss", () => {
+    expect(listingEmptyState({ ...BASE, category: "cameras", page: 9 }, 30, 0)).toBe("pastEnd");
+  });
+
+  it("calls an empty filtered listing a filter miss", () => {
+    expect(listingEmptyState({ ...BASE, category: "cameras" }, 0, 0)).toBe("noMatch");
+    expect(listingEmptyState({ ...BASE, brands: ["boya"] }, 0, 0)).toBe("noMatch");
+    expect(listingEmptyState({ ...BASE, statuses: ["LOW_STOCK"] }, 0, 0)).toBe("noMatch");
+    expect(listingEmptyState({ ...BASE, maxPrice: 500 }, 0, 0)).toBe("noMatch");
+  });
+
+  it("doesn't count a sort as a filter, so an empty catalog is still an empty catalog", () => {
+    expect(listingEmptyState(BASE, 0, 0)).toBe("catalogEmpty");
+    expect(listingEmptyState({ ...BASE, sort: "priceDesc" }, 0, 0)).toBe("catalogEmpty");
+    expect(listingEmptyState({ ...BASE, maxPrice: PRICE_RANGE_MAX }, 0, 0)).toBe("catalogEmpty");
   });
 });

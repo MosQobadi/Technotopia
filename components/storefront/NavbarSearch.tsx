@@ -22,6 +22,8 @@ interface SearchResponse {
   query: string;
   scope: SearchScope;
   data: StorefrontSearchResult;
+  /** The request failed — which is not the same thing as finding nothing. */
+  failed: boolean;
 }
 
 /**
@@ -37,6 +39,8 @@ export function NavbarSearch() {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  // Bumped by "Try again", to send the same query's request once more.
+  const [attempt, setAttempt] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -48,6 +52,7 @@ export function NavbarSearch() {
   const isStale = response === null || response.query !== trimmedQuery || response.scope !== scope;
   const results = isStale ? EMPTY_RESULT : response.data;
   const isLoading = trimmedQuery.length > 0 && isStale;
+  const hasFailed = !isStale && response.failed;
 
   useEffect(() => {
     if (!trimmedQuery) return;
@@ -66,11 +71,12 @@ export function NavbarSearch() {
             query: trimmedQuery,
             scope,
             data: body?.success ? (body.data as StorefrontSearchResult) : EMPTY_RESULT,
+            failed: !body?.success,
           });
         })
         .catch((error: unknown) => {
           if (error instanceof DOMException && error.name === "AbortError") return;
-          setResponse({ query: trimmedQuery, scope, data: EMPTY_RESULT });
+          setResponse({ query: trimmedQuery, scope, data: EMPTY_RESULT, failed: true });
         });
     }, DEBOUNCE_MS);
 
@@ -78,7 +84,7 @@ export function NavbarSearch() {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [trimmedQuery, scope]);
+  }, [trimmedQuery, scope, attempt]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -105,6 +111,13 @@ export function NavbarSearch() {
 
   function closePanel() {
     setIsOpen(false);
+  }
+
+  function retrySearch() {
+    // Clearing the response is what puts the panel back into its loading state;
+    // the bump is what sends the request again for the same query.
+    setResponse(null);
+    setAttempt((current) => current + 1);
   }
 
   return (
@@ -164,12 +177,31 @@ export function NavbarSearch() {
           className="absolute inset-x-0 top-full z-30 mt-2 max-h-96 overflow-y-auto rounded-2xl border border-line bg-surface py-2 shadow-lg"
         >
           <p className="sr-only" aria-live="polite">
-            {isLoading ? t("searchLoading") : t("searchResultCount", { count: resultCount })}
+            {isLoading
+              ? t("searchLoading")
+              : hasFailed
+                ? t("searchFailed")
+                : t("searchResultCount", { count: resultCount })}
           </p>
 
           {isLoading && <p className="px-4 py-3 text-sm text-fg-subtle">{t("searchLoading")}</p>}
 
-          {!isLoading && resultCount === 0 && (
+          {/* A failed request is not an empty result: "no results for X" would
+              send the customer off to rephrase a query that was fine. */}
+          {hasFailed && (
+            <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+              <p className="text-fg-subtle">{t("searchFailed")}</p>
+              <button
+                type="button"
+                onClick={retrySearch}
+                className="text-accent-readable focus-visible:outline-accent-readable shrink-0 cursor-pointer rounded font-semibold outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                {t("searchRetry")}
+              </button>
+            </div>
+          )}
+
+          {!isLoading && !hasFailed && resultCount === 0 && (
             <p className="px-4 py-3 text-sm text-fg-subtle">
               {t("searchNoResults", { query: trimmedQuery })}
             </p>

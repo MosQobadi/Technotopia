@@ -5,8 +5,18 @@ import { getTranslations } from "next-intl/server";
 import { StorefrontChrome } from "@/components/storefront/StorefrontChrome";
 import { organizationJsonLd, localeAlternates } from "@/lib/seo";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("meta");
+// The locale is passed in rather than left for next-intl to find. Metadata is
+// resolved apart from the layout render, so setRequestLocale may not have run
+// yet, and next-intl's fallback is to read the request headers — which the
+// product page, being ISR, refuses. Its not-found render (products/[slug]/
+// not-found.tsx) resolves this function too, and answered with a 500.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
   return {
     title: {
       default: t("home.title"),

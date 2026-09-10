@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Controller, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { FieldError, Input, Label, TextField } from "@heroui/react";
+import { useFieldError } from "@/lib/storefront/useFieldError";
 import type { CheckoutDetailsInput } from "@/lib/validation";
 
 interface ShippingAddressFieldsProps {
@@ -13,6 +14,7 @@ interface ShippingAddressFieldsProps {
 
 export function ShippingAddressFields({ control, register, errors }: ShippingAddressFieldsProps) {
   const t = useTranslations("checkout");
+  const fieldError = useFieldError();
 
   return (
     <section>
@@ -25,7 +27,7 @@ export function ShippingAddressFields({ control, register, errors }: ShippingAdd
             <TextField isRequired isInvalid={!!errors.fullName} fullWidth className="col-span-2">
               <Label className="sr-only">{t("fullName")}</Label>
               <Input placeholder={t("fullNamePlaceholder")} {...field} />
-              <FieldError>{errors.fullName?.message}</FieldError>
+              <FieldError>{fieldError(errors.fullName)}</FieldError>
             </TextField>
           )}
         />
@@ -37,7 +39,7 @@ export function ShippingAddressFields({ control, register, errors }: ShippingAdd
             <TextField isRequired isInvalid={!!errors.phone} fullWidth className="col-span-2">
               <Label className="sr-only">{t("phone")}</Label>
               <Input type="tel" placeholder={t("phonePlaceholder")} {...field} />
-              <FieldError>{errors.phone?.message}</FieldError>
+              <FieldError>{fieldError(errors.phone)}</FieldError>
             </TextField>
           )}
         />
@@ -45,19 +47,19 @@ export function ShippingAddressFields({ control, register, errors }: ShippingAdd
         <TextField isRequired isInvalid={!!errors.address} fullWidth className="col-span-2">
           <Label className="sr-only">{t("streetAddress")}</Label>
           <Input placeholder={t("streetAddressPlaceholder")} {...register("address")} />
-          <FieldError>{errors.address?.message}</FieldError>
+          <FieldError>{fieldError(errors.address)}</FieldError>
         </TextField>
 
         <TextField isRequired isInvalid={!!errors.city} fullWidth>
           <Label className="sr-only">{t("city")}</Label>
           <Input placeholder={t("city")} {...register("city")} />
-          <FieldError>{errors.city?.message}</FieldError>
+          <FieldError>{fieldError(errors.city)}</FieldError>
         </TextField>
 
         <TextField isRequired isInvalid={!!errors.postalCode} fullWidth>
           <Label className="sr-only">{t("postalCode")}</Label>
           <Input placeholder={t("postalCode")} {...register("postalCode")} />
-          <FieldError>{errors.postalCode?.message}</FieldError>
+          <FieldError>{fieldError(errors.postalCode)}</FieldError>
         </TextField>
       </div>
     </section>

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { HomeBestSellerView, HomeOption } from "@/types/home";
+import { EmptyState } from "@/components/storefront/ui/EmptyState";
 import { ProductCard } from "@/components/storefront/ui/ProductCard";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { cn } from "@/lib/cn";
@@ -116,7 +117,14 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-10 text-center text-[13px] text-fg-subtle">{t("noMatch")}</p>
+        <EmptyState
+          message={t("noMatch")}
+          actionLabel={t("clearFilters")}
+          onAction={() => {
+            setActiveCategory(ALL);
+            setActiveBrand(ALL);
+          }}
+        />
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
           {filtered.map((product) => (

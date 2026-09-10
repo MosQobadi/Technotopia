@@ -7,16 +7,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FieldError, Input, Label, TextField } from "@heroui/react";
 import { Button } from "@/components/storefront/ui/Button";
+import { requestFailure } from "@/lib/storefront/form-errors";
+import { useFieldError } from "@/lib/storefront/useFieldError";
 import type { AddressCreateInput } from "@/lib/validation";
 import type { Address } from "@/lib/generated/prisma/client";
 
 // isDefault isn't in this form (no default-address UI in the wireframe) — sent as false.
+// No messages in the schema: a field's error is worded by useFieldError, in the reader's
+// language.
 const addressFormSchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required").max(200),
-  phone: z.string().trim().min(1, "Phone number is required").max(30),
-  addressLine: z.string().trim().min(1, "Street address is required").max(300),
-  city: z.string().trim().min(1, "City is required").max(100),
-  postalCode: z.string().trim().min(1, "Postal code is required").max(20),
+  fullName: z.string().trim().min(1).max(200),
+  phone: z.string().trim().min(1).max(30),
+  addressLine: z.string().trim().min(1).max(300),
+  city: z.string().trim().min(1).max(100),
+  postalCode: z.string().trim().min(1).max(20),
 });
 
 type AddressFormValues = z.infer<typeof addressFormSchema>;
@@ -28,6 +32,7 @@ interface AddressesTabProps {
 
 export function AddressesTab({ initialAddresses }: AddressesTabProps) {
   const t = useTranslations("account.addresses");
+  const fieldError = useFieldError();
   // The list arrives with the page; this state exists only so a newly added
   // address appears without a round-trip back to the server render.
   const [addresses, setAddresses] = useState(initialAddresses);
@@ -52,11 +57,12 @@ export function AddressesTab({ initialAddresses }: AddressesTabProps) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
-    });
-    const result = await response.json();
+    }).catch(() => null);
+    const result = await response?.json().catch(() => null);
 
-    if (!result.success) {
-      setFormError(result.error ?? t("errorDefault"));
+    if (!result?.success) {
+      // Named by status, never the route's English `error` (lib/storefront/form-errors).
+      setFormError(t(`failure.${requestFailure(response?.status, ["unauthorized"])}`));
       return;
     }
 
@@ -89,7 +95,7 @@ export function AddressesTab({ initialAddresses }: AddressesTabProps) {
           {formError && (
             <p
               role="alert"
-              className="col-span-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600"
+              className="bg-danger-soft text-danger col-span-2 rounded-md px-3 py-2 text-sm"
             >
               {formError}
             </p>
@@ -98,31 +104,31 @@ export function AddressesTab({ initialAddresses }: AddressesTabProps) {
           <TextField isRequired isInvalid={!!errors.fullName} fullWidth className="col-span-2">
             <Label className="sr-only">{t("fullName")}</Label>
             <Input placeholder={t("fullName")} {...register("fullName")} />
-            <FieldError>{errors.fullName?.message}</FieldError>
+            <FieldError>{fieldError(errors.fullName)}</FieldError>
           </TextField>
 
           <TextField isRequired isInvalid={!!errors.phone} fullWidth className="col-span-2">
             <Label className="sr-only">{t("phone")}</Label>
             <Input type="tel" placeholder={t("phone")} {...register("phone")} />
-            <FieldError>{errors.phone?.message}</FieldError>
+            <FieldError>{fieldError(errors.phone)}</FieldError>
           </TextField>
 
           <TextField isRequired isInvalid={!!errors.addressLine} fullWidth className="col-span-2">
             <Label className="sr-only">{t("streetAddress")}</Label>
             <Input placeholder={t("streetAddress")} {...register("addressLine")} />
-            <FieldError>{errors.addressLine?.message}</FieldError>
+            <FieldError>{fieldError(errors.addressLine)}</FieldError>
           </TextField>
 
           <TextField isRequired isInvalid={!!errors.city} fullWidth>
             <Label className="sr-only">{t("city")}</Label>
             <Input placeholder={t("city")} {...register("city")} />
-            <FieldError>{errors.city?.message}</FieldError>
+            <FieldError>{fieldError(errors.city)}</FieldError>
           </TextField>
 
           <TextField isRequired isInvalid={!!errors.postalCode} fullWidth>
             <Label className="sr-only">{t("postalCode")}</Label>
             <Input placeholder={t("postalCode")} {...register("postalCode")} />
-            <FieldError>{errors.postalCode?.message}</FieldError>
+            <FieldError>{fieldError(errors.postalCode)}</FieldError>
           </TextField>
 
           <div className="col-span-2 flex gap-3">

@@ -44,7 +44,11 @@ export default async function AccountPage() {
       {user ? (
         <AccountTabs user={user} orders={orders} addresses={addresses} />
       ) : (
-        <EmptyState message={t("loggedOut")} actionLabel={tCommon("logIn")} actionHref="/login" />
+        <EmptyState
+          message={t("loggedOut")}
+          actionLabel={tCommon("logIn")}
+          actionHref="/login?next=/account"
+        />
       )}
     </main>
   );

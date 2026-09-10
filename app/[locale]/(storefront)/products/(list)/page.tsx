@@ -4,6 +4,7 @@ import { breadcrumbJsonLd, localeAlternates } from "@/lib/seo";
 import {
   buildProductListHref,
   categoryListHref,
+  listingEmptyState,
   PLP_PAGE_SIZE,
   PRODUCTS_PATH,
   productPageCount,
@@ -16,6 +17,7 @@ import { listCategoryOptions } from "@/server/category.service";
 import { listStorefrontProducts } from "@/server/storefront-product.service";
 import { navTrail } from "@/components/storefront/navLinks";
 import { Breadcrumb } from "@/components/storefront/ui/Breadcrumb";
+import { EmptyState } from "@/components/storefront/ui/EmptyState";
 import { Pagination } from "@/components/storefront/ui/Pagination";
 import { FilterSidebar } from "@/components/storefront/products/FilterSidebar";
 import { ProductGrid } from "@/components/storefront/products/ProductGrid";
@@ -67,6 +69,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const query = storefrontProductListPageQuerySchema.parse(await searchParams);
   const t = await getTranslations("products");
   const tNav = await getTranslations("nav");
+  const tCommon = await getTranslations("common");
 
   const [categories, brands] = await Promise.all([listCategoryOptions(), listBrandOptions()]);
 
@@ -95,6 +98,25 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   });
 
   const pageCount = productPageCount(total, PLP_PAGE_SIZE);
+
+  // A listing with nothing on it still says why, and offers the one link that
+  // gets back to products — which link is lib/storefront/plp.ts's decision.
+  const emptyState = listingEmptyState(params, total, products.length);
+  const empty = emptyState
+    ? {
+        pastEnd: {
+          message: t("pastEnd", { page: params.page, pageCount }),
+          actionLabel: t("firstPage"),
+          actionHref: buildProductListHref({ ...params, page: 1 }),
+        },
+        noMatch: { message: t("noMatch"), actionLabel: t("showAll"), actionHref: PRODUCTS_PATH },
+        catalogEmpty: {
+          message: t("catalogEmpty"),
+          actionLabel: tCommon("goHome"),
+          actionHref: "/",
+        },
+      }[emptyState]
+    : null;
   const heading = activeCategory?.name ?? t("all");
   const breadcrumbItems = activeCategory
     ? navTrail("shop", tNav, { label: activeCategory.name })
@@ -118,17 +140,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             <ProductSortSelect params={params} />
           </div>
 
-          {products.length === 0 ? (
-            <p className="text-fg-subtle py-15 text-center text-[13px]">{t("noMatch")}</p>
+          {empty ? (
+            <EmptyState {...empty} />
           ) : (
-            <ProductGrid products={products} />
+            <>
+              <ProductGrid products={products} />
+              <Pagination
+                page={params.page}
+                pageCount={pageCount}
+                hrefForPage={(page) => buildProductListHref({ ...params, page })}
+              />
+            </>
           )}
-
-          <Pagination
-            page={params.page}
-            pageCount={pageCount}
-            hrefForPage={(page) => buildProductListHref({ ...params, page })}
-          />
         </div>
       </div>
     </main>
