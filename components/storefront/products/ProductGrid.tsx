@@ -5,7 +5,7 @@ import type { InventoryStatus } from "@/types/inventory";
 import type { StorefrontProductView } from "@/types/product";
 import { ProductCard } from "@/components/storefront/ui/ProductCard";
 import { useCartStore } from "@/lib/store/cart";
-import { useWishlistHydration, useWishlistStore } from "@/lib/store/wishlist";
+import { useWishlistHeart } from "@/lib/store/wishlist";
 
 // The grid itself is only a client component because of the two buttons on each
 // card — add-to-cart and the wishlist heart. The products arrive as props from
@@ -24,15 +24,8 @@ export function ProductGrid({ products }: ProductGridProps) {
   const tStatus = useTranslations("common.stockStatus");
 
   const addCartItem = useCartStore((state) => state.addItem);
-  const toggleWishlist = useWishlistStore((state) => state.toggle);
-  // `isWishlisted` is a stable function reference, so this component also has to
-  // subscribe to `items` directly — otherwise it never re-renders when the
-  // wishlist changes.
-  useWishlistStore((state) => state.items);
-  const isWishlisted = useWishlistStore((state) => state.isWishlisted);
-
   // The hearts are this grid's own concern, so is the list behind them.
-  useWishlistHydration();
+  const heart = useWishlistHeart();
 
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5">
@@ -57,8 +50,7 @@ export function ProductGrid({ products }: ProductGridProps) {
                   tone: STATUS_BADGE_TONE[product.stockStatus],
                 }
           }
-          isWishlisted={isWishlisted(product.id)}
-          onToggleWishlist={() => toggleWishlist(product.id)}
+          wishlist={heart(product.id)}
           onAddToCart={() => addCartItem(product.id, product.price)}
         />
       ))}

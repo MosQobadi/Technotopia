@@ -12,7 +12,7 @@ import {
   type AddBlocker,
 } from "@/lib/storefront/cart";
 import { useCartStore } from "@/lib/store/cart";
-import { useWishlistHydration, useWishlistStore } from "@/lib/store/wishlist";
+import { useWishlistHeart } from "@/lib/store/wishlist";
 import { HeartIcon } from "@/components/storefront/icons";
 import { Button } from "@/components/storefront/ui/Button";
 import { QuantityStepper } from "@/components/storefront/ui/QuantityStepper";
@@ -48,15 +48,8 @@ export function ProductPurchasePanel({ productId, slug, price, stock }: ProductP
 
   const items = useCartStore((state) => state.items);
   const addCartItem = useCartStore((state) => state.addItem);
-  const toggleWishlist = useWishlistStore((state) => state.toggle);
-  // `isWishlisted` is a stable function reference, so this component also has to
-  // subscribe to `items` directly — otherwise the heart never re-renders when the
-  // wishlist changes.
-  useWishlistStore((state) => state.items);
-  const isWishlisted = useWishlistStore((state) => state.isWishlisted);
-
   // The heart is this panel's own concern, so is the list behind it.
-  useWishlistHydration();
+  const heart = useWishlistHeart()(productId);
 
   const { inCart, max, blocker } = pdpAddLimit(stock, items, productId);
   // The ceiling can fall under the chosen quantity — an add from this page, or
@@ -106,13 +99,11 @@ export function ProductPurchasePanel({ productId, slug, price, stock }: ProductP
         <Button
           variant="icon-circle"
           iconSize="md"
-          aria-label={
-            isWishlisted(productId) ? tCommon("removeFromWishlist") : tCommon("addToWishlist")
-          }
-          onClick={() => toggleWishlist(productId)}
+          aria-label={heart.label}
+          onClick={heart.toggle}
           className="hover:text-danger shrink-0"
         >
-          <HeartIcon className="size-5" fill={isWishlisted(productId) ? "currentColor" : "none"} />
+          <HeartIcon className="size-5" fill={heart.isWishlisted ? "currentColor" : "none"} />
         </Button>
       </div>
 

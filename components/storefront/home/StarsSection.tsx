@@ -7,7 +7,7 @@ import { Button } from "@/components/storefront/ui/Button";
 import { ProductCard } from "@/components/storefront/ui/ProductCard";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { useCartStore } from "@/lib/store/cart";
-import { useWishlistHydration, useWishlistStore } from "@/lib/store/wishlist";
+import { useWishlistHeart } from "@/lib/store/wishlist";
 
 const COLLAPSED_COUNT = 4;
 const EXPANDED_COUNT = 10;
@@ -16,11 +16,8 @@ export function StarsSection({ products }: { products: HomeProductView[] }) {
   const t = useTranslations("home.stars");
   const [expanded, setExpanded] = useState(false);
   const addCartItem = useCartStore((state) => state.addItem);
-  const toggleWishlist = useWishlistStore((state) => state.toggle);
-  const isWishlisted = useWishlistStore((state) => state.isWishlisted);
-
   // The hearts are this section's own concern, so is the list behind them.
-  useWishlistHydration();
+  const heart = useWishlistHeart();
 
   if (products.length === 0) return null;
 
@@ -47,8 +44,7 @@ export function StarsSection({ products }: { products: HomeProductView[] }) {
                 ? { kind: "discount", label: `-${product.discountPercent}%` }
                 : undefined
             }
-            isWishlisted={isWishlisted(product.id)}
-            onToggleWishlist={() => toggleWishlist(product.id)}
+            wishlist={heart(product.id)}
             onAddToCart={() => addCartItem(product.id, product.price)}
           />
         ))}

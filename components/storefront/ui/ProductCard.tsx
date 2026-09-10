@@ -2,6 +2,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
+import type { WishlistHeart } from "@/lib/store/wishlist";
 import { CloseIcon, HeartIcon } from "@/components/storefront/icons";
 import { Button } from "./Button";
 import { PriceTag } from "./PriceTag";
@@ -21,8 +22,8 @@ interface ProductCardProps {
   discountPercent: number;
   imageSrc?: string;
   badge?: ProductCardBadge;
-  isWishlisted?: boolean;
-  onToggleWishlist?: () => void;
+  /** The heart, from useWishlistHeart. Cards on the wishlist page pass `onRemove` instead. */
+  wishlist?: WishlistHeart;
   onRemove?: () => void;
   onAddToCart?: () => void;
 }
@@ -42,8 +43,7 @@ export function ProductCard({
   discountPercent,
   imageSrc,
   badge,
-  isWishlisted,
-  onToggleWishlist,
+  wishlist,
   onRemove,
   onAddToCart,
 }: ProductCardProps) {
@@ -94,16 +94,18 @@ export function ProductCard({
             <CloseIcon className="size-4" />
           </Button>
         ) : (
-          <Button
-            variant="icon-circle"
-            iconSize="sm"
-            iconTone="surface"
-            aria-label={isWishlisted ? t("removeFromWishlist") : t("addToWishlist")}
-            onClick={onToggleWishlist}
-            className="hover:text-danger absolute end-2.5 top-2.5"
-          >
-            <HeartIcon className="size-4" fill={isWishlisted ? "currentColor" : "none"} />
-          </Button>
+          wishlist && (
+            <Button
+              variant="icon-circle"
+              iconSize="sm"
+              iconTone="surface"
+              aria-label={wishlist.label}
+              onClick={wishlist.toggle}
+              className="hover:text-danger absolute end-2.5 top-2.5"
+            >
+              <HeartIcon className="size-4" fill={wishlist.isWishlisted ? "currentColor" : "none"} />
+            </Button>
+          )
         )}
       </div>
       <div className="flex flex-col gap-1.5 p-5">

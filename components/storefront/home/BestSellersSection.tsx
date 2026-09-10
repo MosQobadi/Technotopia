@@ -8,7 +8,7 @@ import { ProductCard } from "@/components/storefront/ui/ProductCard";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { cn } from "@/lib/cn";
 import { useCartStore } from "@/lib/store/cart";
-import { useWishlistHydration, useWishlistStore } from "@/lib/store/wishlist";
+import { useWishlistHeart } from "@/lib/store/wishlist";
 
 type SortOption = "sold" | "priceAsc" | "priceDesc" | "new";
 
@@ -42,11 +42,8 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
   const [activeSort, setActiveSort] = useState<SortOption>("sold");
 
   const addCartItem = useCartStore((state) => state.addItem);
-  const toggleWishlist = useWishlistStore((state) => state.toggle);
-  const isWishlisted = useWishlistStore((state) => state.isWishlisted);
-
   // The hearts are this section's own concern, so is the list behind them.
-  useWishlistHydration();
+  const heart = useWishlistHeart();
 
   const filtered = useMemo(() => {
     return products
@@ -139,8 +136,7 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
               discountPercent={product.discountPercent}
               imageSrc={product.image ?? undefined}
               badge={{ kind: "rank", label: t("soldBadge", { rank: product.rank }) }}
-              isWishlisted={isWishlisted(product.id)}
-              onToggleWishlist={() => toggleWishlist(product.id)}
+              wishlist={heart(product.id)}
               onAddToCart={() => addCartItem(product.id, product.price)}
             />
           ))}

@@ -6,7 +6,7 @@ import type { HomeProductView } from "@/types/home";
 import { ProductCard } from "@/components/storefront/ui/ProductCard";
 import { SectionEyebrow } from "@/components/storefront/ui/SectionEyebrow";
 import { useCartStore } from "@/lib/store/cart";
-import { useWishlistHydration, useWishlistStore } from "@/lib/store/wishlist";
+import { useWishlistHeart } from "@/lib/store/wishlist";
 
 // How much of the visible width one arrow press travels. Just under a full
 // screenful, so a card stays half-visible as a hint that the rail continues.
@@ -34,11 +34,8 @@ export function DealsSection({ products }: { products: HomeProductView[] }) {
   const [atEnd, setAtEnd] = useState(false);
 
   const addCartItem = useCartStore((state) => state.addItem);
-  const toggleWishlist = useWishlistStore((state) => state.toggle);
-  const isWishlisted = useWishlistStore((state) => state.isWishlisted);
-
   // The hearts are this section's own concern, so is the list behind them.
-  useWishlistHydration();
+  const heart = useWishlistHeart();
 
   const measure = useCallback(() => {
     const track = trackRef.current;
@@ -128,8 +125,7 @@ export function DealsSection({ products }: { products: HomeProductView[] }) {
               discountPercent={product.discountPercent}
               imageSrc={product.image ?? undefined}
               badge={{ kind: "discount", label: `-${product.discountPercent}%` }}
-              isWishlisted={isWishlisted(product.id)}
-              onToggleWishlist={() => toggleWishlist(product.id)}
+              wishlist={heart(product.id)}
               onAddToCart={() => addCartItem(product.id, product.price)}
             />
           </li>

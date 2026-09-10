@@ -114,6 +114,7 @@
     "addToCart": "Add to Cart",
     "addToWishlist": "Add to wishlist",
     "removeFromWishlist": "Remove from wishlist",
+    "logInToSave": "Log in to save to your wishlist",
     "decreaseQuantity": "Decrease quantity",
     "increaseQuantity": "Increase quantity",
     "subtotal": "Subtotal",
