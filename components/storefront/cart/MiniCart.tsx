@@ -8,7 +8,7 @@ import { useDismissable } from "@/lib/storefront/useDismissable";
 import { useCart, useCartStore } from "@/lib/store/cart";
 import { Button } from "@/components/storefront/ui/Button";
 import { HeaderIconButton } from "@/components/storefront/ui/HeaderIconButton";
-import { CartIcon } from "@/components/storefront/ui/NavIcons";
+import { CartIcon } from "@/components/storefront/icons";
 
 // The header's answer to "did that work?".
 //

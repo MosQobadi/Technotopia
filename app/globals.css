@@ -105,6 +105,9 @@
      where --app-* is undefined, is untouched. */
   --color-plate: var(--app-plate, transparent);
 
+  /* White whatever the theme is, for product photography. See --app-photo. */
+  --color-photo: var(--app-photo, transparent);
+
   /* The readable accent, under a name of our own — because `accent` could not
      be it. HeroUI maps --color-accent to var(--accent), and var(--accent) has
      to stay the *fill*: its accent-filled components (login's <Button>) put
@@ -290,6 +293,18 @@ body[data-scope="storefront"] {
      Nothing draws text on it: the brand name sits below the tile on the page's
      own ground, and a brand with no logo is not rendered at all. */
   --app-plate: oklch(0.96 0.002 240);
+
+  /* The panel a product photograph sits on, and the plate's reasoning applied
+     to a photograph: product photography is shot on white (see CLAUDE.md), and
+     a contained shot never fills its box, so the ground around it has to be
+     that same white or the empty bands read as a pasted-in rectangle. A shot
+     on white does not stop being one because the page went dark. One user —
+     ProductCard, and only when it has an image.
+
+     Not repeated in the dark block, like the scrim and the plate. Nothing
+     draws text on it directly: the badges and the wishlist button laid over
+     it carry their own grounds. */
+  --app-photo: oklch(1 0 0);
 
   /* ── Status ──
      Each value is dark enough to serve twice: as text on a ground *and* as a

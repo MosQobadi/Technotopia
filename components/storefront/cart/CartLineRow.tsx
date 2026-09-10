@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { CloseIcon } from "@/components/storefront/icons";
 import { QuantityStepper } from "@/components/storefront/ui/QuantityStepper";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -154,9 +155,9 @@ export function CartLineRow({ line, onDecrease, onIncrease, onRemove }: CartLine
         type="button"
         aria-label={product ? t("removeNamed", { name: product.name }) : t("removeItem")}
         onClick={onRemove}
-        className="hover:text-danger focus-visible:outline-accent-readable text-fg-subtle flex size-7 shrink-0 items-center justify-center self-start rounded-full text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="hover:text-danger focus-visible:outline-accent-readable text-fg-subtle flex size-7 shrink-0 items-center justify-center self-start rounded-full outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
       >
-        ✕
+        <CloseIcon className="size-4" />
       </button>
     </li>
   );

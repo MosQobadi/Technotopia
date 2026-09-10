@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/format";
 import type { StorefrontSearchResult } from "@/types/search";
+import { ArrowIcon } from "./icons";
 
 const SEARCH_SCOPE_KEYS = ["all", "products", "categories", "brands"] as const;
 type SearchScope = (typeof SEARCH_SCOPE_KEYS)[number];
@@ -151,7 +152,7 @@ export function NavbarSearch() {
           aria-label={t("search")}
           className="bg-accent hover:bg-accent-hover focus-visible:outline-accent-readable m-0.75 flex size-8.5 shrink-0 items-center justify-center rounded-full text-accent-foreground outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
         >
-          <SearchArrowIcon />
+          <ArrowIcon className="size-4" />
         </button>
       </form>
 
@@ -253,20 +254,5 @@ function SearchRow({
         {meta && <span className="shrink-0 text-xs text-fg-subtle">{meta}</span>}
       </Link>
     </li>
-  );
-}
-
-function SearchArrowIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className="size-4"
-      aria-hidden
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0-6-6m6 6-6 6" />
-    </svg>
   );
 }

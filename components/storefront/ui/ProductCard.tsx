@@ -2,6 +2,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
+import { CloseIcon, HeartIcon } from "@/components/storefront/icons";
 import { Button } from "./Button";
 import { PriceTag } from "./PriceTag";
 
@@ -50,14 +51,21 @@ export function ProductCard({
 
   return (
     <div className="bg-surface-sunken group overflow-hidden rounded-[20px] transition-transform duration-150 hover:-translate-y-1">
-      <div className="bg-surface-muted relative aspect-square">
+      {/* Product photography is shot on white, so a photograph gets a white
+          panel and is contained rather than cropped: the whole product is on
+          screen, and a grid reads as one shelf instead of a patchwork. The
+          panel stays white in the dark theme too (see --app-photo) — on any
+          other ground a contained shot's empty bands show as a pasted-in
+          rectangle. With no photograph there is nothing to match, so the
+          placeholder keeps the card's own well, which flips. */}
+      <div className={cn("relative aspect-square", imageSrc ? "bg-photo" : "bg-surface-muted")}>
         {imageSrc ? (
           <Image
             src={imageSrc}
             alt={name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
-            className="object-cover"
+            className="object-contain p-4"
           />
         ) : (
           <div className="flex size-full items-center justify-center text-[10px] text-fg-subtle">
@@ -83,7 +91,7 @@ export function ProductCard({
             onClick={onRemove}
             className="text-danger absolute end-2.5 top-2.5"
           >
-            ✕
+            <CloseIcon className="size-4" />
           </Button>
         ) : (
           <Button
@@ -94,13 +102,13 @@ export function ProductCard({
             onClick={onToggleWishlist}
             className="hover:text-danger absolute end-2.5 top-2.5"
           >
-            {isWishlisted ? "♥" : "♡"}
+            <HeartIcon className="size-4" fill={isWishlisted ? "currentColor" : "none"} />
           </Button>
         )}
       </div>
       <div className="flex flex-col gap-1.5 p-5">
-        <span className="text-accent-readable text-[11px] tracking-wide uppercase">{category}</span>
-        <Link href={href} className="text-fg text-[17px] font-bold tracking-tight">
+        <span className="text-accent-readable text-label">{category}</span>
+        <Link href={href} className="text-fg text-subhead">
           {name}
         </Link>
         <PriceTag

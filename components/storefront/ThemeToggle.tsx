@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { applyTheme, readAppliedTheme } from "@/lib/storefront/theme";
+import { MoonIcon, SunIcon } from "./icons";
 
 // Deliberately stateless. The theme lives in one attribute on <html>, and the
 // `dark:` variant in globals.css keys on that attribute — so flipping it
@@ -30,47 +31,10 @@ export function ThemeToggle() {
       onClick={() => applyTheme(readAppliedTheme() === "dark" ? "light" : "dark")}
       className="bg-surface-sunken text-fg hover:bg-surface-muted focus-visible:outline-accent-readable flex size-9.5 shrink-0 cursor-pointer items-center justify-center rounded-full outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
     >
-      <MoonIcon />
-      <SunIcon />
+      {/* The moon shows in the light theme: it is what clicking gets you, not
+          where you are. */}
+      <MoonIcon className="size-4.5 dark:hidden" />
+      <SunIcon className="hidden size-4.5 dark:block" />
     </button>
-  );
-}
-
-// Shown in the light theme: the moon is what clicking gets you, not where you are.
-function MoonIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      className="size-4.5 dark:hidden"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M20.25 14.4A8.25 8.25 0 0 1 9.6 3.75a8.25 8.25 0 1 0 10.65 10.65Z"
-      />
-    </svg>
-  );
-}
-
-function SunIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      className="hidden size-4.5 dark:block"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="4" />
-      <path
-        strokeLinecap="round"
-        d="M12 2.75v2M12 19.25v2M4.22 4.22l1.41 1.41M18.37 18.37l1.41 1.41M2.75 12h2M19.25 12h2M4.22 19.78l1.41-1.41M18.37 5.63l1.41-1.41"
-      />
-    </svg>
   );
 }

@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useAuthStore } from "@/lib/store/auth";
 import { MiniCart } from "@/components/storefront/cart/MiniCart";
 import { HeaderIconButton } from "@/components/storefront/ui/HeaderIconButton";
-import { HeartIcon, PersonIcon } from "@/components/storefront/ui/NavIcons";
+import { HeartIcon, PersonIcon } from "@/components/storefront/icons";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NavDrawer } from "./NavDrawer";
 import { NAV_LINKS } from "./navLinks";

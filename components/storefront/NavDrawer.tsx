@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useDismissable } from "@/lib/storefront/useDismissable";
 import { useCart } from "@/lib/store/cart";
 import { HeaderIconButton } from "@/components/storefront/ui/HeaderIconButton";
-import { CartIcon, HeartIcon, MenuIcon, PersonIcon } from "@/components/storefront/ui/NavIcons";
+import { CartIcon, HeartIcon, MenuIcon, PersonIcon } from "@/components/storefront/icons";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 import type { NavLink } from "./navLinks";

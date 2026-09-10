@@ -12,6 +12,7 @@ import {
 } from "@/lib/storefront/cart";
 import { useCartStore } from "@/lib/store/cart";
 import { useWishlistHydration, useWishlistStore } from "@/lib/store/wishlist";
+import { HeartIcon } from "@/components/storefront/icons";
 import { Button } from "@/components/storefront/ui/Button";
 import { QuantityStepper } from "@/components/storefront/ui/QuantityStepper";
 import { NotifyMeForm } from "./NotifyMeForm";
@@ -110,7 +111,7 @@ export function ProductPurchasePanel({ productId, slug, price, stock }: ProductP
           onClick={() => toggleWishlist(productId)}
           className="hover:text-danger shrink-0"
         >
-          {isWishlisted(productId) ? "♥" : "♡"}
+          <HeartIcon className="size-5" fill={isWishlisted(productId) ? "currentColor" : "none"} />
         </Button>
       </div>
 
