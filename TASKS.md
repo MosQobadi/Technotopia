@@ -735,3 +735,56 @@ trigger's start edge in RTL.
 `e2e/storefront/shopping.spec.ts` moved with it: it used to reach the cart page through
 `getByRole("link", { name: "Cart" })` in the header, which is now a button, and it asserts
 the panel is open and the URL has not changed before following "View Cart".
+
+### Task 30.3 — The cart page ✅
+
+**Decision: a line that ships nothing stops the order; a line that ships less does not.**
+The cart already said "remove it to check out" under an out-of-stock line while leaving
+the checkout button live, and `orderableLines` quietly dropped that line from the order.
+One of the two had to give. Blocking is the half that keeps the promise: an order missing
+a product the customer believes they bought is discovered after payment, and the sentence
+already asks for the removal. `exceedsStock` is deliberately not in that class — it ships
+what is on the shelf and the note says so — and `priceChanged` blocks nothing, because
+checkout settles the price against the catalog rather than the snapshot. The rule is one
+function, `cartBlocker`, next to the totals it has to agree with.
+
+**Decision: four states, not two.** A cart is unread, unchecked, uncheckable or checked,
+and only the last of them may say a word about stock or price. Collapsing them is what the
+page used to do, and it had two consequences that only showed up on a slow or broken
+lookup: for the length of the first round trip every line rendered as "This product is no
+longer listed", and a lookup that failed left that showing permanently — the store turned
+a failure into an empty entry list, which reconciles to "everything is gone". The store now
+records which ids its answer covers (`entriesKey`) separately from whether the last attempt
+succeeded (`lookupFailed`), `pendingCart` renders the browser's own snapshot with no claims
+attached, and the failure gets a panel with a retry rather than six confident lies.
+
+**What fell out of that.** Two mutations stopped asking the catalog anything: a quantity
+change asks a question whose answer has not moved, and a removal cannot invalidate what was
+learned about the other lines, so its held entries are pruned instead of thrown away. Both
+used to refetch, which on this screen means every line's state blanking for a round trip —
+on the one page whose whole job is to keep saying what is wrong with each line. Adding a
+product the answer does not cover is the only mutation that still fetches.
+
+**The shape of it.** Three files, the way topoil splits it: `useCartLines` decides what the
+screen may claim, `CartLineRow` says one line's state, and `CartContent` composes them and
+holds no arithmetic at all — every figure on it comes from `lib/storefront/cart.ts`. The
+stepper's ceiling is now the shelf, so raising a line past what is left is not offered and
+`exceedsStock` can only mean stock fell under a quantity already stored. A blocked row
+carries a `bg-danger-soft` wash, drops its stepper (remove is the only move left) and
+prints "Not included" where its money would be; a short row keeps both and prints the
+`2 × …` its total is actually for. Notes are toned by how much they stand between cart and
+order: danger, warning, info.
+
+**DoD:** every line state — available, unavailable, out of stock, quantity above what is
+left, price changed — has a visible, translated treatment; totals come from the pure
+module and match its tests; the page renders correctly with good and problem lines mixed. ✅
+
+**Verified:** `pnpm lint`, `pnpm tsc --noEmit`, `pnpm build` clean; `pnpm test` 305 (14 new
+over `pendingCart`, `cartBlocker` and `cartIdsKey`); all 13 E2E pass. In the running app, a
+six-line cart holding one good line, a repriced one, one above stock, one out of stock, one
+deactivated and one id the catalog has no row for rendered all six at once with a subtotal
+of ۸٬۲۱۵ — 2249 + 1598 + 4368, the three lines that can ship — and checkout disabled under
+"An item in your cart is out of stock. Remove it to continue." Both themes, both locales
+and 375px checked. Forcing the lookup to 400 produced the failure panel and its retry, and
+the retry put the page back into "Checking availability…" rather than into a cart of
+products that no longer exist.

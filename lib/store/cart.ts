@@ -2,7 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   addToStoredCart,
+  cartIdsKey,
   EMPTY_CART,
+  pendingCart,
   reconcileCart,
   removeFromStoredCart,
   serializeCartIds,
@@ -17,7 +19,20 @@ interface CartState {
   items: StoredCartItem[];
   /** The catalog's answer for those ids. Derived, never persisted. */
   entries: CartCatalogEntry[];
+  /**
+   * The ids `entries` actually answers for. Comparing it with the cart's own key
+   * is what tells a reader whether the answer still covers the cart — see
+   * `useCart`. Without it, "no entry for this id" and "no answer yet" are the
+   * same shape, and a cart mid-lookup reports every product in it as gone.
+   */
+  entriesKey: string;
   isLoading: boolean;
+  /**
+   * The last lookup did not answer. The lines are unverified, not gone — nothing
+   * may be said about their stock or price until one does, which is why this is
+   * a fact of its own rather than an empty `entries`.
+   */
+  lookupFailed: boolean;
   /**
    * False until localStorage has been read back. Everything that renders a
    * count waits for it: the server has no localStorage, so a cart that appeared
@@ -34,71 +49,113 @@ interface CartState {
 
   /** Read the stored cart, then reconcile it. Safe to call from every mounted consumer. */
   hydrate: () => Promise<void>;
-  /** Re-read the catalog for the ids already stored. */
+  /** Re-read the catalog for the ids already stored — also how a failed lookup is retried. */
   reconcile: () => Promise<void>;
   addItem: (productId: string, unitPrice: number, quantity?: number) => Promise<void>;
-  setQuantity: (productId: string, quantity: number) => Promise<void>;
-  removeItem: (productId: string) => Promise<void>;
+  setQuantity: (productId: string, quantity: number) => void;
+  removeItem: (productId: string) => void;
   clear: () => void;
 }
 
 const STORAGE_KEY = "technotopia.cart";
 
-async function fetchEntries(items: StoredCartItem[]): Promise<CartCatalogEntry[]> {
-  if (items.length === 0) return [];
-
+/** The catalog's entries for these ids, or null when the lookup did not answer. */
+async function fetchEntries(items: StoredCartItem[]): Promise<CartCatalogEntry[] | null> {
   const query = new URLSearchParams({ ids: serializeCartIds(items) });
   const response = await fetch(`/api/storefront/cart?${query}`).catch(() => null);
-  if (!response) return [];
+  if (!response) return null;
 
   const result = await response.json().catch(() => null);
-  return result?.success ? (result.data.entries as CartCatalogEntry[]) : [];
+  return result?.success ? (result.data.entries as CartCatalogEntry[]) : null;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => {
-      /** Every mutation writes the list, then re-reads it against the catalog. */
-      async function commit(items: StoredCartItem[]) {
-        set({ items, isLoading: true });
-        set({ entries: await fetchEntries(items), isLoading: false });
+      /** Ask the catalog about the cart as it now stands, and record what came back. */
+      async function lookup(items: StoredCartItem[]) {
+        if (items.length === 0) {
+          set({ entries: [], entriesKey: "", isLoading: false, lookupFailed: false });
+          return;
+        }
+
+        set({ isLoading: true, lookupFailed: false });
+        const entries = await fetchEntries(items);
+        if (entries) {
+          set({ entries, entriesKey: cartIdsKey(items), isLoading: false, lookupFailed: false });
+          return;
+        }
+        // `entriesKey` is left stale on purpose, so the cart goes on reading as
+        // unverified instead of falling back on an answer to another question.
+        set({ isLoading: false, lookupFailed: true });
+      }
+
+      /** True while `entries` answers for exactly the ids these items carry. */
+      function covers(items: StoredCartItem[]): boolean {
+        return cartIdsKey(items) === get().entriesKey;
       }
 
       return {
         items: [],
         entries: [],
+        entriesKey: "",
         isLoading: false,
+        lookupFailed: false,
         hasHydrated: false,
         lastAddedAt: null,
 
         hydrate: () => ensureHydrated(),
 
-        reconcile: async () => {
-          const { items } = get();
-          if (items.length === 0) {
-            set({ entries: [], isLoading: false });
-            return;
-          }
-          set({ isLoading: true });
-          set({ entries: await fetchEntries(items), isLoading: false });
-        },
+        reconcile: () => lookup(get().items),
 
         addItem: async (productId, unitPrice, quantity = 1) => {
-          set({ lastAddedAt: Date.now() });
-          await commit(
-            addToStoredCart(get().items, productId, quantity, unitPrice, new Date().toISOString()),
+          const items = addToStoredCart(
+            get().items,
+            productId,
+            quantity,
+            unitPrice,
+            new Date().toISOString(),
           );
+          set({ items, lastAddedAt: Date.now() });
+          // Only a product the held answer does not already cover is worth asking about.
+          if (!covers(items)) await lookup(items);
         },
 
-        setQuantity: async (productId, quantity) => {
-          await commit(setStoredQuantity(get().items, productId, quantity));
+        // A quantity is not something the catalog has an opinion about until
+        // checkout, and the stock it was checked against has not moved — so this
+        // asks nothing. Re-running the lookup here would blank every line's
+        // state for the length of a round trip, on the one screen whose whole
+        // job is to keep saying what is wrong with each line.
+        setQuantity: (productId, quantity) => {
+          set({ items: setStoredQuantity(get().items, productId, quantity) });
         },
 
-        removeItem: async (productId) => {
-          await commit(removeFromStoredCart(get().items, productId));
+        // Dropping a line cannot invalidate what was learned about the others,
+        // so the held answer is pruned rather than thrown away. If it was not
+        // covering the cart to begin with there is nothing to prune, and the
+        // cart stays unverified until the next lookup.
+        removeItem: (productId) => {
+          const current = get().items;
+          const items = removeFromStoredCart(current, productId);
+          if (!covers(current)) {
+            set({ items });
+            return;
+          }
+          set({
+            items,
+            entries: get().entries.filter((entry) => entry.productId !== productId),
+            entriesKey: cartIdsKey(items),
+          });
         },
 
-        clear: () => set({ items: [], entries: [], lastAddedAt: null }),
+        clear: () =>
+          set({
+            items: [],
+            entries: [],
+            entriesKey: "",
+            lookupFailed: false,
+            lastAddedAt: null,
+          }),
       };
     },
     {
@@ -129,11 +186,25 @@ function ensureHydrated(): Promise<void> {
 /**
  * The cart as the UI reads it: the stored lines merged with the catalog by the
  * same rules the lookup route documents. Empty until localStorage has been read,
- * so server and client agree on the first paint.
+ * so server and client agree on the first paint — and merged only while the
+ * catalog's answer covers the cart in hand. Until it does, the lines are the
+ * browser's own snapshot with no claims attached: an answer to a different set
+ * of ids is not evidence that these products are gone.
  */
 export function useCart(): ReconciledCart {
   const items = useCartStore((state) => state.items);
   const entries = useCartStore((state) => state.entries);
+  const entriesKey = useCartStore((state) => state.entriesKey);
   const hasHydrated = useCartStore((state) => state.hasHydrated);
-  return hasHydrated ? reconcileCart(items, entries) : EMPTY_CART;
+
+  if (!hasHydrated) return EMPTY_CART;
+  return cartIdsKey(items) === entriesKey ? reconcileCart(items, entries) : pendingCart(items);
+}
+
+/** True while what is on screen has been checked against the catalog. */
+export function useCartVerified(): boolean {
+  const items = useCartStore((state) => state.items);
+  const entriesKey = useCartStore((state) => state.entriesKey);
+  const hasHydrated = useCartStore((state) => state.hasHydrated);
+  return hasHydrated && cartIdsKey(items) === entriesKey;
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   addToStoredCart,
+  cartBlocker,
+  cartIdsKey,
   cartLineIssue,
   cartTotals,
   MAX_CART_ITEMS,
@@ -8,6 +10,7 @@ import {
   orderableLines,
   orderableQuantity,
   parseCartIds,
+  pendingCart,
   reconcileCart,
   reconcileCartLine,
   removeFromStoredCart,
@@ -262,5 +265,113 @@ describe("parseCartIds", () => {
     const items = [stored({ productId: "a" }), stored({ productId: "b" })];
     expect(parseCartIds(serializeCartIds(items))).toEqual(["a", "b"]);
     expect(serializeCartIds([])).toBe("");
+  });
+});
+
+describe("pendingCart", () => {
+  const items = [
+    stored({ productId: "b", quantity: 1, addedAt: "2026-09-02T00:00:00.000Z" }),
+    stored({ productId: "a", quantity: 2, addedAt: "2026-09-01T00:00:00.000Z" }),
+  ];
+
+  it("keeps the order the cart was filled in, the way a read against the catalog does", () => {
+    expect(pendingCart(items).lines.map((line) => line.productId)).toEqual(["a", "b"]);
+  });
+
+  it("claims nothing about a product it has not asked about", () => {
+    for (const line of pendingCart(items).lines) {
+      expect(line.issue).toBeNull();
+      expect(line.product).toBeNull();
+    }
+    expect(pendingCart(items).hasIssues).toBe(false);
+  });
+
+  it("totals the captured prices, since they are the only ones it has", () => {
+    expect(pendingCart(items)).toMatchObject({
+      itemCount: 3,
+      subtotal: 3000,
+      shipping: SHIPPING_FLAT_RATE,
+      total: 3000 + SHIPPING_FLAT_RATE,
+    });
+  });
+
+  it("is the empty cart when the browser holds nothing", () => {
+    expect(pendingCart([])).toMatchObject({ lines: [], subtotal: 0, shipping: 0, total: 0 });
+  });
+
+  it("offers every line for order, because only the catalog could say otherwise", () => {
+    expect(orderableLines(pendingCart(items))).toEqual([
+      { productId: "a", quantity: 2 },
+      { productId: "b", quantity: 1 },
+    ]);
+  });
+});
+
+describe("cartBlocker", () => {
+  function cartOf(...entries: CartCatalogEntry[]) {
+    return reconcileCart(
+      entries.map((e, i) =>
+        stored({ productId: e.productId, addedAt: `2026-09-0${i + 1}T00:00:00.000Z` }),
+      ),
+      entries,
+    );
+  }
+
+  it("passes a cart every line of which can ship", () => {
+    expect(cartBlocker(cartOf(entry({ productId: "a" }), entry({ productId: "b" })))).toBeNull();
+  });
+
+  it("passes an empty cart — there is nothing wrong with it, only nothing in it", () => {
+    expect(cartBlocker(reconcileCart([], []))).toBeNull();
+  });
+
+  it("stops on a line that ships nothing", () => {
+    expect(cartBlocker(cartOf(entry({ productId: "a", stock: 0 })))).toBe("outOfStock");
+    expect(cartBlocker(cartOf(entry({ productId: "a", isAvailable: false })))).toBe("unavailable");
+  });
+
+  it("lets a short line through: it still ships what is left, and says so", () => {
+    const cart = reconcileCart(
+      [stored({ productId: "a", quantity: 5 })],
+      [entry({ productId: "a", stock: 2 })],
+    );
+    expect(cart.lines[0]?.issue).toBe("exceedsStock");
+    expect(cartBlocker(cart)).toBeNull();
+  });
+
+  it("lets a repriced line through: checkout settles the price against the catalog", () => {
+    const cart = reconcileCart(
+      [stored({ productId: "a" })],
+      [entry({ productId: "a", unitPrice: 1200 })],
+    );
+    expect(cart.lines[0]?.issue).toBe("priceChanged");
+    expect(cartBlocker(cart)).toBeNull();
+  });
+
+  it("reports the first blocking line, with the good and the bad mixed together", () => {
+    const cart = cartOf(
+      entry({ productId: "a" }),
+      entry({ productId: "b", stock: 0 }),
+      entry({ productId: "c", isAvailable: false }),
+    );
+    expect(cartBlocker(cart)).toBe("outOfStock");
+  });
+});
+
+describe("cartIdsKey", () => {
+  it("is the same key however the cart was filled", () => {
+    expect(cartIdsKey([stored({ productId: "b" }), stored({ productId: "a" })])).toBe(
+      cartIdsKey([stored({ productId: "a" }), stored({ productId: "b" })]),
+    );
+  });
+
+  it("changes when a product joins or leaves, and not when a quantity does", () => {
+    const cart = [stored({ productId: "a", quantity: 1 })];
+    expect(cartIdsKey(cart)).toBe(cartIdsKey([stored({ productId: "a", quantity: 9 })]));
+    expect(cartIdsKey(cart)).not.toBe(cartIdsKey([...cart, stored({ productId: "b" })]));
+  });
+
+  it("is empty for an empty cart, which is what an answer to nothing covers", () => {
+    expect(cartIdsKey([])).toBe("");
   });
 });

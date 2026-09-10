@@ -142,6 +142,18 @@
     "itemCount": "{count, plural, =0 {No items} one {# item} other {# items}}",
     "moreLines": "{count, plural, one {and # more product} other {and # more products}}",
     "checkout": "Checkout →",
+    "loading": "Loading your cart…",
+    "checking": "Checking availability…",
+    "lookupFailed": "We couldn't check availability just now, so checkout is on hold.",
+    "retry": "Try again",
+    "noImage": "no photo",
+    "quantityAsked": "Quantity: {quantity}",
+    "notIncluded": "Not included",
+    "removeNamed": "Remove item — {name}",
+    "blocked": {
+      "unavailable": "One of these products is no longer available. Remove it to continue.",
+      "outOfStock": "An item in your cart is out of stock. Remove it to continue."
+    },
     "issue": {
       "goneProduct": "This product is no longer listed",
       "unavailable": "No longer available — remove it to check out.",

@@ -147,6 +147,11 @@ export function cartTotals(
   return { itemCount, subtotal, shipping, total: subtotal + shipping };
 }
 
+/** The cart lists oldest first, the way it was filled — in both readings below. */
+function byAddedAt(a: StoredCartItem, b: StoredCartItem): number {
+  return a.addedAt.localeCompare(b.addedAt);
+}
+
 /**
  * The stored snapshot read against the catalog. Lines keep the order they were
  * added in; an id the catalog knows nothing about still gets a line, so the
@@ -158,7 +163,7 @@ export function reconcileCart(
 ): ReconciledCart {
   const byId = new Map(entries.map((entry) => [entry.productId, entry]));
   const lines = [...stored]
-    .sort((a, b) => a.addedAt.localeCompare(b.addedAt))
+    .sort(byAddedAt)
     .map((item) => reconcileCartLine(item, byId.get(item.productId)));
 
   return {
@@ -168,11 +173,55 @@ export function reconcileCart(
   };
 }
 
+/**
+ * The cart as the browser alone can describe it: every line at the quantity and
+ * price it was added at, and no line claiming to know anything it does not.
+ *
+ * This is what a caller renders before the catalog has answered, and after one
+ * that failed. The alternative — reconciling against an empty list of entries —
+ * reports every product in the cart as gone, which is the one thing a cart must
+ * not say when the truth is that we could not ask.
+ */
+export function pendingCart(stored: StoredCartItem[]): ReconciledCart {
+  const lines: CartLine[] = [...stored].sort(byAddedAt).map((item) => ({
+    productId: item.productId,
+    quantity: item.quantity,
+    addedAt: item.addedAt,
+    capturedPrice: item.capturedPrice,
+    product: null,
+    issue: null,
+    orderableQuantity: item.quantity,
+    lineTotal: item.capturedPrice * item.quantity,
+  }));
+
+  return { lines, ...cartTotals(lines), hasIssues: false };
+}
+
 /** The lines an order can be placed for, at the quantity it can be placed for. */
 export function orderableLines(cart: ReconciledCart): { productId: string; quantity: number }[] {
   return cart.lines
     .filter((line) => line.orderableQuantity > 0)
     .map((line) => ({ productId: line.productId, quantity: line.orderableQuantity }));
+}
+
+/** The issues that ship nothing at all, and so stop the order rather than shrink it. */
+export type CartBlocker = Extract<CartIssue, "unavailable" | "outOfStock">;
+
+/**
+ * The first reason the cart cannot be ordered as it stands, or null.
+ *
+ * Only a line that ships *nothing* blocks. `exceedsStock` ships what is left and
+ * the line says so; `priceChanged` is settled server-side at checkout, against
+ * the catalog rather than against the snapshot. A line that ships nothing is
+ * different in kind: carrying it through would place an order missing a product
+ * the customer believes they bought, and the line's own copy already asks for it
+ * to be removed.
+ */
+export function cartBlocker(cart: ReconciledCart): CartBlocker | null {
+  for (const line of cart.lines) {
+    if (line.issue === "unavailable" || line.issue === "outOfStock") return line.issue;
+  }
+  return null;
 }
 
 // --- The stored list itself -------------------------------------------------
@@ -238,4 +287,12 @@ export function parseCartIds(raw: string | null | undefined): string[] {
 
 export function serializeCartIds(items: Pick<StoredCartItem, "productId">[]): string {
   return items.map((item) => item.productId).join(",");
+}
+
+/**
+ * The same ids in a stable order, whatever order the cart was filled in — what a
+ * caller compares a held answer against to know whether it still covers the cart.
+ */
+export function cartIdsKey(items: Pick<StoredCartItem, "productId">[]): string {
+  return [...new Set(items.map((item) => item.productId))].sort().join(",");
 }
