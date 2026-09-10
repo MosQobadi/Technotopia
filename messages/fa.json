@@ -104,6 +104,8 @@
     "addToCart": "افزودن به سبد خرید",
     "addToWishlist": "افزودن به علاقه‌مندی‌ها",
     "removeFromWishlist": "حذف از علاقه‌مندی‌ها",
+    "decreaseQuantity": "کاهش تعداد",
+    "increaseQuantity": "افزایش تعداد",
     "subtotal": "جمع جزء",
     "shipping": "هزینه ارسال",
     "free": "رایگان",

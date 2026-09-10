@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 
 type QuantityStepperSize = "sm" | "md";
@@ -26,6 +27,7 @@ export function QuantityStepper({
   size = "md",
   className,
 }: QuantityStepperProps) {
+  const t = useTranslations("common");
   const sizeClasses = SIZE_CLASSES[size];
   const atMin = value <= min;
   const atMax = max != null && value >= max;
@@ -34,7 +36,7 @@ export function QuantityStepper({
     <div className={cn("bg-surface-sunken flex items-center rounded-full", className)}>
       <button
         type="button"
-        aria-label="Decrease quantity"
+        aria-label={t("decreaseQuantity")}
         onClick={onDecrease}
         disabled={atMin}
         className={cn(
@@ -50,7 +52,7 @@ export function QuantityStepper({
       </span>
       <button
         type="button"
-        aria-label="Increase quantity"
+        aria-label={t("increaseQuantity")}
         onClick={onIncrease}
         disabled={atMax}
         className={cn(
