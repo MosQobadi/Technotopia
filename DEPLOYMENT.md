@@ -678,7 +678,7 @@ Two things to know before running it:
   specs need the seeded admin account to log in with. It is a check on the build,
   not on production data.
 
-Expected: **12 passed**, nothing skipped. A skip here is a regression in itself —
+Expected: **18 passed**, nothing skipped. A skip here is a regression in itself —
 `e2e/storefront/search.spec.ts` was a `test.fixme` for a search box that submitted
 nowhere until Task 26.7, and a suite that skips is a suite that stops noticing.
 
