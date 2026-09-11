@@ -1033,10 +1033,21 @@ against 4.45–4.79 s. Two causes combine:
   CPU that JS holds the main thread, and the image request moves from 2.4 s to 3.2 s. FCP is
   unchanged (about 2.7 s in both builds).
 
-The fix is not part of this task, which measures. It has two parts: give the gallery's first
-image `priority`, as `HomeHero` does, so it is fetched straight from the HTML whatever the JS is
-doing; and load `NotifyMeForm` with `next/dynamic` only when the product is out of stock. The
-first part removes the dependency on the JS; the second removes the JS.
+**Fixed in a follow-up commit, re-measured the same way.** PDP LCP is now 2.5 s (en) and 3.0 s
+(fa), medians of three. That is better than before the regression (3.4 / 3.7 s at `f11e636`).
+Two changes did it:
+
+- The gallery's main image takes `preload`. That is Next 16's name for what `HomeHero` still
+  spells `priority`; both make the image eager and emit a preload link. The thumbnails stay lazy.
+  The image is now requested from the HTML at about 0.9 s and has arrived by about 1.7 s.
+- `NotifyMeForm` loads through `next/dynamic`. An in-stock PDP's initial chunks no longer contain
+  react-hook-form or Zod. PDP JS dropped from 341 KB to 191 KB transferred, and total blocking time
+  from about 630 ms to 90 ms. An out-of-stock PDP still server-renders the form with its chunks,
+  validates, and posts (201).
+
+LCP now equals FCP in every run: the photograph is ready before the first paint, so first paint
+is what is left to improve. Because of that, LCP moves with FCP. Eight English runs across two
+batches ranged from 2.4 s to 2.9 s, and the three Farsi runs from 2.5 s to 3.1 s.
 
 **Finding: image bytes say almost nothing yet.** They are the same in every build. Home loads
 11.9 KB, which is the one banner, a 1.7 MB upload that next/image serves at 750w. PLP loads no

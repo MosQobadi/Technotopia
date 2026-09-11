@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/format";
@@ -16,7 +17,12 @@ import { useWishlistHeart } from "@/lib/store/wishlist";
 import { HeartIcon } from "@/components/storefront/icons";
 import { Button } from "@/components/storefront/ui/Button";
 import { QuantityStepper } from "@/components/storefront/ui/QuantityStepper";
-import { NotifyMeForm } from "./NotifyMeForm";
+
+// Only an out-of-stock product shows the form, and it brings react-hook-form,
+// Zod and a HeroUI field with it — about 138 KB that every in-stock PDP used to
+// load ahead of its own photograph. Loaded on demand, it is still server-rendered
+// when the page needs it, and its chunk ships only with those pages.
+const NotifyMeForm = dynamic(() => import("./NotifyMeForm").then((m) => m.NotifyMeForm));
 
 // The only interactive strip of the product detail page. Everything around it —
 // name, price, stock badge, tags, description, breadcrumbs — is rendered on the

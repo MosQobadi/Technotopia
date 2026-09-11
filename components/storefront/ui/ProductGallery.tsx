@@ -27,6 +27,10 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
             // One column below lg on the product detail page, half of it above.
             sizes="(max-width: 1024px) 100vw, 600px"
             className="object-cover"
+            // The page's LCP element. Without this next/image makes it lazy,
+            // and a lazy image waits for layout and a free main thread before
+            // it is even requested — behind every script the page loads.
+            preload
           />
         ) : (
           <div
