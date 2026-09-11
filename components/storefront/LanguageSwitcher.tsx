@@ -34,7 +34,7 @@ function LanguageSwitcherLink() {
       href={href}
       locale={targetLocale}
       aria-label={targetLocale === "fa" ? t("switchToFarsi") : t("switchToEnglish")}
-      className="flex h-9.5 shrink-0 items-center justify-center rounded-full bg-surface-sunken px-3.5 text-xs font-bold text-fg hover:bg-surface-muted"
+      className="focus-visible:outline-accent-readable flex h-9.5 shrink-0 items-center justify-center rounded-full bg-surface-sunken px-3.5 text-xs font-bold text-fg outline-none hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       {targetLocale === "fa" ? "فا" : "EN"}
     </Link>

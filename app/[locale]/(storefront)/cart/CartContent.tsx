@@ -131,10 +131,12 @@ export function CartContent() {
           {canCheckout ? (
             <Button variant="primary" href="/checkout" fullWidth>
               {t("checkout")}
+              <CheckoutArrow />
             </Button>
           ) : (
             <Button variant="disabled" fullWidth disabled>
               {t("checkout")}
+              <CheckoutArrow />
             </Button>
           )}
 
@@ -149,6 +151,17 @@ export function CartContent() {
         </div>
       </div>
     </CartShell>
+  );
+}
+
+// Out of the translated label, where it was part of the button's accessible name
+// and read out as "right arrow" — and turned around with the reading direction
+// here, the way the hero's CTA arrow is, instead of in each message file.
+function CheckoutArrow() {
+  return (
+    <span aria-hidden className="rtl:-scale-x-100">
+      →
+    </span>
   );
 }
 

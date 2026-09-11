@@ -114,6 +114,15 @@ export function MailIcon(props: IconProps) {
   );
 }
 
+/** A step that is done — the order tracking row. */
+export function CheckIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m5 12.5 4.5 4.5L19 7" />
+    </Svg>
+  );
+}
+
 export function ArrowIcon(props: IconProps) {
   return (
     <Svg {...props}>

@@ -46,7 +46,8 @@
     "switchToEnglish": "Switch to English",
     "switchToFarsi": "Switch to Persian",
     "toggleTheme": "Toggle dark mode",
-    "menu": "Menu"
+    "menu": "Menu",
+    "primaryNav": "Main"
   },
   "footer": {
     "tagline": "Cameras, microphones, lights and speakers for people who make things worth watching.",
@@ -115,6 +116,8 @@
     "addToWishlist": "Add to wishlist",
     "removeFromWishlist": "Remove from wishlist",
     "logInToSave": "Log in to save to your wishlist",
+    "photoPlaceholder": "Product photo",
+    "viewImage": "View image {number}",
     "decreaseQuantity": "Decrease quantity",
     "increaseQuantity": "Increase quantity",
     "subtotal": "Subtotal",
@@ -163,7 +166,7 @@
     "viewCart": "View Cart",
     "itemCount": "{count, plural, =0 {No items} one {# item} other {# items}}",
     "moreLines": "{count, plural, one {and # more product} other {and # more products}}",
-    "checkout": "Checkout →",
+    "checkout": "Checkout",
     "loading": "Loading your cart…",
     "checking": "Checking availability…",
     "lookupFailed": "We couldn't check availability just now, so checkout is on hold.",

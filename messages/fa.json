@@ -46,7 +46,8 @@
     "switchToEnglish": "تغییر به انگلیسی",
     "switchToFarsi": "تغییر به فارسی",
     "toggleTheme": "تغییر حالت تیره",
-    "menu": "منو"
+    "menu": "منو",
+    "primaryNav": "منوی اصلی"
   },
   "footer": {
     "tagline": "دوربین، میکروفون، نور و بلندگو برای افرادی که چیزهای دیدنی می‌سازند.",
@@ -115,6 +116,8 @@
     "addToWishlist": "افزودن به علاقه‌مندی‌ها",
     "removeFromWishlist": "حذف از علاقه‌مندی‌ها",
     "logInToSave": "برای ذخیره در علاقه‌مندی‌ها وارد شوید",
+    "photoPlaceholder": "عکس محصول",
+    "viewImage": "نمایش تصویر {number}",
     "decreaseQuantity": "کاهش تعداد",
     "increaseQuantity": "افزایش تعداد",
     "subtotal": "جمع جزء",
@@ -163,7 +166,7 @@
     "viewCart": "مشاهده سبد خرید",
     "itemCount": "{count, plural, =0 {بدون کالا} one {# کالا} other {# کالا}}",
     "moreLines": "{count, plural, one {و # محصول دیگر} other {و # محصول دیگر}}",
-    "checkout": "تسویه حساب ←",
+    "checkout": "تسویه حساب",
     "loading": "در حال بارگذاری سبد خرید…",
     "checking": "در حال بررسی موجودی…",
     "lookupFailed": "در این لحظه نتوانستیم موجودی را بررسی کنیم، بنابراین تسویه فعلاً متوقف است.",

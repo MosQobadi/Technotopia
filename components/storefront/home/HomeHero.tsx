@@ -40,9 +40,15 @@ export async function HomeHero({ banners }: { banners: HomeBannerView[] }) {
   if (banners.length === 0) return null;
 
   const t = await getTranslations("home.hero");
+  const tCommon = await getTranslations("common");
 
   const slides = banners.map((banner, index) => (
-    <HeroSlide key={banner.id} banner={banner} eager={index === 0} />
+    <HeroSlide
+      key={banner.id}
+      banner={banner}
+      eager={index === 0}
+      photoPlaceholder={tCommon("photoPlaceholder")}
+    />
   ));
 
   return (
@@ -74,7 +80,15 @@ export async function HomeHero({ banners }: { banners: HomeBannerView[] }) {
 // slide with the `hidden` attribute rather than with opacity, the browser does
 // not fetch those photographs until the slide is actually shown. Three banners
 // is still one image on first paint.
-function HeroSlide({ banner, eager }: { banner: HomeBannerView; eager: boolean }) {
+function HeroSlide({
+  banner,
+  eager,
+  photoPlaceholder,
+}: {
+  banner: HomeBannerView;
+  eager: boolean;
+  photoPlaceholder: string;
+}) {
   return (
     <div className="grid items-center gap-9 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
       <div>
@@ -131,8 +145,8 @@ function HeroSlide({ banner, eager }: { banner: HomeBannerView; eager: boolean }
             loading={eager ? undefined : "lazy"}
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-[13px]">
-            HERO PRODUCT PHOTO
+          <div aria-hidden className="flex size-full items-center justify-center text-[13px] uppercase">
+            {photoPlaceholder}
           </div>
         )}
       </div>

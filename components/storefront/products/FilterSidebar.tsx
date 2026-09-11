@@ -63,6 +63,7 @@ export function FilterSidebar({ params, categories, brands }: FilterSidebarProps
           <button
             type="button"
             onClick={() => apply({ category: undefined })}
+            aria-pressed={params.category === undefined}
             className={cn(
               "focus-visible:outline-accent-readable text-start text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
               params.category === undefined
@@ -77,6 +78,9 @@ export function FilterSidebar({ params, categories, brands }: FilterSidebarProps
               key={category.id}
               type="button"
               onClick={() => apply({ category: category.slug })}
+              // The chosen category is otherwise told apart by colour and weight
+              // alone, which a screen reader does not announce.
+              aria-pressed={params.category === category.slug}
               className={cn(
                 "focus-visible:outline-accent-readable text-start text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
                 params.category === category.slug

@@ -102,7 +102,10 @@ export function CartLineRow({ line, onDecrease, onIncrease, onRemove }: CartLine
             {product.name}
           </Link>
         ) : (
-          <h3 className="text-fg text-subhead">{product?.name ?? t("issue.goneProduct")}</h3>
+          // Not a heading: an available line's name is a link, not a heading, so
+          // an <h3> here made the one unavailable line the only heading between
+          // the page's <h1> and the summary's <h2>.
+          <p className="text-fg text-subhead">{product?.name ?? t("issue.goneProduct")}</p>
         )}
 
         {issue && (

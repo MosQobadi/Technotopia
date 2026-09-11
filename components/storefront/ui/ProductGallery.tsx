@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 
 interface ProductGalleryProps {
@@ -11,6 +12,7 @@ interface ProductGalleryProps {
 }
 
 export function ProductGallery({ images, alt, className }: ProductGalleryProps) {
+  const t = useTranslations("common");
   const [activeIndex, setActiveIndex] = useState(0);
   const activeImage = images[activeIndex];
 
@@ -27,8 +29,11 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
             className="object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-[13px] text-fg-subtle">
-            PRODUCT PHOTO
+          <div
+            aria-hidden
+            className="flex size-full items-center justify-center text-[13px] text-fg-subtle uppercase"
+          >
+            {t("photoPlaceholder")}
           </div>
         )}
       </div>
@@ -38,7 +43,7 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
             <button
               key={image}
               type="button"
-              aria-label={`View image ${index + 1}`}
+              aria-label={t("viewImage", { number: index + 1 })}
               aria-current={index === activeIndex}
               onClick={() => setActiveIndex(index)}
               className={cn(

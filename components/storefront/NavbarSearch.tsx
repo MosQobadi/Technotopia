@@ -122,10 +122,13 @@ export function NavbarSearch() {
 
   return (
     <div ref={containerRef} className="relative flex min-w-55 flex-1 flex-col">
+      {/* The pill draws the focus ring for the select and the input inside it:
+          both are `outline-none`, and an outline of their own would be clipped
+          by the pill's overflow. The submit button keeps its own ring. */}
       <form
         onSubmit={handleSubmit}
         role="search"
-        className="flex items-center overflow-hidden rounded-full bg-surface-sunken"
+        className="outline-accent-readable flex items-center overflow-hidden rounded-full bg-surface-sunken outline-offset-2 has-[input:focus-visible]:outline-2 has-[select:focus-visible]:outline-2"
       >
         <label className="sr-only" htmlFor="navbar-search-scope">
           {t("searchScope")}
@@ -166,7 +169,8 @@ export function NavbarSearch() {
           aria-label={t("search")}
           className="bg-accent hover:bg-accent-hover focus-visible:outline-accent-readable m-0.75 flex size-8.5 shrink-0 items-center justify-center rounded-full text-accent-foreground outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
         >
-          <ArrowIcon className="size-4" />
+          {/* Points the way the reader reads, like every other arrow here. */}
+          <ArrowIcon className="size-4 rtl:-scale-x-100" />
         </button>
       </form>
 

@@ -8,6 +8,7 @@ import { OrderStatus } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/cn";
 import { formatOrderNumber } from "@/lib/format";
 import { ORDER_STEPS, orderStepIndex } from "@/lib/orders";
+import { CheckIcon } from "@/components/storefront/icons";
 
 interface OrderTrackingPageProps {
   params: Promise<{ orderId: string }>;
@@ -57,7 +58,12 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
     <main className="mx-auto max-w-180 px-6 py-12">
       <h1 className="text-fg text-title mb-2">{t("heading")}</h1>
       <p className="mb-8 text-[13px] text-fg-subtle">
-        <span className="font-mono">{orderNumber}</span> ·{" "}
+        {/* Isolated LTR, or the Farsi tree's bidi pass moves the # to the far
+            end of an id that starts with a letter. */}
+        <span className="font-mono" dir="ltr">
+          {orderNumber}
+        </span>{" "}
+        ·{" "}
         {t("placed", { date: format(order.createdAt, "MMM d, yyyy") })}
       </p>
 
@@ -65,17 +71,25 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
         {isCancelled ? (
           <p className="text-fg text-center text-sm font-semibold">{t("cancelled")}</p>
         ) : (
-          <div className="flex items-start">
+          // A list, so a screen reader hears how many steps there are, and
+          // aria-current, so it hears which one the order is at — the check
+          // marks and the colour only tell a sighted reader.
+          <ol className="flex items-start">
             {ORDER_STEPS.map((step, index) => {
               const done = index <= currentStepIndex;
               return (
-                <div key={step} className="relative flex flex-1 flex-col items-center">
+                <li
+                  key={step}
+                  aria-current={index === currentStepIndex ? "step" : undefined}
+                  className="relative flex flex-1 flex-col items-center"
+                >
                   {index > 0 && (
+                    // The connector reaches back to the previous dot, from half
+                    // a step before this one's inline start — which is the
+                    // right-hand side in the Farsi tree.
                     <div
                       className={cn(
-                        // Percentage-offset connector between step dots — no clean
-                        // logical-property equivalent, so it's flipped explicitly.
-                        "absolute top-2.5 left-[-50%] h-0.5 w-full rtl:right-[-50%] rtl:left-auto",
+                        "absolute -start-1/2 top-2.5 h-0.5 w-full",
                         done ? "bg-accent" : "bg-line-strong",
                       )}
                     />
@@ -86,7 +100,7 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
                       done ? "bg-accent" : "bg-line-strong",
                     )}
                   >
-                    {done && <span className="text-xs font-extrabold text-accent-foreground">✓</span>}
+                    {done && <CheckIcon className="text-accent-foreground size-3.5" strokeWidth={3} />}
                   </div>
                   <span
                     className={cn(
@@ -96,10 +110,10 @@ export default async function OrderTrackingPage({ params }: OrderTrackingPagePro
                   >
                     {tStatus(step)}
                   </span>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ol>
         )}
       </div>
 

@@ -40,7 +40,7 @@ export function Navbar() {
           <span className="text-fg text-lg font-extrabold tracking-tight">Technotopia</span>
         </Link>
 
-        <nav aria-label="Primary" className="hidden shrink-0 gap-5 md:flex">
+        <nav aria-label={t("primaryNav")} className="hidden shrink-0 gap-5 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}

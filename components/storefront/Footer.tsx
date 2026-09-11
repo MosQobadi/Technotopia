@@ -22,7 +22,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-label mb-4 text-fg-muted">{t("shopHeading")}</h3>
+          <h2 className="text-label mb-4 text-fg-muted">{t("shopHeading")}</h2>
           <div className="flex flex-col gap-2.5">
             {SHOP_LINK_SLUGS.map((slug) => (
               <Link key={slug} href={categoryListHref(slug)} className="text-sm text-fg-subtle">
@@ -33,7 +33,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-label mb-4 text-fg-muted">{t("supportHeading")}</h3>
+          <h2 className="text-label mb-4 text-fg-muted">{t("supportHeading")}</h2>
           <div className="flex flex-col gap-2.5">
             <Link href="/orders/track" className="text-sm text-fg-subtle">
               {t("trackOrder")}
@@ -54,7 +54,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-label mb-4 text-fg-muted">{t("visitHeading")}</h3>
+          <h2 className="text-label mb-4 text-fg-muted">{t("visitHeading")}</h2>
           <address className="text-sm leading-loose text-fg-subtle not-italic">
             {t("addressLine1")}
             <br />

@@ -34,7 +34,10 @@ export function OrdersTab({ orders }: OrdersTabProps) {
         >
           <div>
             <div className="mb-1 text-xs text-fg-subtle">
-              <span className="font-mono">{formatOrderNumber(order.id)}</span> ·{" "}
+              <span className="font-mono" dir="ltr">
+                {formatOrderNumber(order.id)}
+              </span>{" "}
+              ·{" "}
               {format(order.createdAt, "MMM d, yyyy")}
             </div>
             <div className="text-fg text-sm font-semibold">{order.itemsSummary}</div>

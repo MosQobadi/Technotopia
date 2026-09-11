@@ -47,7 +47,9 @@ export function QuantityStepper({
       >
         −
       </button>
-      <span className={cn("text-fg text-center font-semibold", sizeClasses.value)}>
+      {/* Live, so pressing − or + tells a screen reader where it landed — the
+          buttons' own names do not change. */}
+      <span aria-live="polite" className={cn("text-fg text-center font-semibold", sizeClasses.value)}>
         {value}
       </span>
       <button

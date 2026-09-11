@@ -69,6 +69,8 @@ export function BestSellersSection({ products, categories, brands }: BestSellers
               key={name}
               type="button"
               onClick={() => setActiveCategory(name)}
+              // The chosen chip is otherwise marked by its fill alone.
+              aria-pressed={name === activeCategory}
               className={cn(
                 "focus-visible:outline-accent-readable cursor-pointer rounded-full px-4 py-2.25 text-[13px] font-semibold outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
                 name === activeCategory ? "bg-fg text-surface" : "bg-surface-sunken text-fg",

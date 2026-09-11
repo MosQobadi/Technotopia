@@ -31,7 +31,12 @@ export function OrderReceipt({ orderId, total, isGuest }: OrderReceiptProps) {
       <div className="bg-surface-sunken mb-8 rounded-[20px] p-7 text-start">
         <div className="mb-3 flex justify-between text-sm">
           <span className="text-fg-subtle">{t("orderNumber")}</span>
-          <span className="text-fg font-mono font-semibold">{formatOrderNumber(orderId)}</span>
+          {/* `dir="ltr"` isolates it: in the Farsi tree the bidi algorithm
+              would otherwise move the leading # to the far end of an id that
+              starts with a letter. */}
+          <span className="text-fg font-mono font-semibold" dir="ltr">
+            {formatOrderNumber(orderId)}
+          </span>
         </div>
         <div className="mb-3 flex justify-between text-sm">
           <span className="text-fg-subtle">{t("estimatedDelivery")}</span>

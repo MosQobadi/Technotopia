@@ -68,8 +68,13 @@ export function ProductCard({
             className="object-contain p-4"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-[10px] text-fg-subtle">
-            PRODUCT PHOTO
+          // Hidden from a screen reader, which gets the product's name from the
+          // link below; translated because it is on screen in the Farsi tree.
+          <div
+            aria-hidden
+            className="flex size-full items-center justify-center text-[10px] text-fg-subtle uppercase"
+          >
+            {t("photoPlaceholder")}
           </div>
         )}
         {badge && (
