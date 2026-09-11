@@ -936,3 +936,119 @@ running app: the English low-stock PDP reads "Only 6 left", the stepper stops at
 them the button is disabled with its reason and a cart link; the Farsi out-of-stock PDP shows the
 disabled control, the reason, and takes a phone number typed in Persian digits (201). The admin modal
 was not exercised in a browser (it needs an admin sign-in); its route is covered by the tests above.
+
+## Phase 32 — The little issues
+
+### Task 32.5 — Measure it ✅
+
+**There was no baseline.** No Lighthouse run was captured before Phase 27 or Phase 28, and
+nothing in the repo or its history records one. The "before" columns below were measured
+**today, after the fact**: the commit before 27.1 (`58cafb1`), the end of Phase 27 (`b0f3895`)
+and the end of Phase 28 (`f11e636`) were each built in a worktree and run against the same dev
+database as HEAD, on the same machine, with the same Lighthouse. They are real measurements of
+the old code, but they are not a record from the time. The catalog columns those commits read
+(`Product`, `Category`, `Brand`, `Banner`) have not changed since, so the old builds render
+today's data as it is.
+
+**Method.** Lighthouse 12.8.2, Chrome 152, the mobile preset (412px wide, 4× CPU, 150 ms RTT /
+1.6 Mbps) with `throttlingMethod: devtools`, one warm-up run and then the median of three.
+Each build ran as `node .next/standalone/server.js`, the Dockerfile's entry point. The PDP
+tested is `roads-led-panel-kit`, the only product with an image. Bytes are transfer sizes from
+Lighthouse's network log. "Names in HTML" counts how many of the 8 active product names appear
+in the raw HTML outside `<script>`.
+
+Lighthouse's default simulated throttling was not usable on this machine. Headless Chrome's
+first paint stalls for about 0.9 s in roughly half of all runs, whatever the build. The
+simulation reads the stall as real work, so simulated LCP swung by up to 1.3 s on identical
+builds. Devtools throttling measures LCP directly, and its three runs usually landed within
+150 ms of each other.
+
+**Now (HEAD `02ee9c1`):**
+
+| Page | Locale | LCP   | CLS  | Fonts            | Images          |
+| ---- | ------ | ----- | ---- | ---------------- | --------------- |
+| Home | en     | 2.9 s | 0.00 | 1 file, 26.9 KB  | 1 file, 11.9 KB |
+| Home | fa     | 3.1 s | 0.00 | 2 files, 79.4 KB | 1 file, 11.9 KB |
+| PLP  | en     | 2.3 s | 0.00 | 1 file, 26.9 KB  | none            |
+| PLP  | fa     | 2.3 s | 0.00 | 2 files, 79.4 KB | none            |
+| PDP  | en     | 4.6 s | 0.00 | 1 file, 26.9 KB  | 1 file, 18.1 KB |
+| PDP  | fa     | 4.8 s | 0.00 | 2 files, 79.4 KB | 1 file, 18.1 KB |
+
+**Across the phases** (en / fa):
+
+|                     | Before 27 `58cafb1` | After 27 `b0f3895` | After 28 `f11e636` | Now `02ee9c1` |
+| ------------------- | ------------------- | ------------------ | ------------------ | ------------- |
+| Font files          | 4 / 4               | 1 / 2              | 1 / 2              | 1 / 2         |
+| Font KB             | 92.7 / 92.7         | 26.9 / 79.4        | 26.9 / 79.4        | 26.9 / 79.4   |
+| Names in HTML, home | 0                   | 0                  | 8                  | 8             |
+| Names in HTML, PLP  | 0                   | 0                  | 8                  | 8             |
+| Names in HTML, PDP  | 2                   | 2                  | 2                  | 2             |
+| Home LCP (s)        | 5.2 / 5.3           | 4.9 / 5.3          | 2.8 / 2.9          | 2.9 / 3.1     |
+| Home CLS            | 0.62 / 0.62         | 0.62 / 0.62        | 0.00 / 0.00        | 0.00 / 0.00   |
+| PLP LCP (s)         | 2.3 / 2.6           | 2.4 / 2.4          | 2.6 / 2.2          | 2.3 / 2.3     |
+| PLP CLS             | 0.14 / 0.14         | 0.14 / 0.13        | 0.00 / 0.00        | 0.00 / 0.00   |
+| PDP LCP (s)         | 3.8 / 3.8           | 3.5 / 3.7          | 3.4 / 3.7          | 4.6 / 4.8     |
+| PDP CLS             | 0.00                | 0.00               | 0.00               | 0.00          |
+
+Image bytes are the same in all four builds, so they are left out of this table.
+
+**27.1 shows up in the font numbers, strongly in English and only slightly in Farsi.**
+Before, both locales fetched the same four preloaded files: Plus Jakarta Sans, Vazirmatn's
+Arabic file and two IBM Plex Mono weights. English is now one file, down 71%. Farsi is down
+from four files to two and 14% in bytes. The Farsi saving is small for a structural reason:
+Farsi pages still carry Latin text, such as product names and SKUs, so they still need a Latin
+face. It is now Vazirmatn's own Latin file (34.7 KB), in place of Plus Jakarta plus Mono. That is
+two files but one family. `subsets: ["arabic"]` only controls preloading; next/font still emits
+the Latin range, and the browser fetches it because the page uses it. Fonts made no measurable
+difference to LCP. They are not preloaded, and no page's LCP element is text waiting on a web
+font.
+
+**Phase 28 shows up on home and PLP.** All 8 product names are in the HTML (none before). Home
+LCP dropped from 5.2 s to 2.8 s. The hero image used to wait for the client fetch of
+`/api/storefront/home`, a 4.2 s delay before the image was even requested; now it is in the
+HTML with `priority`, and that delay is 0.6 s. CLS went from 0.62 to 0 on home and from 0.14 to
+0 on PLP. Those pages used to paint an empty shell and then shift it when the content arrived.
+
+**Finding: PLP LCP does not measure the listing.** At 412px the largest element is the header
+search box's placeholder, not the grid. 7 of the 8 dev products have no image, and the one that
+does sits below the fold. So PLP LCP equals FCP in every build, and 28.2 shows up only in CLS and
+in the HTML. Re-measure once the real, photographed catalog is in; a product photo will then be
+the LCP element.
+
+**Finding: 28.3 had no gap to close in these metrics.** Before 28.3, the PDP's `page.tsx`
+already fetched the product on the server and passed it to a client component, and client
+components are server-rendered too. The product name is in the HTML in every build. 28.3
+changed what hydrates, not what is in the HTML.
+
+**Finding: PDP LCP regressed by about 1.2 s after Phase 28.** It went from 3.4 / 3.7 s at
+`f11e636` to 4.6 / 4.8 s now. Five extra English runs per build confirmed it: 3.49–3.58 s
+against 4.45–4.79 s. Two causes combine:
+
+- The gallery's main image (`components/storefront/ui/ProductGallery.tsx`) has no `priority`, so
+  next/image gives it `loading="lazy"`. That has been true in all four builds. A lazy image is
+  not requested until layout has run and the main thread is free to get to it.
+- Task 30.6 imported `NotifyMeForm` statically into `ProductPurchasePanel`. So every PDP loads
+  react-hook-form, Zod and HeroUI's text field up front, even an in-stock product that never
+  shows the form. That is three extra chunks, about 138 KB transferred, 65 KB of it Zod. At 4×
+  CPU that JS holds the main thread, and the image request moves from 2.4 s to 3.2 s. FCP is
+  unchanged (about 2.7 s in both builds).
+
+The fix is not part of this task, which measures. It has two parts: give the gallery's first
+image `priority`, as `HomeHero` does, so it is fetched straight from the HTML whatever the JS is
+doing; and load `NotifyMeForm` with `next/dynamic` only when the product is out of stock. The
+first part removes the dependency on the JS; the second removes the JS.
+
+**Finding: image bytes say almost nothing yet.** They are the same in every build. Home loads
+11.9 KB, which is the one banner, a 1.7 MB upload that next/image serves at 750w. PLP loads no
+images, and the PDP loads 18.1 KB. The dev catalog holds two uploaded images, and categories and
+brands have none, so the home page's category photos (29.3) and brand logos (29.4) render as
+placeholders. Image bytes need re-measuring against the real catalog.
+
+**DoD:** home, PLP and PDP in both locales are recorded against a production build, with LCP,
+CLS, font bytes and image bytes. The missing baseline is stated, and the before-columns are
+labelled as measured after the fact. 27.1 and Phase 28 are visible in the numbers; where they
+are not (Farsi fonts, PLP LCP, PDP HTML), the reason is written up. ✅
+
+**Verified:** four production builds, run against the standalone server one at a time, never
+two measurements at once. The PDP regression was confirmed separately on the `f11e636` and HEAD
+builds, with five devtools-throttled runs each and a request waterfall for each.
